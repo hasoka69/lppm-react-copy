@@ -1,0 +1,779 @@
+/* resources/css/home.module.css */
+
+/* Global Styles */
+.globalReset {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.body {
+    font-family: "Poppins", sans-serif;
+    background-color: #FFFADD;
+    color: #333;
+    line-height: 1.6;
+}
+
+/*
+ * ====================================
+ * STYLES UNTUK HERO SECTION LPPM
+ * ====================================
+ */
+
+/* Kontainer Utama Hero Section */
+.heroLppm {
+    position: relative;
+    overflow: hidden;
+    min-height: calc(0vh - 20px);
+    padding: 60px 0 50px 0;
+    background: linear-gradient(135deg, #004d99 0%, #007bff 100%);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.heroContainerLppm {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+    z-index: 2;
+    position: relative;
+    width: 100%;
+}
+
+.heroTextContent {
+    color: #ffffff;
+    max-width: 50%;
+}
+
+.welcomeLppmTitle {
+    font-size: 48px;
+    line-height: 1.2;
+    font-weight: 900;
+    font-family: 'Georgia', serif;
+    margin-bottom: 15px;
+}
+
+.heroTagline {
+    font-size: 20px;
+    font-weight: 300;
+    margin-bottom: 30px;
+}
+
+/* Tombol Ajukan Sekarang */
+.btnAjukanSekarang {
+    display: inline-flex;
+    align-items: center;
+    background-color: #333333;
+    color: #ffffff;
+    padding: 12px 30px;
+    font-size: 16px;
+    font-weight: 500;
+    text-decoration: none;
+    border-radius: 4px;
+    transition: background-color 0.3s;
+}
+
+.btnAjukanSekarang:hover {
+    background-color: #555555;
+}
+
+.arrowIcon {
+    margin-left: 10px;
+    font-size: 20px;
+    line-height: 1;
+}
+
+.heroImageLppm {
+    width: 100%;
+    height: 600px;
+    position: relative;
+    background: linear-gradient(to right, rgba(0, 123, 255, 0) 0%, #007bff 30%);
+}
+
+.heroImageLppm::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: -35px;
+    bottom: 0;
+    width: 100%;
+    background-image: url('/image/wellcome.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: right bottom;
+    z-index: 1;
+}
+
+.heroOverlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0.1;
+    z-index: 1;
+    background-image: radial-gradient(#ffffff 1.5px, transparent 1px);
+    background-size: 10px 10px;
+}
+
+/* Kotak Fitur di Bawah */
+.featureBoxesContainer {
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 20px;
+    z-index: 10;
+    max-width: 900px;
+    width: 90%;
+}
+
+.featureBox {
+    flex: 1;
+    background-color: #ffffff;
+    padding: 15px 20px;
+    border-radius: 8px;
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: left;
+    cursor: pointer;
+    transition: transform 0.3s;
+}
+
+.featureBox:hover {
+    transform: translateY(-5px);
+}
+
+.boxIcon {
+    flex-shrink: 0;
+    margin-right: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.boxIcon img {
+    width: 40px;
+    height: 40px;
+    margin-bottom: 0;
+}
+
+.featureBox p {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #004d99;
+    flex-grow: 1;
+}
+
+/* Media Queries untuk Responsif */
+@media (max-width: 992px) {
+    .heroContainerLppm {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .heroTextContent {
+        max-width: 100%;
+        margin-bottom: 30px;
+    }
+
+    .heroImageLppm {
+        display: none;
+    }
+
+    .featureBoxesContainer {
+        flex-direction: column;
+        bottom: -100px;
+    }
+}
+
+/*
+ * ====================================
+ * STYLES UNTUK SECTION BERITA TERBARU
+ * ====================================
+ */
+
+.latestNewsLppm {
+    padding: 120px 0 80px 0;
+    background-color: #fafcfc;
+    text-align: center;
+}
+
+.containerLppm {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.sectionTitle {
+    font-size: 30px;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.sectionSubtitle {
+    font-size: 16px;
+    color: #666;
+    margin-bottom: 40px;
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.newsCardsWrapper {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+    justify-content: center;
+}
+
+.newsCard {
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+    transition: box-shadow 0.3s ease;
+}
+
+.newsCard:hover {
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+}
+
+.cardHeader {
+    padding: 50px 25px;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: auto;
+}
+
+.bgBluePrimary { background-color: #007bff; }
+.bgBlueSecondary { background-color: #0d47a1; }
+.bgBlueTertiary { background-color: #1976d2; }
+
+.cardHeader h3 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 600;
+    text-align: center;
+}
+
+.cardBody {
+    padding: 20px 25px;
+    flex-grow: 1;
+}
+
+.cardTitle {
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.cardDescription {
+    font-size: 14px;
+    color: #555;
+    line-height: 1.5;
+    margin-bottom: 20px;
+}
+
+.cardFooter {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 25px;
+    border-top: none;
+    font-size: 13px;
+    color: #888;
+}
+
+.newsDate {
+    color: #777;
+}
+
+.readMore {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.readMore:hover {
+    color: #0056b3;
+}
+
+/*
+ * ====================================
+ * STYLES UNTUK SECTION PENGUMUMAN TERBARU
+ * ====================================
+ */
+
+.latestAnnouncementsLppm {
+    padding: 80px 0;
+    background-color: #ffffff;
+    text-align: center;
+}
+
+.announcementHeaderIcon {
+    font-size: 40px;
+    color: #4CAF50;
+    margin-bottom: 10px;
+}
+
+.announcementHeaderIcon .fas {
+    color: #4CAF50;
+    border: 2px solid #4CAF50;
+    border-radius: 50%;
+    padding: 5px;
+}
+
+.latestAnnouncementsLppm .sectionTitle {
+    font-size: 30px;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.latestAnnouncementsLppm .sectionSubtitle {
+    font-size: 16px;
+    color: #666;
+    margin-bottom: 40px;
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.announcementCardsWrapper {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 30px;
+    justify-content: center;
+}
+
+.announcementCard {
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    display: flex;
+    align-items: flex-start;
+    padding: 25px;
+    text-align: left;
+    transition: transform 0.3s ease;
+}
+
+.announcementCard:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+}
+
+.cardIconWrapper {
+    flex-shrink: 0;
+    width: 50px;
+    height: 50px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 20px;
+}
+
+.cardIconWrapper .fas {
+    font-size: 20px;
+    color: white;
+}
+
+.bgBlue { background-color: #007bff; }
+.bgGreen { background-color: #4CAF50; }
+.bgOrange { background-color: #ff9800; }
+.bgPurple { background-color: #9c27b0; }
+
+.cardContent {
+    flex-grow: 1;
+}
+
+.cardMeta {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+    font-size: 13px;
+}
+
+.cardMeta .date {
+    color: #777;
+    margin-right: 15px;
+}
+
+.tag {
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    line-height: 1;
+}
+
+.tagBlue { background-color: #e0f2ff; color: #007bff; }
+.tagGreen { background-color: #e8f5e9; color: #4CAF50; }
+.tagOrange { background-color: #fff3e0; color: #ff9800; }
+.tagPurple { background-color: #f3e5f5; color: #9c27b0; }
+
+.cardAnnouncementTitle {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 8px;
+}
+
+.cardAnnouncementDescription {
+    font-size: 13px;
+    color: #666;
+    line-height: 1.5;
+}
+
+@media (max-width: 992px) {
+    .announcementCardsWrapper {
+        grid-template-columns: 1fr;
+    }
+    .announcementCard {
+        padding: 20px;
+    }
+}
+
+/*
+ * ====================================
+ * STYLES UNTUK SECTION APA ITU LPPM ASAINDO?
+ * ====================================
+ */
+
+.aboutAsaLppm {
+    padding: 80px 0;
+    background-color: #ffffff;
+    text-align: center;
+}
+
+.sectionTitleAbout {
+    font-size: 36px;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.sectionSubtitleAbout {
+    font-size: 18px;
+    color: #666;
+    margin-bottom: 50px;
+}
+
+.aboutContentWrapper {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 60px;
+    text-align: left;
+}
+
+.aboutFeaturesList {
+    flex-basis: 45%;
+    padding-top: 50px;
+}
+
+.featureItem {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 30px;
+}
+
+.featureIconBox {
+    flex-shrink: 0;
+    width: 45px;
+    height: 45px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 20px;
+}
+
+.featureIconBox .fas {
+    font-size: 20px;
+    color: white;
+}
+
+.bgBlueDark { background-color: #004d99; }
+.bgGreenLight { background-color: #4CAF50; }
+.bgOrangeLight { background-color: #ff9800; }
+.bgPurpleLight { background-color: #9c27b0; }
+
+.featureText h4 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+.featureText p {
+    font-size: 14px;
+    color: #666;
+    line-height: 1.5;
+}
+
+.aboutVisualDashboard {
+    flex-basis: 55%;
+    position: relative;
+}
+
+.dashboardCard {
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.dashboardHeader {
+    background: linear-gradient(135deg, #007bff 0%, #004d99 100%);
+    padding: 25px 30px;
+    color: white;
+}
+
+.dashboardTitle {
+    font-size: 18px;
+    font-weight: 500;
+    margin-bottom: 20px;
+}
+
+.dashboardStats {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    text-align: center;
+}
+
+.statItem {
+    flex: 1;
+}
+
+.statNumber {
+    font-size: 30px;
+    font-weight: 700;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.statLabel {
+    font-size: 12px;
+    opacity: 0.8;
+}
+
+.dashboardProgressList {
+    padding: 20px 30px;
+}
+
+.progressItem {
+    display: flex;
+    align-items: center;
+    padding: 15px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.progressItem:last-child {
+    border-bottom: none;
+}
+
+.progressItem .fas,
+.progressItem .faCheckCircle,
+.progressItem .faClock,
+.progressItem .faPlusCircle {
+    font-size: 20px;
+    margin-right: 15px;
+    flex-shrink: 0;
+}
+
+.textGreen { color: #4CAF50; }
+.textOrange { color: #ff9800; }
+.textBlue { color: #007bff; }
+
+.progressText {
+    flex-grow: 1;
+}
+
+.progressTitle {
+    font-size: 15px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.progressSubtitle {
+    font-size: 12px;
+    color: #888;
+    margin: 0;
+}
+
+.progressStatus {
+    font-size: 12px;
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
+@media (max-width: 992px) {
+    .aboutContentWrapper {
+        flex-direction: column;
+    }
+
+    .aboutFeaturesList {
+        flex-basis: 100%;
+        padding-top: 0;
+        margin-bottom: 40px;
+    }
+
+    .aboutVisualDashboard {
+        flex-basis: 100%;
+    }
+}
+
+/*
+ * ====================================
+ * STYLES UNTUK SECTION HOW IT WORKS
+ * ====================================
+ */
+
+.howItWorksLppm {
+    padding: 80px 0;
+    background-color: #f8f9fa;
+    text-align: center;
+}
+
+.sectionTitleHow {
+    font-size: 36px;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.sectionSubtitleHow {
+    font-size: 18px;
+    color: #666;
+    margin-bottom: 50px;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.processCardsWrapper {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 30px;
+}
+
+.processCard {
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    padding: 40px 20px 30px 20px;
+    text-align: center;
+    position: relative;
+    transition: box-shadow 0.3s ease;
+}
+
+.processCard:hover {
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+}
+
+.cardHeaderProcess {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 25px;
+}
+
+.processCard:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    top: 35px;
+    right: -30px;
+    width: 30px;
+    height: 1px;
+    background-color: #ccc;
+    z-index: 1;
+}
+
+.stepNumber {
+    position: absolute;
+    top: -15px;
+    right: 40px;
+    background-color: #007bff;
+    color: white;
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    font-size: 14px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 5;
+}
+
+.iconCircle {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    z-index: 2;
+}
+
+.iconCircle .fas {
+    font-size: 30px;
+    color: white;
+}
+
+.processTitle {
+    font-size: 18px;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.processDescription {
+    font-size: 14px;
+    color: #666;
+    line-height: 1.6;
+    min-height: 80px;
+}
+
+@media (max-width: 1200px) {
+    .processCardsWrapper {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .processCard:nth-child(even)::after,
+    .processCard:nth-child(3)::after {
+        content: none;
+    }
+    .processCard:not(:last-child)::after {
+        content: none;
+    }
+}
+
+@media (max-width: 768px) {
+    .processCardsWrapper {
+        grid-template-columns: 1fr;
+    }
+    .processCard:not(:last-child)::after {
+        content: none;
+    }
+}
