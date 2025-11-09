@@ -1,6 +1,10 @@
 import { Head, Link, usePage } from '@inertiajs/react';
 import { type SharedData } from '@/types';
 import { useEffect } from 'react';
+import homeStyles from '../../css/home.module.css'; // Ganti nama
+
+import Navbar from '@/components/navbar';
+import Footer from '@/components/footer';
 
 export default function Welcome() {
   const { auth, setting } = usePage<SharedData>().props;
@@ -17,98 +21,358 @@ export default function Welcome() {
 
   return (
     <>
-      <Head title="Welcome" />
-      <div className="relative min-h-screen flex flex-col items-center justify-center px-4 bg-gradient-to-br from-background to-gray-50 dark:to-gray-900">
-        {/* Decorative elements */}
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute top-0 left-1/4 w-32 h-32 rounded-full bg-[var(--primary)]/10 blur-3xl" />
-          <div className="absolute bottom-0 right-1/4 w-40 h-40 rounded-full bg-secondary/10 blur-3xl" />
+      <Head title="LPPM | Lembaga Penelitian Asa" />
+      
+      {/* Navbar Component */}
+      <Navbar />
+
+      {/* Hero Section */}
+      <section className={homeStyles.heroLppm} style={{ marginTop: '95px' }}>
+        <div className={homeStyles.heroOverlay}></div>
+        <div className={homeStyles.heroContainerLppm}>
+          <div className={homeStyles.heroTextContent}>
+            <h1 className={homeStyles.welcomeLppmTitle}>Selamat Datang di LPPM Asaindo</h1>
+            <p className={homeStyles.heroTagline}>Meneliti untuk Berkarya, Mengabdi untuk Negeri.</p>
+            <a href="#" className={homeStyles.btnAjukanSekarang}>
+              Ajukan Sekarang
+              <span className={homeStyles.arrowIcon}>›</span>
+            </a>
+          </div>
+          <div className={homeStyles.heroImageLppm}></div>
         </div>
-
-        <div className="relative w-full max-w-4xl text-center space-y-8 z-10">
-          {/* Header section */}
-          <div className="space-y-6">
-            <h1 className="text-5xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-[var(--primary)] to-[var(--primary)]/80">
-              Laravel 12 + React Starter Kit
-            </h1>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Accelerate your development with a production-ready foundation featuring authentication, role management, customizable settings, and a modern UI.
-            </p>
+        
+        <div className={homeStyles.featureBoxesContainer}>
+          <div className={homeStyles.featureBox}>
+            <div className={homeStyles.boxIcon}>
+              <img src="/image/pengajuan.png" alt="Ikon Pengajuan Usulan"/>
+            </div>
+            <p>Pengajuan Usulan</p>
           </div>
-
-          {/* CTA section */}
-          {auth.user ? (
-            <div className="space-y-4">
-              <Link
-                href="/dashboard"
-                className="inline-flex items-center justify-center px-8 py-3 rounded-lg bg-[var(--primary)] text-white font-medium hover:bg-[var(--primary)]/90 transition-all transform hover:-translate-y-0.5 shadow-md hover:shadow-lg"
-              >
-                Go to Dashboard
-                <svg xmlns="http://www.w3.org/2000/svg" className="ml-2 h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
-                </svg>
-              </Link>
+          <div className={homeStyles.featureBox}>
+            <div className={homeStyles.boxIcon}>
+              <img src="/image/review.png" alt="Ikon Review Usulan"/>
             </div>
-          ) : (
-            <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
-              <Link
-                href="/login"
-                className="px-8 py-3 rounded-lg border border-border bg-white dark:bg-gray-800 font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-all transform hover:-translate-y-0.5 shadow-sm hover:shadow-md"
-              >
-                Sign In
-              </Link>
-              <Link
-                href="/register"
-                className="px-8 py-3 rounded-lg bg-[var(--primary)] text-white font-medium hover:bg-[var(--primary)]/90 transition-all transform hover:-translate-y-0.5 shadow-md hover:shadow-lg"
-              >
-                Get Started
-              </Link>
-            </div>
-          )}
-
-          {/* Features grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-8">
-            <div className="bg-white dark:bg-gray-800/50 p-6 rounded-xl border border-border shadow-sm hover:shadow-md transition-shadow">
-              <div className="text-[var(--primary)] mb-3">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                </svg>
-              </div>
-              <h3 className="font-semibold text-lg mb-2">Secure Authentication</h3>
-              <p className="text-muted-foreground text-sm">Built-in user authentication with email verification and password reset.</p>
-            </div>
-            <div className="bg-white dark:bg-gray-800/50 p-6 rounded-xl border border-border shadow-sm hover:shadow-md transition-shadow">
-              <div className="text-[var(--primary)] mb-3">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-              </div>
-              <h3 className="font-semibold text-lg mb-2">Role Management</h3>
-              <p className="text-muted-foreground text-sm">Flexible role-based permissions system for controlling access.</p>
-            </div>
-            <div className="bg-white dark:bg-gray-800/50 p-6 rounded-xl border border-border shadow-sm hover:shadow-md transition-shadow">
-              <div className="text-[var(--primary)] mb-3">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
-                </svg>
-              </div>
-              <h3 className="font-semibold text-lg mb-2">Modern Dashboard</h3>
-              <p className="text-muted-foreground text-sm">Clean, responsive interface with dark mode support.</p>
-            </div>
+            <p>Review Usulan</p>
           </div>
-
-          {/* Footer links */}
-          <div className="pt-8 space-y-2 text-sm text-muted-foreground">
-            <p>
-              Read the <a href="https://laravel.com/docs" target="_blank" rel="noopener noreferrer" className="text-[var(--primary)] hover:underline font-medium">Laravel documentation</a> or explore <a href="https://laracasts.com" target="_blank" rel="noopener noreferrer" className="text-[var(--primary)] hover:underline font-medium">Laracasts tutorials</a>.
-            </p>
-            <p>
-              Need quick deployment? Try <a href="https://cloud.laravel.com" target="_blank" rel="noopener noreferrer" className="text-[var(--primary)] hover:underline font-medium">Laravel Cloud</a>.
-            </p>
+          <div className={homeStyles.featureBox}>
+            <div className={homeStyles.boxIcon}>
+              <img src="/image/pelaporan.png" alt="Ikon Pelaporan Kegiatan"/>
+            </div>
+            <p>Pelaporan Kegiatan</p>
           </div>
         </div>
-      </div>
+      </section>
+
+      {/* Berita Section */}
+      <section className={homeStyles.latestNewsLppm}>
+        <div className={homeStyles.containerLppm}>
+          <h2 className={homeStyles.sectionTitle}>Berita Terbaru</h2>
+          <p className={homeStyles.sectionSubtitle}>
+            Kabar dan informasi terkini seputar kegiatan penelitian dan pengabdian masyarakat Asaindo.
+          </p>
+
+          <div className={homeStyles.newsCardsWrapper}>
+            <div className={homeStyles.newsCard}>
+              <div className={`${homeStyles.cardHeader} ${homeStyles.bgBluePrimary}`}>
+                <h3>Penelitian Terbaru</h3>
+              </div>
+              <div className={homeStyles.cardBody}>
+                <h4 className={homeStyles.cardTitle}>Penelitian Inovasi Teknologi Pendidikan</h4>
+                <p className={homeStyles.cardDescription}>
+                  Tim peneliti LPPM Asaindo berhasil mengembangkan platform pembelajaran digital yang meningkatkan efektivitas belajar mengajar hingga 40%.
+                </p>
+              </div>
+              <div className={homeStyles.cardFooter}>
+                <span className={homeStyles.newsDate}>15 Januari 2025</span>
+                <a href="#" className={homeStyles.readMore}>Baca Selengkapnya →</a>
+              </div>
+            </div>
+
+            <div className={homeStyles.newsCard}>
+              <div className={`${homeStyles.cardHeader} ${homeStyles.bgBlueSecondary}`}>
+                <h3>Pengabdian Masyarakat</h3>
+              </div>
+              <div className={homeStyles.cardBody}>
+                <h4 className={homeStyles.cardTitle}>Program Pemberdayaan UMKM Digital</h4>
+                <p className={homeStyles.cardDescription}>
+                  Kegiatan pengabdian masyarakat yang membantu 200+ UMKM lokal untuk go digital dan meningkatkan penjualan online mereka.
+                </p>
+              </div>
+              <div className={homeStyles.cardFooter}>
+                <span className={homeStyles.newsDate}>12 Januari 2025</span>
+                <a href="#" className={homeStyles.readMore}>Baca Selengkapnya →</a>
+              </div>
+            </div>
+
+            <div className={homeStyles.newsCard}>
+              <div className={`${homeStyles.cardHeader} ${homeStyles.bgBlueTertiary}`}>
+                <h3>Kolaborasi Riset</h3>
+              </div>
+              <div className={homeStyles.cardBody}>
+                <h4 className={homeStyles.cardTitle}>Kolaborasi Riset Internasional</h4>
+                <p className={homeStyles.cardDescription}>
+                  LPPM Asaindo menjalin kerjasama penelitian dengan universitas terkemuka di Asia Tenggara untuk pengembangan teknologi berkelanjutan.
+                </p>
+              </div>
+              <div className={homeStyles.cardFooter}>
+                <span className={homeStyles.newsDate}>10 Januari 2025</span>
+                <a href="#" className={homeStyles.readMore}>Baca Selengkapnya →</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Pengumuman Section */}
+      <section className={homeStyles.latestAnnouncementsLppm}>
+        <div className={homeStyles.containerLppm}>
+          <div className={homeStyles.announcementHeaderIcon}>
+            <i className="fas fa-check-circle"></i> 
+          </div>
+
+          <h2 className={homeStyles.sectionTitle}>Pengumuman Terbaru</h2>
+          <p className={homeStyles.sectionSubtitle}>Informasi penting dan pembaruan resmi dari LPPM Asaindo.</p>
+
+          <div className={homeStyles.announcementCardsWrapper}>
+            <div className={homeStyles.announcementCard}>
+              <div className={`${homeStyles.cardIconWrapper} ${homeStyles.bgBlue}`}>
+                <i className="fas fa-bullhorn"></i>
+              </div>
+              <div className={homeStyles.cardContent}>
+                <div className={homeStyles.cardMeta}>
+                  <span className={homeStyles.date}>16 Januari 2025</span>
+                  <span className={`${homeStyles.tag} ${homeStyles.tagBlue}`}>Penting</span>
+                </div>
+                <h3 className={homeStyles.cardAnnouncementTitle}>Pembukaan Pendaftaran Hibah Penelitian 2025</h3>
+                <p className={homeStyles.cardAnnouncementDescription}>
+                  Pendaftaran hibah penelitian internal tahun 2025 dibuka mulai 20 Januari hingga 20 Februari 2025. Informasi lengkap tersedia di portal BIMA.
+                </p>
+              </div>
+            </div>
+
+            <div className={homeStyles.announcementCard}>
+              <div className={`${homeStyles.cardIconWrapper} ${homeStyles.bgGreen}`}>
+                <i className="fas fa-sync-alt"></i>
+              </div>
+              <div className={homeStyles.cardContent}>
+                <div className={homeStyles.cardMeta}>
+                  <span className={homeStyles.date}>14 Januari 2025</span>
+                  <span className={`${homeStyles.tag} ${homeStyles.tagGreen}`}>Update</span>
+                </div>
+                <h3 className={homeStyles.cardAnnouncementTitle}>Update Sistem V2.1</h3>
+                <p className={homeStyles.cardAnnouncementDescription}>
+                  Sistem BIMA telah diperbarui dengan fitur notifikasi real-time dan dashboard analitik yang lebih komprehensif untuk monitoring penelitian.
+                </p>
+              </div>
+            </div>
+
+            <div className={homeStyles.announcementCard}>
+              <div className={`${homeStyles.cardIconWrapper} ${homeStyles.bgOrange}`}>
+                <i className="fas fa-clock"></i>
+              </div>
+              <div className={homeStyles.cardContent}>
+                <div className={homeStyles.cardMeta}>
+                  <span className={homeStyles.date}>12 Januari 2025</span>
+                  <span className={`${homeStyles.tag} ${homeStyles.tagOrange}`}>Deadline</span>
+                </div>
+                <h3 className={homeStyles.cardAnnouncementTitle}>Batas Akhir Laporan Penelitian 2024</h3>
+                <p className={homeStyles.cardAnnouncementDescription}>
+                  Reminder untuk semua peneliti yang memiliki hibah penelitian 2024, batas akhir pengumpulan laporan akhir adalah 31 Januari 2025.
+                </p>
+              </div>
+            </div>
+
+            <div className={homeStyles.announcementCard}>
+              <div className={`${homeStyles.cardIconWrapper} ${homeStyles.bgPurple}`}>
+                <i className="fas fa-building"></i>
+              </div>
+              <div className={homeStyles.cardContent}>
+                <div className={homeStyles.cardMeta}>
+                  <span className={homeStyles.date}>10 Januari 2025</span>
+                  <span className={`${homeStyles.tag} ${homeStyles.tagPurple}`}>Workshop</span>
+                </div>
+                <h3 className={homeStyles.cardAnnouncementTitle}>Workshop Penulisan Proposal Penelitian</h3>
+                <p className={homeStyles.cardAnnouncementDescription}>
+                  Workshop pelatihan penulisan proposal penelitian yang efektif akan diselenggarakan pada 25 Januari 2025. Daftar melalui sistem BIMA.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* About Section */}
+      <section className={homeStyles.aboutAsaLppm}>
+        <div className={`${homeStyles.containerLppm} ${homeStyles.textCenter}`}>
+          <h2 className={homeStyles.sectionTitleAbout}>Apa itu LPPM ASAINDO?</h2>
+          <p className={homeStyles.sectionSubtitleAbout}>
+            Sistem pintar yang memudahkan pengelolaan penelitian dan pengabdian masyarakat.
+          </p>
+
+          <div className={homeStyles.aboutContentWrapper}>
+            <div className={homeStyles.aboutFeaturesList}>
+              <div className={homeStyles.featureItem}>
+                <div className={`${homeStyles.featureIconBox} ${homeStyles.bgBlueDark}`}>
+                  <i className="fas fa-cubes"></i>
+                </div>
+                <div className={homeStyles.featureText}>
+                  <h4>Platform Terpadu</h4>
+                  <p>Mengelola penelitian dan pengabdian dalam satu sistem yang terintegrasi dan mudah diakses.</p>
+                </div>
+              </div>
+
+              <div className={homeStyles.featureItem}>
+                <div className={`${homeStyles.featureIconBox} ${homeStyles.bgGreenLight}`}>
+                  <i className="fas fa-mobile-alt"></i>
+                </div>
+                <div className={homeStyles.featureText}>
+                  <h4>Mudah Digunakan</h4>
+                  <p>Pengajuan, persetujuan, dan pelaporan bisa dilakukan online dengan antarmuka yang intuitif.</p>
+                </div>
+              </div>
+
+              <div className={homeStyles.featureItem}>
+                <div className={`${homeStyles.featureIconBox} ${homeStyles.bgOrangeLight}`}>
+                  <i className="fas fa-chart-bar"></i>
+                </div>
+                <div className={homeStyles.featureText}>
+                  <h4>Transparan & Efisien</h4>
+                  <p>Pantau progres setiap kegiatan secara real-time dengan dashboard yang komprehensif.</p>
+                </div>
+              </div>
+
+              <div className={homeStyles.featureItem}>
+                <div className={`${homeStyles.featureIconBox} ${homeStyles.bgPurpleLight}`}>
+                  <i className="fas fa-lock"></i>
+                </div>
+                <div className={homeStyles.featureText}>
+                  <h4>Data Aman</h4>
+                  <p>Semua arsip tersimpan rapi dan dapat diakses sesuai kebijakan lembaga dengan keamanan tinggi.</p>
+                </div>
+              </div>
+            </div>
+
+            <div className={homeStyles.aboutVisualDashboard}>
+              <div className={homeStyles.dashboardCard}>
+                <div className={`${homeStyles.dashboardHeader} ${homeStyles.bgGradientBlue}`}>
+                  <h4 className={homeStyles.dashboardTitle}>Dashboard BIMA</h4>
+                  <div className={homeStyles.dashboardStats}>
+                    <div className={homeStyles.statItem}>
+                      <span className={homeStyles.statNumber}>24</span>
+                      <span className={homeStyles.statLabel}>Penelitian Aktif</span>
+                    </div>
+                    <div className={homeStyles.statItem}>
+                      <span className={homeStyles.statNumber}>18</span>
+                      <span className={homeStyles.statLabel}>Pengabdian</span>
+                    </div>
+                    <div className={`${homeStyles.statItem} ${homeStyles.completionStat}`}>
+                      <span className={homeStyles.statNumber}>95%</span>
+                      <span className={homeStyles.statLabel}>Completion</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className={homeStyles.dashboardProgressList}>
+                  <div className={`${homeStyles.progressItem} ${homeStyles.approved}`}>
+                    <i className={`fas fa-check-circle ${homeStyles.textGreen}`}></i>
+                    <div className={homeStyles.progressText}>
+                      <p className={homeStyles.progressTitle}>Proposal Disetujui</p>
+                      <span className={homeStyles.progressSubtitle}>Penelitian AI Education</span>
+                    </div>
+                    <span className={`${homeStyles.progressStatus} ${homeStyles.textGreen}`}>Selesai</span>
+                  </div>
+
+                  <div className={`${homeStyles.progressItem} ${homeStyles.reviewing}`}>
+                    <i className={`fas fa-clock ${homeStyles.textOrange}`}></i>
+                    <div className={homeStyles.progressText}>
+                      <p className={homeStyles.progressTitle}>Review Berlangsung</p>
+                      <span className={homeStyles.progressSubtitle}>Pengabdian UMKM Digital</span>
+                    </div>
+                    <span className={`${homeStyles.progressStatus} ${homeStyles.textOrange}`}>Progress</span>
+                  </div>
+
+                  <div className={`${homeStyles.progressItem} ${homeStyles.new}`}>
+                    <i className={`fas fa-plus-circle ${homeStyles.textBlue}`}></i>
+                    <div className={homeStyles.progressText}>
+                      <p className={homeStyles.progressTitle}>Proposal Baru</p>
+                      <span className={homeStyles.progressSubtitle}>Teknologi Berkelanjutan</span>
+                    </div>
+                    <span className={`${homeStyles.progressStatus} ${homeStyles.textBlue}`}>Baru</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* How It Works Section */}
+      <section className={homeStyles.howItWorksLppm}>
+        <div className={`${homeStyles.containerLppm} ${homeStyles.textCenter}`}>
+          <h2 className={homeStyles.sectionTitleHow}>Bagaimana LPPM Asaindo Bekerja?</h2>
+          <p className={homeStyles.sectionSubtitleHow}>
+            Proses kerja LPPM Asaindo dirancang agar setiap kegiatan penelitian dan pengabdian masyarakat 
+            berjalan efektif, transparan, dan terdokumentasi dengan baik.
+          </p>
+
+          <div className={homeStyles.processCardsWrapper}>
+            <div className={homeStyles.processCard}>
+              <div className={homeStyles.cardHeaderProcess}>
+                <div className={homeStyles.stepNumber}>1</div>
+                <div className={`${homeStyles.iconCircle} ${homeStyles.bgBlueDark}`}>
+                  <i className="fas fa-file-alt"></i>
+                </div>
+              </div>
+              <h3 className={homeStyles.processTitle}>Pengajuan Proposal</h3>
+              <p className={homeStyles.processDescription}>
+                Dosen atau peneliti mengunggah proposal penelitian dan pengabdian masyarakat secara daring melalui sistem LPPM Asaindo.
+              </p>
+            </div>
+
+            <div className={homeStyles.processCard}>
+              <div className={homeStyles.cardHeaderProcess}>
+                <div className={homeStyles.stepNumber}>2</div>
+                <div className={`${homeStyles.iconCircle} ${homeStyles.bgBlueDark}`}>
+                  <i className="fas fa-clipboard-check"></i>
+                </div>
+              </div>
+              <h3 className={homeStyles.processTitle}>Review & Persetujuan</h3>
+              <p className={homeStyles.processDescription}>
+                Tim LPPM melakukan evaluasi dan validasi proposal sebelum kegiatan disetujui untuk dijalankan.
+              </p>
+            </div>
+
+            <div className={homeStyles.processCard}>
+              <div className={homeStyles.cardHeaderProcess}>
+                <div className={homeStyles.stepNumber}>3</div>
+                <div className={`${homeStyles.iconCircle} ${homeStyles.bgBlueDark}`}>
+                  <i className="fas fa-sitemap"></i>
+                </div>
+              </div>
+              <h3 className={homeStyles.processTitle}>Pelaksanaan Kegiatan</h3>
+              <p className={homeStyles.processDescription}>
+                Kegiatan dilaksanakan dengan pendampingan dari LPPM untuk memastikan kesesuaian antara rencana dan implementasi.
+              </p>
+            </div>
+
+            <div className={homeStyles.processCard}>
+              <div className={homeStyles.cardHeaderProcess}>
+                <div className={homeStyles.stepNumber}>4</div>
+                <div className={`${homeStyles.iconCircle} ${homeStyles.bgBlueDark}`}>
+                  <i className="fas fa-edit"></i>
+                </div>
+              </div>
+              <h3 className={homeStyles.processTitle}>Pelaporan & Dokumentasi</h3>
+              <p className={homeStyles.processDescription}>
+                Seluruh hasil dan dokumentasi kegiatan diunggah ke sistem agar tersimpan rapi dan mudah diakses untuk evaluasi.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer Component */}
+      <Footer />
     </>
   );
 }

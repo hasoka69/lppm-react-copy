@@ -1,0 +1,159 @@
+/*
+ * ====================================
+ * STYLES UNTUK NAVBAR LPPM SESUAI GAMBAR
+ * ====================================
+ */
+
+/* Kontainer Utama Navbar */
+.navbarLppm {
+    /* PENAMBAHAN UNTUK FIXED POSITION */
+    position: fixed; 
+    top: 0;
+    width: 100%;
+    z-index: 1000; /* Pastikan navbar selalu di atas elemen lain */
+    /* Akhir PENAMBAHAN */
+    
+    background-color: #ffffff; 
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); 
+    padding: 10px 0;
+}
+
+/* Kontainer Isi Navbar (untuk mengatur lebar) */
+.navContainerLppm {
+    max-width: 1200px; /* Lebar maksimal konten */
+    margin: 0 auto; /* Tengah */
+    display: flex;
+    justify-content: space-between; /* Pisahkan logo dan navigasi */
+    align-items: center;
+    padding: 0 20px; /* Padding samping */
+}
+
+/* Area Logo dan Detail Lembaga */
+.headerContent {
+    display: flex;
+    align-items: center;
+    gap: 15px; /* Jarak antara logo dan teks LPPM */
+}
+
+/* Area Logo */
+.logoArea {
+    /* Gaya untuk meniru area logo Universitas Asa Indonesia di gambar */
+    padding-right: 15px;
+    border-right: 1px solid #ccc; /* Garis vertikal pemisah */
+}
+
+.logoLppm {
+    height: 60px; /* Ukuran logo */
+    /* Pastikan gambar logo berlatar belakang transparan atau putih */
+}
+
+/* Detail Nama Lembaga */
+.institutionDetails {
+    line-height: 1.2;
+}
+
+.lppmTitle {
+    font-size: 28px;
+    font-weight: 500;
+    color: #333;
+    letter-spacing: 1px;
+    margin-bottom: 2px;
+}
+
+.lppmSubtitle {
+    font-size: 11px;
+    color: #555;
+    font-weight: 400;
+}
+
+/* Tautan Navigasi */
+.navLinksLppm {
+    list-style: none;
+    display: flex;
+    margin: 0;
+    padding: 0;
+    gap: 25px; /* Jarak antar menu */
+}
+
+.navLinksLppm li a {
+    text-decoration: none;
+    color: #444; /* Warna teks tautan */
+    font-size: 15px;
+    font-weight: 400;
+    padding: 5px 0;
+    transition: color 0.3s ease;
+}
+
+.navLinksLppm li a:hover {
+    color: #1a73e8; /* Warna saat hover */
+}
+
+/* Tampilan tautan Login lebih menonjol (jika diperlukan) */
+.navLinksLppm li:last-child a {
+    /* Bisa ditambahkan gaya khusus jika Login ingin disorot */
+    font-weight: 500;
+}
+
+/* Bagian Biru Gradien di Bawah Navbar */
+.navbarBottomBar {
+    height: 5px; /* Ketebalan garis */
+    background: linear-gradient(to right, #007bff, #0056b3); /* Gradien biru */
+    width: 100%;
+}
+
+/* Media Query Dasar untuk Penyesuaian Responsif jika diperlukan */
+@media (max-width: 768px) {
+    .navContainerLppm {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    .headerContent {
+        width: 100%;
+        justify-content: center;
+    }
+    .navLinksLppm {
+        gap: 15px;
+        margin-top: 10px;
+        justify-content: center;
+        width: 100%;
+    }
+}
+
+/* Gaya untuk Dropdown */
+.dropdown {
+    position: relative; /* Penting untuk menempatkan menu */
+}
+
+/* Gaya untuk Menu Dropdown (tersembunyi secara default) */
+.dropdownMenu {
+    display: none; /* Sembunyikan menu secara default */
+    position: absolute;
+    top: 100%; /* Tempatkan di bawah item induk */
+    left: 0;
+    min-width: 200px;
+    background-color: #ffffff; /* Latar belakang putih menu */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Bayangan lembut */
+    padding: 10px 0;
+    list-style: none;
+    z-index: 1000; /* Pastikan menu muncul di atas konten lain */
+    border-radius: 4px;
+}
+
+/* Tampilkan menu saat di-hover */
+.dropdown:hover .dropdownMenu {
+    display: block;
+}
+
+.dropdownMenu li a {
+    padding: 8px 20px;
+    display: block;
+    color: #444;
+    text-decoration: none;
+    white-space: nowrap; /* Mencegah teks terpotong */
+}
+
+.dropdownMenu li a:hover {
+    background-color: #f5f5f5; /* Warna latar belakang saat hover */
+    color: #1a73e8;
+}
