@@ -16,5 +16,8 @@ bash.
 - npm run build
 - run di back end dengan php artisan serve
 - run di front end dengan npm run dev
+
+- perlu tambhan awesome
+  npm install @fortawesome/fontawesome-free
   
 
