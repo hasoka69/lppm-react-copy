@@ -1,104 +1,124 @@
-import { Head, useForm } from '@inertiajs/react';
-import { LoaderCircle } from 'lucide-react';
-import { FormEventHandler } from 'react';
+import { useForm } from "@inertiajs/react";
 
-import InputError from '@/components/input-error';
-import TextLink from '@/components/text-link';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import AuthLayout from '@/layouts/auth-layout';
-
-interface LoginForm {
-    email: string;
-    password: string;
-    remember: boolean;
-}
-
-interface LoginProps {
-    status?: string;
-    canResetPassword: boolean;
-}
-
-export default function Login({ status, canResetPassword }: LoginProps) {
-    const { data, setData, post, processing, errors, reset } = useForm<LoginForm>({
-        email: '',
-        password: '',
-        remember: false,
+export default function Login() {
+    const { data, setData, post, processing, errors } = useForm({
+        email: "",
+        password: "",
     });
 
-    const submit: FormEventHandler = (e) => {
+    function submit(e: React.FormEvent) {
         e.preventDefault();
-        post(route('login'), {
-            onFinish: () => reset('password'),
-        });
-    };
+        post(route("login"));
+    }
 
     return (
-        <AuthLayout title="Log in to your account" description="Enter your email and password below to log in">
-            <Head title="Log in" />
+        <div className="min-h-screen flex">
 
-            <form className="flex flex-col gap-6" onSubmit={submit}>
-                <div className="grid gap-6">
-                    <div className="grid gap-2">
-                        <Label htmlFor="email">Email address</Label>
-                        <Input
-                            id="email"
-                            type="email"
-                            required
-                            autoFocus
-                            tabIndex={1}
-                            autoComplete="email"
-                            value={data.email}
-                            onChange={(e) => setData('email', e.target.value)}
-                            placeholder="email@example.com"
-                        />
-                        <InputError message={errors.email} />
+            {/* LEFT SIDE */}
+            <div className="hidden lg:flex w-1/2 bg-white p-8 flex-col justify-center">
+                <div className="w-full flex justify-start">
+                    <img
+                        src="/image/logo-lppm.png"
+                        alt="logo-lppm"
+                        className="h-14 w-auto mb-10 object-contain"
+                    />
+                </div>
+
+                <div className="flex-1 flex items-center justify-center">
+                    <img
+                        src="/image/login-illustration.png"
+                        alt="illustration"
+                        className="max-w-full max-h-[500px] object-contain"
+                    />
+                </div>
+            </div>
+
+            {/* RIGHT SIDE LOGIN */}
+            <div
+                className="flex-1 flex items-center justify-center p-6 sm:p-12 relative"
+                style={{
+                    backgroundImage: "url('/image/bg-login.png')",
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
+                }}
+            >
+                {/* Overlay */}
+                <div className="absolute inset-0 bg-blue-900/55 backdrop-blur-[1px]" />
+
+                <div className="w-full max-w-md relative z-10 text-white">
+                    <div className="text-center mb-10">
+                        <h1 className="text-5xl font-extrabold drop-shadow-lg">Halo!</h1>
+                        <p className="text-2xl opacity-90 mt-1 font-medium">
+                            Selamat Datang Kembali 👋
+                        </p>
                     </div>
 
-                    <div className="grid gap-2">
-                        <div className="flex items-center">
-                            <Label htmlFor="password">Password</Label>
-                            {canResetPassword && (
-                                <TextLink href={route('password.request')} className="ml-auto text-sm" tabIndex={5}>
-                                    Forgot password?
-                                </TextLink>
+                    <form onSubmit={submit} className="space-y-6">
+
+                        {/* Email */}
+                        <div>
+                            <label className="block text-sm font-medium mb-1">Email</label>
+                            <input
+                                type="email"
+                                required
+                                value={data.email}
+                                onChange={(e) => setData("email", e.target.value)}
+                                className="w-full p-3 text-black bg-white rounded-2xl
+                                           outline-none
+                                           shadow-[4px_6px_0_0_#8B0000]
+                                           focus:shadow-[5px_7px_0_0_#B30000]
+                                           transition-shadow placeholder-gray-500"
+                                placeholder="email@example.com"
+                            />
+                            {errors.email && (
+                                <p className="text-xs text-red-300 mt-1">{errors.email}</p>
                             )}
                         </div>
-                        <Input
-                            id="password"
-                            type="password"
-                            required
-                            tabIndex={2}
-                            autoComplete="current-password"
-                            value={data.password}
-                            onChange={(e) => setData('password', e.target.value)}
-                            placeholder="Password"
-                        />
-                        <InputError message={errors.password} />
-                    </div>
 
-                    <div className="flex items-center space-x-3">
-                        <Checkbox id="remember" name="remember" tabIndex={3} />
-                        <Label htmlFor="remember">Remember me</Label>
-                    </div>
+                        {/* Password */}
+                        <div>
+                            <label className="block text-sm font-medium mb-1">Password</label>
+                            <input
+                                type="password"
+                                required
+                                value={data.password}
+                                onChange={(e) => setData("password", e.target.value)}
+                                className="w-full p-3 text-black bg-white rounded-2xl
+                                           outline-none
+                                           shadow-[4px_6px_0_0_#8B0000]
+                                           focus:shadow-[5px_7px_0_0_#B30000]
+                                           transition-shadow placeholder-gray-500"
+                                placeholder="••••••••"
+                            />
+                            {errors.password && (
+                                <p className="text-xs text-red-300 mt-1">{errors.password}</p>
+                            )}
+                        </div>
 
-                    <Button type="submit" className="mt-4 w-full" tabIndex={4} disabled={processing}>
-                        {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
-                        Log in
-                    </Button>
+                        {/* Button */}
+                        <button
+                            type="submit"
+                            disabled={processing}
+                            className="w-full py-3 mt-2 rounded-full bg-red-700 hover:bg-red-800
+                                       font-semibold text-white tracking-wide
+                                       shadow-lg hover:shadow-xl hover:scale-[1.02]
+                                       disabled:opacity-60 transition"
+                        >
+                            {processing ? "Loading..." : "Login"}
+                        </button>
+                    </form>
+
+                    <div className="text-center text-xs text-gray-200 opacity-80 mt-6 space-x-4">
+                        <span className="hover:underline cursor-pointer">Privacy Policy</span>
+                        <span className="hover:underline cursor-pointer">Cookies Settings</span>
+                    </div>
                 </div>
 
-                <div className="text-muted-foreground text-center text-sm">
-                    Don't have an account?{' '}
-                    <TextLink href={route('register')} tabIndex={5}>
-                        Sign up
-                    </TextLink>
+                {/* Mobile Logo */}
+                <div className="lg:hidden absolute top-4 left-4 z-20">
+                    <img src="/image/logo-lppm.png" className="h-9 w-auto" />
                 </div>
-            </form>
-
-            {status && <div className="mb-4 text-center text-sm font-medium text-green-600">{status}</div>}
-        </AuthLayout>
+            </div>
+        </div>
     );
 }

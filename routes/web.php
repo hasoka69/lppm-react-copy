@@ -11,6 +11,16 @@ use App\Http\Controllers\UserFileController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\SettingAppController;
 use App\Http\Controllers\MediaFolderController;
+use App\Http\Controllers\Auth\AuthenticatedSessionController;
+
+Route::get('/login', function () {
+    return Inertia::render('Login');
+})->name('login');
+
+Route::post('/login', [AuthenticatedSessionController::class, 'store'])->name('login.store');
+
+Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
+
 
 Route::get('/', function () {
     return Inertia::render('welcome');
