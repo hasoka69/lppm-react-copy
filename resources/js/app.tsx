@@ -15,7 +15,10 @@ const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
 createInertiaApp({
     title: (title) => `${title} - ${appName}`,
-    resolve: (name) => resolvePageComponent(`./pages/${name}.tsx`, import.meta.glob('./pages/**/*.tsx')),
+    resolve: (name) => resolvePageComponent(
+        `./pages/${name}.tsx`,
+        import.meta.glob<{ default: Component }>('./pages/**/*.tsx'),  // ini sudah bisa detect semua folder
+    ),
     setup({ el, App, props }) {
         const root = createRoot(el);
 

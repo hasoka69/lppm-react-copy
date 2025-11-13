@@ -2,6 +2,7 @@ import { Head, Link, usePage } from '@inertiajs/react';
 import { type SharedData } from '@/types';
 import { useEffect } from 'react';
 import homeStyles from '../../css/home.module.css'; // Ganti nama
+import NewsSection from '../components/NewsSection';
 
 import Navbar from '@/components/navbar';
 import Footer from '@/components/footer';
@@ -22,7 +23,7 @@ export default function Welcome() {
   return (
     <>
       <Head title="LPPM | Lembaga Penelitian Asa" />
-      
+
       {/* Navbar Component */}
       <Navbar />
 
@@ -40,94 +41,36 @@ export default function Welcome() {
           </div>
           <div className={homeStyles.heroImageLppm}></div>
         </div>
-        
+
         <div className={homeStyles.featureBoxesContainer}>
           <div className={homeStyles.featureBox}>
             <div className={homeStyles.boxIcon}>
-              <img src="/image/pengajuan.png" alt="Ikon Pengajuan Usulan"/>
+              <img src="/image/pengajuan.png" alt="Ikon Pengajuan Usulan" />
             </div>
             <p>Pengajuan Usulan</p>
           </div>
           <div className={homeStyles.featureBox}>
             <div className={homeStyles.boxIcon}>
-              <img src="/image/review.png" alt="Ikon Review Usulan"/>
+              <img src="/image/review.png" alt="Ikon Review Usulan" />
             </div>
             <p>Review Usulan</p>
           </div>
           <div className={homeStyles.featureBox}>
             <div className={homeStyles.boxIcon}>
-              <img src="/image/pelaporan.png" alt="Ikon Pelaporan Kegiatan"/>
+              <img src="/image/pelaporan.png" alt="Ikon Pelaporan Kegiatan" />
             </div>
             <p>Pelaporan Kegiatan</p>
           </div>
         </div>
       </section>
 
-      {/* Berita Section */}
-      <section className={homeStyles.latestNewsLppm}>
-        <div className={homeStyles.containerLppm}>
-          <h2 className={homeStyles.sectionTitle}>Berita Terbaru</h2>
-          <p className={homeStyles.sectionSubtitle}>
-            Kabar dan informasi terkini seputar kegiatan penelitian dan pengabdian masyarakat Asaindo.
-          </p>
-
-          <div className={homeStyles.newsCardsWrapper}>
-            <div className={homeStyles.newsCard}>
-              <div className={`${homeStyles.cardHeader} ${homeStyles.bgBluePrimary}`}>
-                <h3>Penelitian Terbaru</h3>
-              </div>
-              <div className={homeStyles.cardBody}>
-                <h4 className={homeStyles.cardTitle}>Penelitian Inovasi Teknologi Pendidikan</h4>
-                <p className={homeStyles.cardDescription}>
-                  Tim peneliti LPPM Asaindo berhasil mengembangkan platform pembelajaran digital yang meningkatkan efektivitas belajar mengajar hingga 40%.
-                </p>
-              </div>
-              <div className={homeStyles.cardFooter}>
-                <span className={homeStyles.newsDate}>15 Januari 2025</span>
-                <a href="#" className={homeStyles.readMore}>Baca Selengkapnya →</a>
-              </div>
-            </div>
-
-            <div className={homeStyles.newsCard}>
-              <div className={`${homeStyles.cardHeader} ${homeStyles.bgBlueSecondary}`}>
-                <h3>Pengabdian Masyarakat</h3>
-              </div>
-              <div className={homeStyles.cardBody}>
-                <h4 className={homeStyles.cardTitle}>Program Pemberdayaan UMKM Digital</h4>
-                <p className={homeStyles.cardDescription}>
-                  Kegiatan pengabdian masyarakat yang membantu 200+ UMKM lokal untuk go digital dan meningkatkan penjualan online mereka.
-                </p>
-              </div>
-              <div className={homeStyles.cardFooter}>
-                <span className={homeStyles.newsDate}>12 Januari 2025</span>
-                <a href="#" className={homeStyles.readMore}>Baca Selengkapnya →</a>
-              </div>
-            </div>
-
-            <div className={homeStyles.newsCard}>
-              <div className={`${homeStyles.cardHeader} ${homeStyles.bgBlueTertiary}`}>
-                <h3>Kolaborasi Riset</h3>
-              </div>
-              <div className={homeStyles.cardBody}>
-                <h4 className={homeStyles.cardTitle}>Kolaborasi Riset Internasional</h4>
-                <p className={homeStyles.cardDescription}>
-                  LPPM Asaindo menjalin kerjasama penelitian dengan universitas terkemuka di Asia Tenggara untuk pengembangan teknologi berkelanjutan.
-                </p>
-              </div>
-              <div className={homeStyles.cardFooter}>
-                <span className={homeStyles.newsDate}>10 Januari 2025</span>
-                <a href="#" className={homeStyles.readMore}>Baca Selengkapnya →</a>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      <NewsSection />
 
       {/* Pengumuman Section */}
       <section className={homeStyles.latestAnnouncementsLppm}>
         <div className={homeStyles.containerLppm}>
           <div className={homeStyles.announcementHeaderIcon}>
-            <i className="fas fa-check-circle"></i> 
+            <i className="fas fa-check-circle"></i>
           </div>
 
           <h2 className={homeStyles.sectionTitle}>Pengumuman Terbaru</h2>
@@ -311,7 +254,7 @@ export default function Welcome() {
         <div className={`${homeStyles.containerLppm} ${homeStyles.textCenter}`}>
           <h2 className={homeStyles.sectionTitleHow}>Bagaimana LPPM Asaindo Bekerja?</h2>
           <p className={homeStyles.sectionSubtitleHow}>
-            Proses kerja LPPM Asaindo dirancang agar setiap kegiatan penelitian dan pengabdian masyarakat 
+            Proses kerja LPPM Asaindo dirancang agar setiap kegiatan penelitian dan pengabdian masyarakat
             berjalan efektif, transparan, dan terdokumentasi dengan baik.
           </p>
 

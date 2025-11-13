@@ -260,9 +260,17 @@
     min-height: auto;
 }
 
-.bgBluePrimary { background-color: #007bff; }
-.bgBlueSecondary { background-color: #0d47a1; }
-.bgBlueTertiary { background-color: #1976d2; }
+.bgBluePrimary {
+    background-color: #007bff;
+}
+
+.bgBlueSecondary {
+    background-color: #0d47a1;
+}
+
+.bgBlueTertiary {
+    background-color: #1976d2;
+}
 
 .cardHeader h3 {
     margin: 0;
@@ -396,10 +404,21 @@
     color: white;
 }
 
-.bgBlue { background-color: #007bff; }
-.bgGreen { background-color: #4CAF50; }
-.bgOrange { background-color: #ff9800; }
-.bgPurple { background-color: #9c27b0; }
+.bgBlue {
+    background-color: #007bff;
+}
+
+.bgGreen {
+    background-color: #4CAF50;
+}
+
+.bgOrange {
+    background-color: #ff9800;
+}
+
+.bgPurple {
+    background-color: #9c27b0;
+}
 
 .cardContent {
     flex-grow: 1;
@@ -425,10 +444,25 @@
     line-height: 1;
 }
 
-.tagBlue { background-color: #e0f2ff; color: #007bff; }
-.tagGreen { background-color: #e8f5e9; color: #4CAF50; }
-.tagOrange { background-color: #fff3e0; color: #ff9800; }
-.tagPurple { background-color: #f3e5f5; color: #9c27b0; }
+.tagBlue {
+    background-color: #e0f2ff;
+    color: #007bff;
+}
+
+.tagGreen {
+    background-color: #e8f5e9;
+    color: #4CAF50;
+}
+
+.tagOrange {
+    background-color: #fff3e0;
+    color: #ff9800;
+}
+
+.tagPurple {
+    background-color: #f3e5f5;
+    color: #9c27b0;
+}
 
 .cardAnnouncementTitle {
     font-size: 16px;
@@ -447,6 +481,7 @@
     .announcementCardsWrapper {
         grid-template-columns: 1fr;
     }
+
     .announcementCard {
         padding: 20px;
     }
@@ -512,10 +547,21 @@
     color: white;
 }
 
-.bgBlueDark { background-color: #004d99; }
-.bgGreenLight { background-color: #4CAF50; }
-.bgOrangeLight { background-color: #ff9800; }
-.bgPurpleLight { background-color: #9c27b0; }
+.bgBlueDark {
+    background-color: #004d99;
+}
+
+.bgGreenLight {
+    background-color: #4CAF50;
+}
+
+.bgOrangeLight {
+    background-color: #ff9800;
+}
+
+.bgPurpleLight {
+    background-color: #9c27b0;
+}
 
 .featureText h4 {
     font-size: 18px;
@@ -601,9 +647,17 @@
     flex-shrink: 0;
 }
 
-.textGreen { color: #4CAF50; }
-.textOrange { color: #ff9800; }
-.textBlue { color: #007bff; }
+.textGreen {
+    color: #4CAF50;
+}
+
+.textOrange {
+    color: #ff9800;
+}
+
+.textBlue {
+    color: #007bff;
+}
 
 .progressText {
     flex-grow: 1;
@@ -760,10 +814,12 @@
     .processCardsWrapper {
         grid-template-columns: repeat(2, 1fr);
     }
+
     .processCard:nth-child(even)::after,
     .processCard:nth-child(3)::after {
         content: none;
     }
+
     .processCard:not(:last-child)::after {
         content: none;
     }
@@ -773,6 +829,7 @@
     .processCardsWrapper {
         grid-template-columns: 1fr;
     }
+
     .processCard:not(:last-child)::after {
         content: none;
     }

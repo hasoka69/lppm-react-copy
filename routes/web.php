@@ -12,6 +12,14 @@ use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\SettingAppController;
 use App\Http\Controllers\MediaFolderController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Models\Berita;
+
+Route::get('/berita', function () {
+    $berita = Berita::all();
+    return Inertia::render('berita/Index', [
+        'berita' => $berita
+    ]);
+});
 
 Route::get('/login', function () {
     return Inertia::render('Login');
