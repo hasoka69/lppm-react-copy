@@ -66,6 +66,7 @@
   color utility to any element that depends on these defaults.
 */
 @layer base {
+
     *,
     ::after,
     ::before,
@@ -154,4 +155,18 @@
     body {
         @apply bg-background text-foreground;
     }
+}
+
+/* navbar.module.css */
+.navbarLppm {
+    width: 100%; /* Pastikan lebar penuh */
+    background-color: #0ea5e9; /* Contoh warna latar belakang */
+    position: relative; /* Pastikan posisi relatif jika diperlukan */
+}
+
+.navContainerLppm {
+    display: flex;
+    justify-content: space-between; /* Atur konten di dalam navbar */
+    align-items: center;
+    padding: 1rem; /* Atur padding sesuai kebutuhan */
 }

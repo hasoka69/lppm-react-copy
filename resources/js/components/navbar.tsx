@@ -1,7 +1,8 @@
+import React from 'react';
 import { Link } from '@inertiajs/react';
 import navbarStyles from '../../css/navbar.module.css';
 
-export default function Navbar() {
+const Navbar = () => {
   return (
     <>
       <nav className={navbarStyles.navbarLppm}>
@@ -19,7 +20,7 @@ export default function Navbar() {
           <ul className={navbarStyles.navLinksLppm}>
             <li><Link href="/">Home</Link></li>
             <li><Link href="/berita">Berita</Link></li>
-            
+
             {/* Dropdown Pengajuan */}
             <li className={navbarStyles.dropdown}>
               <a href="#">Pengajuan ▾</a>
@@ -56,4 +57,6 @@ export default function Navbar() {
       <div className={navbarStyles.navbarBottomBar}></div>
     </>
   );
-}
+};
+
+export default Navbar;
