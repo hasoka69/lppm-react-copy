@@ -29,6 +29,11 @@ Route::post('/login', [AuthenticatedSessionController::class, 'store'])->name('l
 
 Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
 
+// Dashboard Admin
+Route::get('/admin/dashboard', function () {
+    return Inertia::render('admin/Dashboard');
+})->middleware(['auth','menu.permission']);
+
 // Dashboard Kaprodi
 Route::get('/kaprodi/dashboard', function () {
     return Inertia::render('kaprodi/Dashboard');

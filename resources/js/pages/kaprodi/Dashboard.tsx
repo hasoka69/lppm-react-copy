@@ -1,19 +1,16 @@
 import React from 'react';
 import { Link } from '@inertiajs/react';
 import StatCard from '@/components/StatCard';
-import HeaderKaprodi from "@/components/Kaprodi/HeaderKaprodi";
+import Header from "@/components/Header";
 
 export function KaprodiLayout({ children }) {
     return (
-        <div className="min-h-screen">
-            <HeaderKaprodi />
-            <main className="p-6">
-                {children}
-            </main>
+        <div>
+            <Header />
+            <main>{children}</main>
         </div>
     );
 }
-
 
 // Dummy data built-in so you can paste this file directly
 const data = {
