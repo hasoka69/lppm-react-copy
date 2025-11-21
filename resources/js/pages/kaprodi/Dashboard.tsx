@@ -1,199 +1,220 @@
 import React from 'react';
 import { Link } from '@inertiajs/react';
-import StatCard from '@/components/StatCard';
-import Header from "@/components/Header";
+import Header from '@/components/Header';
+import StatCard from '@/components/Shared/StatCard';
+import WelcomeHero from '@/components/Shared/WelcomeHero';
+import ActivityItem from '@/components/Shared/ActivityItem';
 
-export function KaprodiLayout({ children }) {
-    return (
-        <div>
-            <Header />
-            <main>{children}</main>
-        </div>
-    );
+// --- ICONS (Inline SVG) ---
+const ClockIcon = <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>;
+const XCircleIcon = <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>;
+const CheckCircleIcon = <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>;
+
+// --- TYPES ---
+// Mendefinisikan tipe data untuk struktur program studi
+interface ProgramData {
+    name: string;
+    faculty: string;
+    lecturers_count: number;
+    proposals_2024: number;
 }
 
-// Dummy data built-in so you can paste this file directly
-const data = {
-    summary: {
-        waiting_review: 12,
-        rejected_prodi: 3,
-        forwarded_to_reviewer: 28
-    },
-    program: {
-        name: 'Teknik Informatika',
-        faculty: 'Fakultas Teknik',
-        lecturers_count: 24,
-        proposals_2024: 43
-    },
-    proposals: [
-        {
-            id: 1,
-            title: 'Implementasi Machine Learning untuk Prediksi Cuaca',
-            type: 'Penelitian',
-            proposer: { name: 'Dr. Budi Santoso', prodi: 'Informatika', avatar: null },
-            date: '15 Nov 2024',
-            status: 'Menunggu Review'
-        },
-        {
-            id: 2,
-            title: 'Pengembangan Aplikasi Mobile untuk UMKM',
-            type: 'Pengabdian',
-            proposer: { name: 'Dr. Sari Dewi', prodi: 'Sistem Informasi', avatar: null },
-            date: '14 Nov 2024',
-            status: 'Menunggu Review'
-        }
-    ],
-    activities: [
-        { id: 1, title: 'Dosen Budi Santoso mengajukan proposal baru', subtitle: 'Penelitian tentang Machine Learning - 2 jam yang lalu', icon: 'doc' },
-        { id: 2, title: 'Anda mengirim review untuk Penelitian IoT Smart Home', subtitle: 'Proposal disetujui dan diteruskan ke reviewer - 1 hari yang lalu', icon: 'check' },
-        { id: 3, title: 'Proposal Pengabdian Desa Digital membutuhkan revisi', subtitle: 'Catatan telah dikirim ke dosen - 2 hari yang lalu', icon: 'alert' }
-    ]
-};
+// Mendefinisikan tipe data untuk struktur proposal
+interface ProposalData {
+    id: number;
+    title: string;
+    type: string;
+    proposer: {
+        name: string;
+        prodi: string;
+    };
+    date: string;
+    status: string;
+}
 
-export default function Dashboard() {
+export default function DashboardKaprodi() {
+
+    // Data Dummy (Simulasi dari Backend)
+    const data = {
+        summary: {
+            waiting_review: 12,
+            rejected_prodi: 3,
+            forwarded_to_reviewer: 28
+        },
+        program: {
+            name: 'Teknik Informatika',
+            faculty: 'Fakultas Teknik',
+            lecturers_count: 24,
+            proposals_2024: 43
+        },
+        proposals: [
+            { id: 1, title: 'Implementasi Machine Learning untuk Prediksi Cuaca', type: 'Penelitian', proposer: { name: 'Dr. Budi Santoso', prodi: 'Informatika' }, date: '15 Nov 2024', status: 'Menunggu Review' },
+            { id: 2, title: 'Pengembangan Aplikasi Mobile untuk UMKM', type: 'Pengabdian', proposer: { name: 'Dr. Sari Dewi', prodi: 'Sistem Informasi' }, date: '14 Nov 2024', status: 'Menunggu Review' }
+        ],
+        activities: [
+            { id: 1, title: 'Dosen Budi Santoso mengajukan proposal baru', subtitle: '2 jam yang lalu', badge: 'Baru' },
+            { id: 2, title: 'Anda mengirim review untuk Penelitian IoT', subtitle: '1 hari yang lalu', badge: 'Disetujui' },
+            { id: 3, title: 'Proposal Pengabdian Desa Digital butuh revisi', subtitle: '2 hari yang lalu', badge: 'Menunggu' }
+        ]
+    };
+
+    // Config untuk StatCards
+    const stats = [
+        { title: "Usulan Menunggu Review", value: data.summary.waiting_review, icon: ClockIcon, color: 'blue' as const },
+        { title: "Usulan Ditolak Prodi", value: data.summary.rejected_prodi, icon: XCircleIcon, color: 'red' as const },
+        { title: "Diteruskan ke Reviewer", value: data.summary.forwarded_to_reviewer, icon: CheckCircleIcon, color: 'green' as const },
+    ];
+
     return (
-        <KaprodiLayout>
-            <div className="min-h-screen bg-gray-50 p-6">
-                {/* Header banner */}
-                <div className="bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-xl p-8 mb-6 flex justify-between items-center">
-                    <div>
-                        <h1 className="text-3xl font-bold">Selamat Datang, Kaprodi</h1>
-                        <p className="mt-2 text-sm text-blue-100">Pantau dan review seluruh usulan penelitian & pengabdian dari dosen program studi Anda.</p>
+        <div className="min-h-screen bg-gray-50 font-sans">
+            <Header />
+
+            <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+
+                {/* 1. WELCOME HERO (Reusable) */}
+                <WelcomeHero
+                    title="Selamat Datang, Kaprodi"
+                    subtitle="Pantau dan review seluruh usulan penelitian & pengabdian dari dosen program studi Anda."
+                    buttonLabel="Lihat Usulan Masuk"
+                    buttonLink="/kaprodi/usulan"
+                />
+
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-8">
+
+                    {/* KOLOM KIRI: Stats (9 cols) */}
+                    <div className="lg:col-span-9">
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 h-full">
+                            {stats.map((stat, index) => (
+                                <StatCard key={index} {...stat} />
+                            ))}
+                        </div>
                     </div>
-                    <div>
-                        <Link href="#" className="bg-white text-blue-600 px-4 py-3 rounded-lg shadow-md flex items-center gap-3">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6M9 16h6M9 8h6" /></svg>
-                            <div className="text-left">
-                                <div className="text-sm font-medium">Lihat Usulan</div>
-                                <div className="text-xs text-slate-500">Menunggu Review</div>
-                            </div>
-                        </Link>
+
+                    {/* KOLOM KANAN: Info Prodi (3 cols) */}
+                    <div className="lg:col-span-3">
+                        <ProdiInfoCard program={data.program} />
                     </div>
                 </div>
 
-                {/* Stats + right card */}
-                <div className="grid grid-cols-12 gap-6 mb-6">
-                    <div className="col-span-9 grid grid-cols-3 gap-4">
-                        <StatCard
-                            title="Usulan Menunggu Review"
-                            value={data.summary.waiting_review}
-                            colorClass="bg-blue-500"
-                            icon="/image/StatusMenunggu.png"
-                        />
-                        <StatCard
-                            title="Usulan Ditolak Prodi"
-                            value={data.summary.waiting_review}
-                            colorClass="bg-red-500"
-                            icon="/image/StatusDitolak.png"
-                        /><StatCard
-                            title="Usulan Diteruskan ke Reviewer"
-                            value={data.summary.waiting_review}
-                            colorClass="bg-green-500"
-                            icon="/image/StatusDisetujui.png"
-                        />
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    {/* TABEL USULAN */}
+                    <div className="lg:col-span-8">
+                        <KaprodiUsulanTable proposals={data.proposals} />
                     </div>
-                    <div className="col-span-3">
-                        <div className="bg-white rounded-xl shadow-sm p-6">
-                            <div className="flex items-center gap-4 mb-4">
-                                <div className="bg-blue-600 p-3 rounded-full text-white">
-                                    <img src="/image/logoProdi.png" className="w-6 h-6 object-contain" />
-                                </div>
-                                <div>
-                                    <div className="text-sm text-slate-500">Informasi Program Studi</div>
-                                    <div className="font-semibold text-lg">{data.program.name}</div>
-                                    <div className="text-sm text-slate-500">{data.program.faculty}</div>
-                                </div>
-                            </div>
-                            <div className="border-t pt-4 mt-4 space-y-2 text-center">
-                                <div className="flex justify-between text-sm text-slate-600">
-                                    <div>
-                                        <div className="text-2xl font-semibold">{data.program.lecturers_count}</div>
-                                        <div className="text-xs">Jumlah Dosen</div>
-                                    </div>
-                                    <div>
-                                        <div className="text-2xl font-semibold">{data.program.proposals_2024}</div>
-                                        <div className="text-xs">Proposal 2024</div>
-                                    </div>
-                                </div>
-                                <div className="mt-4">
-                                    <button className="w-full bg-slate-100 text-slate-700 py-2 rounded-lg">Lihat Data Dosen</button>
-                                </div>
+
+                    {/* AKTIVITAS */}
+                    <div className="lg:col-span-4">
+                        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                            <h3 className="font-bold text-gray-800 text-lg mb-4">Aktivitas Terbaru</h3>
+                            <div className="space-y-2">
+                                {data.activities.map(act => (
+                                    <ActivityItem
+                                        key={act.id}
+                                        title={act.title}
+                                        time={act.subtitle}
+                                        badge={act.badge}
+                                    />
+                                ))}
                             </div>
                         </div>
                     </div>
                 </div>
 
-                {/* Table proposals */}
-                <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
-                    <h2 className="text-xl font-semibold mb-4">Usulan Menunggu Tinjauan Kaprodi</h2>
-                    <div className="w-full overflow-hidden rounded-xl">
-                        <table className="w-full">
-                            <thead className="text-sm text-slate-500 border-b">
-                                <tr>
-                                    <th className="py-3 text-left">Judul Usulan</th>
-                                    <th className="py-3 text-left">Jenis</th>
-                                    <th className="py-3 text-left">Pengusul</th>
-                                    <th className="py-3 text-left">Tanggal</th>
-                                    <th className="py-3 text-left">Status</th>
-                                    <th className="py-3 text-left">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody className="text-sm">
-                                {data.proposals.map(p => (
-                                    <tr key={p.id} className="border-b">
-                                        <td className="py-4 pr-4">
-                                            <div className="font-medium">{p.title}</div>
-                                            <div className="text-xs text-slate-500 mt-1">Penelitian fundamental tentang AI...</div>
-                                        </td>
-                                        <td className="py-4">
-                                            <span
-                                                className={
-                                                    "px-3 py-1 rounded-full text-xs font-medium " +
-                                                    (p.type === "Penelitian"
-                                                        ? "bg-blue-100 text-blue-800"
-                                                        : "bg-green-100 text-green-800")
-                                                }
-                                            >
-                                                {p.type}
-                                            </span>
-                                        </td>
-                                        <td className="py-4">
-                                            <div className="font-medium">{p.proposer.name}</div>
-                                            <div className="text-xs text-slate-500">{p.proposer.prodi}</div>
-                                        </td>
-                                        <td className="py-4">{p.date}</td>
-                                        <td className="py-4"><span className="px-3 py-1 rounded-full bg-yellow-100 text-yellow-800 text-xs">{p.status}</span></td>
-                                        <td className="py-4">
-                                            <Link href={'/proposals/' + p.id} className="bg-blue-600 text-white px-3 py-2 rounded-lg">Review</Link>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+            </div>
+        </div>
+    );
+}
+
+// --- SUB COMPONENTS ---
+
+// FIX: Mengganti 'any' dengan interface ProgramData
+function ProdiInfoCard({ program }: { program: ProgramData }) {
+    return (
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 h-full flex flex-col justify-between">
+            <div>
+                <div className="flex items-center gap-4 mb-6">
+                    <div className="bg-blue-600 p-3 rounded-lg text-white shadow-md">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+                    </div>
+                    <div>
+                        <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Program Studi</div>
+                        <div className="font-bold text-gray-800 text-lg leading-tight">{program.name}</div>
+                        <div className="text-sm text-gray-500">{program.faculty}</div>
                     </div>
                 </div>
 
-                {/* Activity */}
-                <div className="bg-white rounded-xl shadow-sm p-6">
-                    <h3 className="text-lg font-semibold mb-4">Aktivitas Terbaru Kaprodi</h3>
-                    <ul className="space-y-3">
-                        {data.activities.map(a => (
-                            <li key={a.id} className="flex items-start gap-3">
-                                <div className="bg-slate-100 p-3 rounded-full">
-                                    {a.icon === 'doc' && <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 7h10M7 11h8m-8 4h6" /></svg>}
-                                    {a.icon === 'check' && <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>}
-                                    {a.icon === 'alert' && <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" /></svg>}
-                                </div>
-                                <div>
-                                    <div className="font-medium">{a.title}</div>
-                                    <div className="text-xs text-slate-500">{a.subtitle}</div>
-                                </div>
-                            </li>
-                        ))}
-                    </ul>
+                <div className="grid grid-cols-2 gap-4 text-center mb-6">
+                    <div className="p-3 bg-gray-50 rounded-lg">
+                        <div className="text-2xl font-bold text-blue-600">{program.lecturers_count}</div>
+                        <div className="text-xs text-gray-500 font-medium">Dosen Aktif</div>
+                    </div>
+                    <div className="p-3 bg-gray-50 rounded-lg">
+                        <div className="text-2xl font-bold text-green-600">{program.proposals_2024}</div>
+                        <div className="text-xs text-gray-500 font-medium">Proposal 2024</div>
+                    </div>
                 </div>
-
             </div>
-        </KaprodiLayout>
+
+            <button className="w-full bg-white border border-gray-300 text-gray-700 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition duration-150">
+                Lihat Data Dosen
+            </button>
+        </div>
+    );
+}
+
+// FIX: Mengganti 'any[]' dengan interface ProposalData[]
+function KaprodiUsulanTable({ proposals }: { proposals: ProposalData[] }) {
+    return (
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 h-full">
+            <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-bold text-gray-800">Usulan Menunggu Tinjauan</h2>
+                <Link href="/kaprodi/usulan" className="text-sm text-blue-600 hover:underline font-medium">Lihat Semua</Link>
+            </div>
+
+            <div className="overflow-x-auto">
+                <table className="min-w-full">
+                    <thead>
+                        <tr className="text-xs font-semibold tracking-wide text-left text-gray-500 uppercase border-b border-gray-200 bg-gray-50">
+                            <th className="px-4 py-3">Judul Usulan</th>
+                            <th className="px-4 py-3">Jenis</th>
+                            <th className="px-4 py-3">Pengusul</th>
+                            <th className="px-4 py-3">Tanggal</th>
+                            <th className="px-4 py-3 text-right">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-100">
+                        {proposals.map((p) => (
+                            <tr key={p.id} className="hover:bg-gray-50 transition-colors">
+                                <td className="px-4 py-3">
+                                    <div className="flex items-center text-sm">
+                                        <div>
+                                            <p className="font-semibold text-gray-700 line-clamp-1">{p.title}</p>
+                                            <p className="text-xs text-gray-500 mt-0.5 line-clamp-1">Topik: Artificial Intelligence...</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td className="px-4 py-3 text-xs">
+                                    <span className={`px-2 py-1 font-semibold leading-tight rounded-full ${p.type === 'Penelitian' ? 'text-blue-700 bg-blue-100' : 'text-green-700 bg-green-100'}`}>
+                                        {p.type}
+                                    </span>
+                                </td>
+                                <td className="px-4 py-3 text-sm text-gray-600">
+                                    <div className="font-medium">{p.proposer.name}</div>
+                                    <div className="text-xs text-gray-400">{p.proposer.prodi}</div>
+                                </td>
+                                <td className="px-4 py-3 text-sm text-gray-600 whitespace-nowrap">
+                                    {p.date}
+                                </td>
+                                <td className="px-4 py-3 text-right">
+                                    <Link href={`/kaprodi/review/${p.id}`} className="bg-blue-600 text-white px-3 py-1.5 rounded text-xs font-medium hover:bg-blue-700 shadow-sm transition">
+                                        Review
+                                    </Link>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        </div>
     );
 }

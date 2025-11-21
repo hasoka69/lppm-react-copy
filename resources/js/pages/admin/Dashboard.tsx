@@ -1,10 +1,10 @@
 import React from "react";
 // Menggunakan path relatif untuk menghindari error
 import Header from "@/components/Header";
-import StatCardAdmin from "@/components/admin/StatCardAdmin";
-import ActivityItem from "@/components/admin/ActivityItem";
-import StatusRing from "@/components/admin/StatusRing";
-import ManagementBox from "@/components/admin/ManagementBox";
+import StatCardAdmin from "@/components/Shared/StatCard";
+import ActivityItem from "@/components/Shared/ActivityItem";
+import StatusRing from "@/components/Shared/StatusRing";
+import ManagementBox from "@/components/Shared/ManagementBox";
 
 // --- Type Definitions for Data Structure ---
 
