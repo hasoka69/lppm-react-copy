@@ -1,0 +1,674 @@
+/* dashboard_admin.module.css */
+
+/* Container utama */
+.dashboardContainer {
+  min-height: 100vh;
+  background: rgba(229, 231, 235, 1);
+  padding: 16px;
+}
+
+/* Header Section */
+.headerSection {
+  background: linear-gradient(135deg, #0E4EB3 0%, #2A7DDA 100%);
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  color: white;
+}
+
+.welcomeHeader {
+  margin-bottom: 20px;
+}
+
+.welcomeTitle {
+  font-size: 30px;
+  font-weight: 700;
+  margin-bottom: 6px;
+  text-align: center;
+}
+
+.welcomeSubtitle {
+  font-size: 13px;
+  opacity: 0.9;
+  margin: 0;
+  line-height: 1.4;
+  text-align: center;
+}
+
+/* Quick Actions */
+.quickActions {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.quickActionItem {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 6px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.2s ease;
+}
+
+.quickActionItem:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.actionIcon {
+  font-size: 20px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #3b82f6, #6366f1);
+  border-radius: 6px;
+  color: white;
+}
+
+.actionContent {
+  flex: 1;
+}
+
+.actionTitle {
+  font-size: 14px;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 2px;
+}
+
+.actionSubtitle {
+  font-size: 12px;
+  font-weight: 600;
+  color: #666;
+  margin: 0;
+}
+
+/* Main Content Grid */
+.mainContent {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 16px;
+}
+
+.leftColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.rightColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Compact Stats Grid */
+.statsGridCompact {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.statCardCompact {
+  background: white;
+  border-radius: 6px;
+  padding: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border-left: 3px solid #10b981;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.statCardCompact:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  border-left-color: #3b82f6;
+}
+
+.statCardCompact:hover .statValueCompact {
+  color: #3b82f6;
+  transform: scale(1.05);
+}
+
+.statCardCompact:hover .statPercentageCompact {
+  color: #059669;
+}
+
+/* Efek background gradient pada hover */
+.statContentCompact {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  text-align: left;
+  position: relative;
+  z-index: 1;
+  width: 100%;
+}
+
+.statTextContent {
+  flex: 1;
+}
+
+.statIcon {
+  font-size: 32px;
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #3b82f6, #6366f1);
+  color: white;
+  transition: all 0.3s ease;
+  margin-left: 16px;
+  flex-shrink: 0;
+}
+
+.statCardCompact:hover .statIcon {
+  transform: scale(1.1) rotate(5deg);
+}
+
+/* Warna berbeda untuk setiap icon */
+.statCardCompact:nth-child(1) .statIcon {
+  background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.statCardCompact:nth-child(2) .statIcon {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+}
+
+.statCardCompact:nth-child(3) .statIcon {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+.statCardCompact:nth-child(4) .statIcon {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+
+.statTitleCompact {
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 4px;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.statValueCompact {
+  font-size: 24px;
+  font-weight: 800;
+  color: #333;
+  margin-bottom: 4px;
+  line-height: 1;
+  transition: all 0.3s ease;
+}
+
+.statInfoCompact {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.statPercentageCompact {
+  font-size: 12px;
+  font-weight: 700;
+  color: #10b981;
+  transition: color 0.3s ease;
+}
+
+.statDescriptionCompact {
+  font-size: 11px;
+  color: #888;
+  transition: color 0.3s ease;
+}
+
+/* Hover effects */
+.statCardCompact:hover .statValueCompact {
+  color: #3b82f6;
+  transform: scale(1.05);
+}
+
+.statCardCompact:hover .statPercentageCompact {
+  color: #059669;
+}
+
+.statCardCompact:hover .statTitleCompact {
+  color: #374151;
+}
+
+.statCardCompact:hover .statDescriptionCompact {
+  color: #666;
+}
+
+/* Warna border berbeda untuk setiap card */
+.statCardCompact:nth-child(1) {
+  border-left-color: #10b981;
+}
+
+.statCardCompact:nth-child(2) {
+  border-left-color: #3b82f6;
+}
+
+.statCardCompact:nth-child(3) {
+  border-left-color: #f59e0b;
+}
+
+.statCardCompact:nth-child(4) {
+  border-left-color: #ef4444;
+}
+
+.statCardCompact:nth-child(1):hover {
+  border-left-color: #059669;
+}
+
+.statCardCompact:nth-child(2):hover {
+  border-left-color: #2563eb;
+}
+
+.statCardCompact:nth-child(3):hover {
+  border-left-color: #d97706;
+}
+
+.statCardCompact:nth-child(4):hover {
+  border-left-color: #dc2626;
+}
+
+/* Activities Section */
+.activitiesSection {
+  background: white;
+  border-radius: 6px;
+  padding: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.sectionHeaderCompact {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.sectionTitleCompact {
+  font-size: 14px;
+  font-weight: 700;
+  color: #333;
+  margin: 0;
+}
+
+.seeAllButtonCompact {
+  background: none;
+  border: none;
+  color: #007bff;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 0;
+}
+
+.activitiesListCompact {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.activityItemCompact {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px 0;
+}
+
+.activityBullet {
+  width: 6px;
+  height: 6px;
+  background: #007bff;
+  border-radius: 50%;
+  margin-top: 6px;
+  flex-shrink: 0;
+}
+
+.activityContentCompact {
+  flex: 1;
+}
+
+.activityTitleCompact {
+  font-size: 12px;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 4px 0;
+  line-height: 1.3;
+}
+
+.activityDescriptionCompact {
+  font-size: 11px;
+  color: #666;
+  margin: 0 0 3px 0;
+  line-height: 1.3;
+}
+
+.activityTimeCompact {
+  font-size: 10px;
+  color: #888;
+  font-style: italic;
+}
+
+/* Status Overview */
+.statusOverview,
+.adminTools {
+  background: white;
+  border-radius: 6px;
+  padding: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.progressSectionCompact {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 12px 0;
+  padding: 12px 0;
+}
+
+.progressCircleCompact {
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: conic-gradient(#007bff 75%, #e0e0e0 0%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 6px;
+}
+
+.progressPercentageCompact {
+  font-size: 14px;
+  font-weight: bold;
+  color: #333;
+}
+
+.progressLabelCompact {
+  font-size: 12px;
+  color: #666;
+  font-weight: 500;
+}
+
+.statusListCompact {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.statusItemCompact {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+}
+
+.statusNameCompact {
+  font-size: 12px;
+  color: #333;
+}
+
+.statusCountCompact {
+  font-size: 12px;
+  font-weight: bold;
+  color: #333;
+}
+
+.detailButtonCompact {
+  width: 100%;
+  padding: 8px 12px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.detailButtonCompact:hover {
+  background: #0056b3;
+}
+
+.managementDosen {
+  background: white;
+  border-radius: 6px;
+  padding: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.managementTitleCompact {
+  font-size: 16px;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.managementListCompact {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.managementItemCompact {
+  padding: 12px 0;
+  border-bottom: 1px solid #f3f4f6;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.managementItemCompact:hover {
+  background: rgba(59, 130, 246, 0.05);
+  border-radius: 4px;
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+.managementItemCompact:last-child {
+  border-bottom: none;
+}
+
+.managementItemContent {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.managementText {
+  flex: 1;
+}
+
+.managementMainText {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 2px;
+}
+
+.managementSubText {
+  font-size: 12px;
+  color: #6b7280;
+  font-weight: 400;
+}
+
+.managementArrow {
+  font-size: 16px;
+  color: #9ca3af;
+  font-weight: bold;
+  transition: color 0.2s ease;
+}
+
+.managementItemCompact:hover .managementArrow {
+  color: #3b82f6;
+  transform: translateX(2px);
+}
+
+/* Item pertama tanpa arrow */
+.managementItemCompact:first-child .managementArrow {
+  display: none;
+}
+
+.managementItemCompact:first-child:hover {
+  background: none;
+  padding-left: 0;
+  padding-right: 0;
+  cursor: default;
+}
+
+/* Admin Tools Compact */
+.toolsSectionCompact {
+  margin-bottom: 16px;
+}
+
+.toolsSectionCompact:last-child {
+  margin-bottom: 0;
+}
+
+.toolsSubtitleCompact {
+  font-size: 12px;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 8px 0;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #eee;
+}
+
+.toolsListCompact {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.toolItemCompact {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 0;
+}
+
+.toolLabelCompact {
+  font-size: 11px;
+  color: #666;
+}
+
+.toolValueCompact {
+  font-size: 11px;
+  font-weight: 600;
+  color: #333;
+}
+
+/* Management Dosen Compact */
+.managementTitleCompact {
+  font-size: 13px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.managementListCompact {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.managementItemCompact {
+  font-size: 11px;
+  color: #333;
+  padding: 6px 0;
+  border-bottom: 1px solid #f5f5f5;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.managementItemCompact:hover {
+  color: #007bff;
+}
+
+.managementItemCompact:last-child {
+  border-bottom: none;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .statsGridCompact {
+    grid-template-columns: repeat(2, 1fr);
+    margin-bottom: 20px;
+  }
+  
+  .quickActions {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .mainContent {
+    grid-template-columns: 1fr;
+  }
+  
+  .statsGridCompact {
+    grid-template-columns: 1fr;
+  }
+  
+  .dashboardContainer {
+    padding: 12px;
+  }
+  
+  .headerSection {
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+  
+  .welcomeTitle {
+    font-size: 18px;
+  }
+  
+  .quickActionItem {
+    padding: 12px;
+  }
+  
+  .actionIcon {
+    width: 32px;
+    height: 32px;
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboardContainer {
+    padding: 8px;
+  }
+  
+  .headerSection {
+    padding: 12px;
+  }
+  
+  .statCardCompact {
+    padding: 12px;
+  }
+  
+  .statValueCompact {
+    font-size: 18px;
+  }
+  
+  .progressCircleCompact {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .progressPercentageCompact {
+    font-size: 12px;
+  }
+}
