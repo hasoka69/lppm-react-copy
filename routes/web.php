@@ -36,7 +36,7 @@ Route::get('/', function () {
 
 Route::middleware(['auth', 'menu.permission'])->group(function () {
     Route::get('dashboard', function () {
-        return Inertia::render('dashboard');
+        return Inertia::render('admin/Index');
     })->name('dashboard');
 
     Route::resource('roles', RoleController::class);
