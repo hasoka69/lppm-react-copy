@@ -29,6 +29,26 @@ Route::post('/login', [AuthenticatedSessionController::class, 'store'])->name('l
 
 Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
 
+// Dashboard Admin
+Route::get('/admin/dashboard', function () {
+    return Inertia::render('admin/Dashboard');
+})->middleware(['auth','menu.permission']);
+
+// Dashboard Reviewer
+Route::get('/reviewer/dashboard', function () {
+    return Inertia::render('reviewer/Dashboard');
+})->middleware(['auth','menu.permission']);
+
+// Dashboard Kaprodi
+Route::get('/kaprodi/dashboard', function () {
+    return Inertia::render('kaprodi/Dashboard');
+})->middleware(['auth','menu.permission']);
+
+// Dashboard Dosen
+Route::get('/dosen/dashboard', function () {
+    return Inertia::render('dosen/Dashboard');
+})->middleware(['auth','menu.permission']);
+
 
 Route::get('/', function () {
     return Inertia::render('welcome');
