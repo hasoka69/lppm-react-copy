@@ -39,6 +39,17 @@ Route::get('/reviewer/dashboard', function () {
     return Inertia::render('reviewer/Dashboard');
 })->middleware(['auth','menu.permission']);
 
+// Pengajuan
+Route::get('/pengajuan/page-usulan', function () {
+    return Inertia::render('pengajuan/page-usulan');
+})->middleware(['auth','menu.permission']);
+
+// Pengajuan-form
+Route::get('/pengajuan/Index', function () {
+    return Inertia::render('pengajuan/Index');
+})->middleware(['auth','menu.permission']);
+
+
 // Dashboard Kaprodi
 Route::get('/kaprodi/dashboard', function () {
     return Inertia::render('kaprodi/Dashboard');
