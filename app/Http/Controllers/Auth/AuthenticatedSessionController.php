@@ -13,6 +13,7 @@ use Inertia\Response;
 
 class AuthenticatedSessionController extends Controller
 {
+    
     /**
      * Show the login page.
      */
@@ -33,9 +34,26 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('dashboard', absolute: false));
-    }
+        // LOGIKA REDIRECT BARU BERDASARKAN PERAN
+        $user = $request->user(); // Menggunakan $request->user() setelah authenticate()
 
+        // Penting: Urutan pengecekan peran (Role Priority)
+
+        if ($user->hasRole('Admin')) {
+            return redirect()->intended('/admin/dashboard');
+        } elseif ($user->hasRole('Admin LPPM')) { // PERBAIKAN: Tambahkan Admin LPPM
+            return redirect()->intended('/lppm/dashboard');
+        } elseif ($user->hasRole('Reviewer')) {
+            return redirect()->intended('/reviewer/dashboard');
+        } elseif ($user->hasRole('Kaprodi')) {
+            return redirect()->intended('/kaprodi/dashboard');
+        } elseif ($user->hasRole('Dosen')) {
+            return redirect()->intended('/dosen/dashboard');
+        }
+
+        // Default redirect jika peran tidak terdeteksi
+        return redirect()->intended('/'); 
+    }
     /**
      * Destroy an authenticated session.
      */

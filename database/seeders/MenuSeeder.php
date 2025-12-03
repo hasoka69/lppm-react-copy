@@ -11,14 +11,48 @@ class MenuSeeder extends Seeder
 {
     public function run(): void
     {
+
         // MENU: Dashboard
         Menu::create([
-            'title' => 'Dashboard',
+            'title' => 'Dashboard Admin',
             'icon' => 'Home',
-            'route' => '/dashboard',
+            'route' => '/admin/dashboard',
             'order' => 1,
-            'permission_name' => 'dashboard-view',
+            'permission_name' => 'dashboard-admin-view',
         ]);
+
+        Menu::create([
+            'title' => 'Dashboard LPPM',
+            'icon' => 'Home',
+            'route' => '/lppm/dashboard',
+            'order' => 1,
+            'permission_name' => 'dashboard-lppm-view',
+        ]);
+
+        Menu::create([
+            'title' => 'Dashboard Reviewer',
+            'icon' => 'Home',
+            'route' => '/reviewer/dashboard',
+            'order' => 1,
+            'permission_name' => 'dashboard-reviewer-view',
+        ]);
+
+        Menu::create([
+            'title' => 'Dashboard Kaprodi',
+            'icon' => 'Home',
+            'route' => '/kaprodi/dashboard',
+            'order' => 1,
+            'permission_name' => 'dashboard-kaprodi-view',
+        ]);
+
+        Menu::create([
+            'title' => 'Dashboard Dosen',
+            'icon' => 'Home',
+            'route' => '/dosen/dashboard',
+            'order' => 1,
+            'permission_name' => 'dashboard-dosen-view',
+        ]);
+
 
         // GROUP: Access
         $access = Menu::create([

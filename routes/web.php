@@ -14,6 +14,14 @@ use App\Http\Controllers\MediaFolderController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Models\Berita;
 
+// ==========================================================
+// RUTE UMUM (NON-AUTH)
+// ==========================================================
+
+Route::get('/', function () {
+    return Inertia::render('welcome');
+})->name('home');
+
 Route::get('/berita', function () {
     $berita = Berita::all();
     return Inertia::render('berita/Index', [
@@ -21,6 +29,7 @@ Route::get('/berita', function () {
     ]);
 });
 
+// Otentikasi
 Route::get('/login', function () {
     return Inertia::render('Login');
 })->name('login');
@@ -29,64 +38,95 @@ Route::post('/login', [AuthenticatedSessionController::class, 'store'])->name('l
 
 Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
 
-// Dashboard Admin
-Route::get('/admin/dashboard', function () {
-    return Inertia::render('admin/Dashboard');
-})->middleware(['auth','menu.permission']);
 
-// Dashboard Reviewer
-Route::get('/reviewer/dashboard', function () {
-    return Inertia::render('reviewer/Dashboard');
-})->middleware(['auth','menu.permission']);
+// ==========================================================
+// RUTE DASHBOARD ROLE-SPECIFIC
+// ==========================================================
 
-// Pengajuan
-Route::get('/pengajuan/page-usulan', function () {
-    return Inertia::render('pengajuan/page-usulan');
-})->middleware(['auth','menu.permission']);
+Route::middleware('auth')->group(function () {
+    
+    // Dashboard Admin 
+    Route::get('/admin/dashboard', function () {
+        return Inertia::render('admin/Dashboard');
+    })->middleware('can:dashboard-admin-view')->name('admin.dashboard');
 
-// Pengajuan-form
-Route::get('/pengajuan/Index', function () {
-    return Inertia::render('pengajuan/Index');
-})->middleware(['auth','menu.permission']);
+    // Dashboard Admin LPPM
+    Route::get('/lppm/dashboard', function () {
+        return Inertia::render('lppm/Dashboard');
+    })->middleware('can:dashboard-lppm-view')->name('lppm.dashboard');
+
+    // Dashboard Reviewer
+    Route::get('/reviewer/dashboard', function () {
+        return Inertia::render('reviewer/Dashboard');
+    })->middleware('can:dashboard-reviewer-view')->name('reviewer.dashboard');
+
+    // Dashboard Kaprodi
+    Route::get('/kaprodi/dashboard', function () {
+        return Inertia::render('kaprodi/Dashboard');
+    })->middleware('can:dashboard-kaprodi-view')->name('kaprodi.dashboard');
+
+    // Dashboard Dosen
+    Route::get('/dosen/dashboard', function () {
+        return Inertia::render('dosen/Dashboard');
+    })->middleware('can:dashboard-dosen-view')->name('dosen.dashboard');
+});
 
 
-// Dashboard Kaprodi
-Route::get('/kaprodi/dashboard', function () {
-    return Inertia::render('kaprodi/Dashboard');
-})->middleware(['auth','menu.permission']);
+// ==========================================================
+// RUTE BERAT DENGAN OTENTIKASI DAN IZIN SPESIFIK
+// ==========================================================
 
-// Dashboard Dosen
-Route::get('/dosen/dashboard', function () {
-    return Inertia::render('dosen/Dashboard');
-})->middleware(['auth','menu.permission']);
-
-
-Route::get('/', function () {
-    return Inertia::render('welcome');
-})->name('home');
-
+// Middleware 'menu.permission' digunakan untuk melindungi rute yang ada di menu
 Route::middleware(['auth', 'menu.permission'])->group(function () {
-    Route::get('dashboard', function () {
-        return Inertia::render('admin/Index');
-    })->name('dashboard');
+    
+    // === AKSES & PENGGUNA (Hanya Admin) ===
+    Route::resource('roles', RoleController::class)->middleware('can:roles-view');
+    Route::resource('permissions', PermissionController::class)->middleware('can:permission-view');
+    
+    // Users harus dilindungi oleh users-view, dan impersonate oleh users-impersonate
+    Route::resource('users', UserController::class)->middleware('can:users-view');
+    Route::put('/users/{user}/reset-password', [UserController::class, 'resetPassword'])->name('users.reset-password')->middleware('can:users-edit');
+    
+    // RUTE IMpersonate (Ganti User) - Penting agar Admin bisa mengakses semua peran
+    Route::post('/users/{user}/impersonate', [UserController::class, 'impersonate'])->name('users.impersonate')->middleware('can:users-impersonate');
+    Route::post('/users/stop-impersonate', [UserController::class, 'stopImpersonate'])->name('users.stop-impersonate');
 
-    Route::resource('roles', RoleController::class);
-    Route::resource('menus', MenuController::class);
-    Route::post('menus/reorder', [MenuController::class, 'reorder'])->name('menus.reorder');
-    Route::resource('permissions', PermissionController::class);
-    Route::resource('users', UserController::class);
-    Route::put('/users/{user}/reset-password', [UserController::class, 'resetPassword'])->name('users.reset-password');
-    Route::get('/settingsapp', [SettingAppController::class, 'edit'])->name('setting.edit');
-    Route::post('/settingsapp', [SettingAppController::class, 'update'])->name('setting.update');
-    Route::get('/audit-logs', [AuditLogController::class, 'index'])->name('audit-logs.index');
-    Route::get('/backup', [BackupController::class, 'index'])->name('backup.index');
-    Route::post('/backup/run', [BackupController::class, 'run'])->name('backup.run');
-    Route::get('/backup/download/{file}', [BackupController::class, 'download'])->name('backup.download');
-    Route::delete('/backup/delete/{file}', [BackupController::class, 'delete'])->name('backup.delete');
-    Route::get('/files', [UserFileController::class, 'index'])->name('files.index');
-    Route::post('/files', [UserFileController::class, 'store'])->name('files.store');
-    Route::delete('/files/{id}', [UserFileController::class, 'destroy'])->name('files.destroy');
-    Route::resource('media', MediaFolderController::class);
+
+    // === MENU & PENGATURAN ===
+    Route::resource('menus', MenuController::class)->middleware('can:menu-view');
+    Route::post('menus/reorder', [MenuController::class, 'reorder'])->name('menus.reorder')->middleware('can:menu-reorder'); // Menggunakan 'menu-reorder' atau 'menu-edit'
+
+    Route::get('/settingsapp', [SettingAppController::class, 'edit'])->name('setting.edit')->middleware('can:app-settings-view');
+    Route::post('/settingsapp', [SettingAppController::class, 'update'])->name('setting.update')->middleware('can:app-settings-edit');
+
+    
+    // === UTILITIES & LOGS ===
+    Route::get('/audit-logs', [AuditLogController::class, 'index'])->name('audit-logs.index')->middleware('can:log-view');
+    
+    // Backup
+    Route::get('/backup', [BackupController::class, 'index'])->name('backup.index')->middleware('can:backup-view');
+    Route::post('/backup/run', [BackupController::class, 'run'])->name('backup.run')->middleware('can:backup-run');
+    Route::get('/backup/download/{file}', [BackupController::class, 'download'])->name('backup.download')->middleware('can:backup-download');
+    Route::delete('/backup/delete/{file}', [BackupController::class, 'delete'])->name('backup.delete')->middleware('can:backup-delete');
+    
+    // File Manager
+    Route::get('/files', [UserFileController::class, 'index'])->name('files.index')->middleware('can:filemanager-view');
+    Route::post('/files', [UserFileController::class, 'store'])->name('files.store')->middleware('can:filemanager-create');
+    Route::delete('/files/{id}', [UserFileController::class, 'destroy'])->name('files.destroy')->middleware('can:filemanager-delete');
+    Route::resource('media', MediaFolderController::class)->middleware('can:media-view'); // Asumsi media-view/media-create/etc.
+
+    
+    // === PENGAJUAN ===
+    // Pengajuan Usulan (Misalnya: dilihat oleh Dosen, Kaprodi, LPPM)
+    Route::get('/pengajuan/page-usulan', function () {
+        return Inertia::render('pengajuan/page-usulan');
+    })->name('pengajuan.usulan')->middleware('can:pengajuan-usulan-view');
+
+    // Pengajuan Form (Misalnya: Hanya Dosen yang boleh mengakses form)
+    Route::get('/pengajuan/Index', function () {
+        return Inertia::render('pengajuan/Index');
+    })->name('pengajuan.index')->middleware('can:pengajuan-form-view');
+
 });
 
 require __DIR__ . '/settings.php';
