@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import Header from "@/components/Header";
-import Footer from "@/components/Footer";
+import Footer from "@/components/footer";
 import PageUser from './page-user';
 import PageSelectProgram from './page-selectprogram';
 import PageIdentitas from './page-identitas';
@@ -55,7 +55,7 @@ const PengajuanIndex = () => {
     // Render content berdasarkan currentStep
     const renderStepContent = () => {
         console.log('Rendering step:', currentStep);
-        
+
         switch (currentStep) {
             case 1:
                 return (
