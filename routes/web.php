@@ -12,7 +12,42 @@ use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\SettingAppController;
 use App\Http\Controllers\MediaFolderController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\UsulanPenelitianController;
 use App\Models\Berita;
+
+// Group untuk authenticated users
+Route::middleware(['auth', 'verified'])->group(function () {
+    
+    // Routes Pengajuan Usulan
+    Route::prefix('pengajuan')->name('pengajuan.')->group(function () {
+        
+        // Index - Tampilkan daftar usulan
+        Route::get('/', [UsulanPenelitianController::class, 'index'])
+            ->name('index');
+        
+        // Store Draft - Simpan usulan baru sebagai draft
+        Route::post('/draft', [UsulanPenelitianController::class, 'storeDraft'])
+            ->name('draft');
+        
+        // Update - Update usulan per step
+        Route::put('/{usulan}', [UsulanPenelitianController::class, 'update'])
+            ->name('update');
+        
+        // Upload Substansi
+        Route::post('/{usulan}/substansi', [UsulanPenelitianController::class, 'uploadSubstansi'])
+            ->name('substansi');
+        
+        // Submit - Submit usulan final
+        Route::post('/{usulan}/submit', [UsulanPenelitianController::class, 'submit'])
+            ->name('submit');
+        
+        // Delete - Hapus usulan
+        Route::delete('/{usulan}', [UsulanPenelitianController::class, 'destroy'])
+            ->name('destroy');
+    });
+});
+
+
 
 // ==========================================================
 // RUTE UMUM (NON-AUTH)

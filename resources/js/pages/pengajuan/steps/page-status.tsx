@@ -1,14 +1,17 @@
 import React from 'react';
-import styles from '../../../css/pengajuan.module.css';
+import styles from '../../../../css/pengajuan.module.css';
+import { CurrentStep } from '../Index';
+
 
 interface PageStatusProps {
-  currentStep: number;
-  title?: string;
+  currentStep: CurrentStep;
+  title: string;
+  infoText?: string;   // ← tambahkan
 }
 
-const PageStatus: React.FC<PageStatusProps> = ({ 
-  currentStep = 1, 
-  title = "Usulan Penelitian" 
+const PageStatus: React.FC<PageStatusProps> = ({
+  currentStep = 1,
+  title = "Usulan Penelitian"
 }) => {
   const steps = [
     { number: 1, label: 'Identitas Usulan' },
@@ -27,21 +30,17 @@ const PageStatus: React.FC<PageStatusProps> = ({
       <div className={styles.progressContainer}>
         {steps.map((step) => (
           <div key={step.number} className={styles.progressStep}>
-            <div 
-              className={`${styles.stepNumber} ${
-                step.number === currentStep ? styles.active : ''
-              } ${
-                step.number < currentStep ? styles.completed : ''
-              }`}
+            <div
+              className={`${styles.stepNumber} ${step.number === currentStep ? styles.active : ''
+                } ${step.number < currentStep ? styles.completed : ''
+                }`}
             >
               {step.number < currentStep ? '✓' : step.number}
             </div>
-            <div 
-              className={`${styles.stepLabel} ${
-                step.number === currentStep ? styles.active : ''
-              } ${
-                step.number < currentStep ? styles.completed : ''
-              }`}
+            <div
+              className={`${styles.stepLabel} ${step.number === currentStep ? styles.active : ''
+                } ${step.number < currentStep ? styles.completed : ''
+                }`}
             >
               {step.label}
             </div>
@@ -53,7 +52,7 @@ const PageStatus: React.FC<PageStatusProps> = ({
       <div className={styles.infoBox}>
         <div className={styles.infoIcon}>ℹ️</div>
         <div className={styles.infoText}>
-          Silahkan isi form dengan data yang benar dan sesuai, agar proses berjalan dengan lancar, Terimakasih. 
+          Silahkan isi form dengan data yang benar dan sesuai, agar proses berjalan dengan lancar, Terimakasih.
           Input dengan tanda * (Wajib diisi)
         </div>
       </div>

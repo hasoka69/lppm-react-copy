@@ -1,134 +1,141 @@
 import React, { useState } from 'react';
+import { usePage } from '@inertiajs/react';
 import Header from "@/components/Header";
-import Footer from "@/components/Footer";
-import PageUser from './page-user';
-import PageSelectProgram from './page-selectprogram';
-import PageIdentitas from './page-identitas';
-import PageUsulan from './page-usulan';
-import PageSubstansi from './page-substansi';
-import PageRAB from './page-rab';
-import PageStatus from './page-status';
-import PageTinjauan from './page-tinjauan';
+import Footer from "@/components/footer";
+import PageIdentitas from './steps/page-identitas-1';
+import PageUsulan from './steps/page-usulan';
+import PageSubstansi from './steps/page-substansi-2';
+import PageRAB from './steps/page-rab-3';
+import PageStatus from './steps/page-status';
+import PageTinjauan from './steps/page-tinjauan-4';
 import styles from '../../../css/pengajuan.module.css';
 
+// Tipe dasar
+export interface Usulan {
+    no: number;
+    id: number;
+    skema: string;
+    judul: string;
+    tahun_pelaksanaan: number;
+    makro_riset: string;
+    peran: string;
+    status: string;
+}
+
+// Tipe lengkap untuk PageIdentitas (sementara)
+export interface UsulanData extends Usulan {
+    tkt_saat_ini: string;
+    target_akhir_tkt: string;
+    kelompok_skema: string;
+    ruang_lingkup: string;
+    // ... tambahkan field lain sesuai kebutuhan
+}
+
+// Steps
+export type CurrentStep = 1 | 2 | 3 | 4;
 type ActiveView = 'daftar' | 'pengajuan';
-type CurrentStep = 1 | 2 | 3 | 4;
 
 const PengajuanIndex = () => {
+    const { props } = usePage();
+    const usulanList: Usulan[] = props.usulanList || [];
+
     const [activeView, setActiveView] = useState<ActiveView>('daftar');
     const [activeTab, setActiveTab] = useState<'daftar' | 'pengajuan' | 'riwayat' | 'panduan'>('daftar');
     const [currentStep, setCurrentStep] = useState<CurrentStep>(1);
+    const [editingUsulan, setEditingUsulan] = useState<Partial<UsulanData> | null>(null);
 
-    // Handler untuk tombol Tambah Usulan Baru
+    // Draft dummy jika belum ada
+    const defaultDraft: UsulanData = {
+        id: 0,
+        no: 0,
+        skema: '',
+        judul: '',
+        tahun_pelaksanaan: new Date().getFullYear(),
+        makro_riset: '',
+        peran: '',
+        status: 'draft',
+        tkt_saat_ini: '',
+        target_akhir_tkt: '',
+        kelompok_skema: '',
+        ruang_lingkup: '',
+    };
+
+    const usulanToEdit: Partial<UsulanData> = editingUsulan || defaultDraft;
+
+    // Event handlers
     const handleTambahUsulan = () => {
+        setEditingUsulan(null);
         setActiveView('pengajuan');
         setActiveTab('pengajuan');
         setCurrentStep(1);
     };
 
-    // Handler untuk kembali ke daftar usulan
+    const handleEditUsulan = (usulan: Usulan) => {
+        setEditingUsulan({ ...defaultDraft, ...usulan });
+        setActiveView('pengajuan');
+        setActiveTab('pengajuan');
+        setCurrentStep(1);
+    };
+
     const handleKembaliKeDaftar = () => {
         setActiveView('daftar');
         setActiveTab('daftar');
         setCurrentStep(1);
     };
 
-    // Handler navigasi steps
     const handleSelanjutnya = () => {
-        console.log('Current step sebelum:', currentStep);
-        if (currentStep < 4) {
-            setCurrentStep((prev) => {
-                const nextStep = (prev + 1) as CurrentStep;
-                console.log('Current step sesudah:', nextStep);
-                return nextStep;
-            });
-        }
+        if (currentStep < 4) setCurrentStep((prev) => (prev + 1) as CurrentStep);
     };
-
     const handleKembali = () => {
-        console.log('Kembali dari step:', currentStep);
-        if (currentStep > 1) {
-            setCurrentStep((prev) => (prev - 1) as CurrentStep);
-        }
+        if (currentStep > 1) setCurrentStep((prev) => (prev - 1) as CurrentStep);
     };
 
-    // Render content berdasarkan currentStep
+    // Render steps
     const renderStepContent = () => {
-        console.log('Rendering step:', currentStep);
-        
         switch (currentStep) {
             case 1:
                 return (
-                    <>
-                        {/* Tampilkan ketiga komponen secara berurutan di Step 1 */}
-                        <PageUser />
-                        <PageSelectProgram />
-                        <PageIdentitas
-                            onSelanjutnya={handleSelanjutnya}
-                            onTutupForm={handleKembaliKeDaftar}
-                        />
-                    </>
+                    <PageIdentitas
+                        usulan={usulanToEdit}
+                        onSelanjutnya={handleSelanjutnya}
+                        onTutupForm={handleKembaliKeDaftar}
+                    />
                 );
             case 2:
-                return (
-                    <PageSubstansi
-                        onKembali={handleKembali}
-                        onSelanjutnya={handleSelanjutnya}
-                    />
-                );
+                return <PageSubstansi onKembali={handleKembali} onSelanjutnya={handleSelanjutnya} />;
             case 3:
-                return (
-                    <PageRAB
-                        onKembali={handleKembali}
-                        onSelanjutnya={handleSelanjutnya}
-                    />
-                );
+                return <PageRAB onKembali={handleKembali} onSelanjutnya={handleSelanjutnya} />;
             case 4:
-                return (
-                    <PageTinjauan
-                        onKembali={handleKembali}
-                        onKonfirmasi={handleKembaliKeDaftar}
-                    />
-                );
+                return <PageTinjauan onKembali={handleKembali} onKonfirmasi={handleKembaliKeDaftar} />;
             default:
-                return (
-                    <>
-                        <PageUser />
-                        <PageSelectProgram />
-                        <PageIdentitas
-                            onSelanjutnya={handleSelanjutnya}
-                            onTutupForm={handleKembaliKeDaftar}
-                        />
-                    </>
-                );
+                return null;
         }
     };
 
-    // Render content berdasarkan activeView
+    // Render content
     const renderContent = () => {
         if (activeView === 'daftar') {
             return (
-                <div className={styles.pageSection}>
-                    <PageUsulan onTambahUsulan={handleTambahUsulan} />
-                </div>
+                <PageUsulan
+                    onTambahUsulan={handleTambahUsulan}
+                    onEditUsulan={handleEditUsulan}
+                    usulanList={usulanList}
+                />
             );
         }
-
-        // View pengajuan baru - menampilkan form berdasarkan currentStep
         return (
-            <div className={styles.pageSection}>
+            <>
                 <PageStatus
                     currentStep={currentStep}
                     title={getStepTitle(currentStep)}
                     infoText={getStepInfoText(currentStep)}
                 />
                 {renderStepContent()}
-            </div>
+            </>
         );
     };
 
-    // Helper functions untuk title dan info text
-    const getStepTitle = (step: CurrentStep): string => {
+    const getStepTitle = (step: CurrentStep) => {
         switch (step) {
             case 1: return 'Identitas Usulan';
             case 2: return 'Substansi Usulan';
@@ -137,62 +144,28 @@ const PengajuanIndex = () => {
             default: return 'Usulan Penelitian';
         }
     };
-
-    const getStepInfoText = (step: CurrentStep): string => {
+    const getStepInfoText = (step: CurrentStep) => {
         switch (step) {
-            case 1: return 'Silahkan isi form dengan data yang benar dan sesuai, agar proses berjalan dengan lancar, Terimakasih. Input dengan tanda * (Wajib diisi)';
-            case 2: return 'Silahkan isi form dengan data yang benar dan sesuai, agar proses berjalan dengan lancar, Terimakasih. Input dengan tanda * (Wajib diisi)';
-            case 3: return 'Silahkan isi form Rencana Anggaran Biaya dengan data yang benar dan sesuai. Input dengan tanda * (Wajib diisi)';
-            case 4: return 'Silahkan tinjau dan konfirmasi data usulan penelitian Anda sebelum mengirimkan. Pastikan semua data sudah benar.';
-            default: return 'Silahkan isi form dengan data yang benar dan sesuai.';
+            case 1: return 'Isi form identitas usulan.';
+            case 2: return 'Isi substansi usulan.';
+            case 3: return 'Isi RAB.';
+            case 4: return 'Tinjau dan konfirmasi.';
+            default: return '';
         }
     };
 
     return (
         <div className={styles.masterContainer}>
             <Header />
-
-            {/* Main Navigation Tabs */}
             <div className={styles.tabContainer}>
                 <div className={styles.tabs}>
-                    <button
-                        className={`${styles.tab} ${activeTab === 'daftar' ? styles.active : ''}`}
-                        onClick={() => {
-                            setActiveView('daftar');
-                            setActiveTab('daftar');
-                        }}
-                    >
-                        Daftar Usulan
-                    </button>
-                    <button
-                        className={`${styles.tab} ${activeTab === 'pengajuan' ? styles.active : ''}`}
-                        onClick={() => {
-                            setActiveView('pengajuan');
-                            setActiveTab('pengajuan');
-                        }}
-                    >
-                        Pengajuan Baru
-                    </button>
-                    <button
-                        className={`${styles.tab} ${activeTab === 'riwayat' ? styles.active : ''}`}
-                        onClick={() => setActiveTab('riwayat')}
-                    >
-                        Riwayat
-                    </button>
-                    <button
-                        className={`${styles.tab} ${activeTab === 'panduan' ? styles.active : ''}`}
-                        onClick={() => setActiveTab('panduan')}
-                    >
-                        Panduan
-                    </button>
+                    <button className={`${styles.tab} ${activeTab === 'daftar' ? styles.active : ''}`} onClick={() => { setActiveView('daftar'); setActiveTab('daftar'); }}>Daftar Usulan</button>
+                    <button className={`${styles.tab} ${activeTab === 'pengajuan' ? styles.active : ''}`} onClick={() => { setActiveView('pengajuan'); setActiveTab('pengajuan'); }}>Pengajuan Baru</button>
+                    <button className={`${styles.tab} ${activeTab === 'riwayat' ? styles.active : ''}`} onClick={() => setActiveTab('riwayat')}>Riwayat</button>
+                    <button className={`${styles.tab} ${activeTab === 'panduan' ? styles.active : ''}`} onClick={() => setActiveTab('panduan')}>Panduan</button>
                 </div>
             </div>
-
-            {/* Content Area */}
-            <div className={styles.contentArea}>
-                {renderContent()}
-            </div>
-
+            <div className={styles.contentArea}>{renderContent()}</div>
             <Footer />
         </div>
     );

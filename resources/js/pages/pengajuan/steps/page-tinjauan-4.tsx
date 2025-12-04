@@ -1,24 +1,26 @@
 import React from 'react';
-import styles from '../../../css/pengajuan.module.css';
+import styles from '../../../../css/pengajuan.module.css';
 
 interface PageTinjauanProps {
   onKembali?: () => void;
-  onSubmit?: () => void;
+  onKonfirmasi?: () => void;   // ← ganti dari onSubmit
   onTutupForm?: () => void;
 }
 
-const PageTinjauan: React.FC<PageTinjauanProps> = ({ onKembali, onSubmit, onTutupForm }) => {
-  // Handler untuk print PDF
+const PageTinjauan: React.FC<PageTinjauanProps> = ({
+  onKembali,
+  onKonfirmasi,
+  onTutupForm
+}) => {
+
   const handlePrintPDF = () => {
     window.print();
   };
 
-  // Handler untuk submit
   const handleSubmit = () => {
-    if (onSubmit) {
-      onSubmit();
-    }
+    onKonfirmasi?.();  // ← pakai onKonfirmasi
   };
+
 
   return (
     <>
@@ -33,7 +35,7 @@ const PageTinjauan: React.FC<PageTinjauanProps> = ({ onKembali, onSubmit, onTutu
       {/* Judul dan Informasi Utama */}
       <div className={styles.formSection}>
         <h2 className={styles.sectionTitle}>Judul</h2>
-        
+
         <div className={styles.reviewGrid}>
           <div className={styles.reviewItem}>
             <span className={styles.reviewLabel}>Judul Penelitian</span>
@@ -91,7 +93,7 @@ const PageTinjauan: React.FC<PageTinjauanProps> = ({ onKembali, onSubmit, onTutu
       {/* Identitas Anggota Dosen */}
       <div className={styles.formSection}>
         <h2 className={styles.sectionTitle}>Identitas Anggota Dosen</h2>
-        
+
         <div className={styles.tableContainer}>
           <table className={styles.table}>
             <thead>
@@ -147,7 +149,7 @@ const PageTinjauan: React.FC<PageTinjauanProps> = ({ onKembali, onSubmit, onTutu
       {/* Substansi dan Luaran */}
       <div className={styles.formSection}>
         <h2 className={styles.sectionTitle}>Substansi dan Luaran</h2>
-        
+
         <div className={styles.reviewSection}>
           <h3 className={styles.subTitle}>Nama Makro Riset</h3>
           <p className={styles.reviewText}>Kelompok Riset Teknologi Tinggi</p>
@@ -160,7 +162,7 @@ const PageTinjauan: React.FC<PageTinjauanProps> = ({ onKembali, onSubmit, onTutu
               Download
             </button>
           </div>
-          
+
           <div className={styles.tableContainer}>
             <table className={styles.table}>
               <thead>
@@ -189,12 +191,12 @@ const PageTinjauan: React.FC<PageTinjauanProps> = ({ onKembali, onSubmit, onTutu
       {/* Rancangan Anggaran Biaya */}
       <div className={styles.formSection}>
         <h2 className={styles.sectionTitle}>Rancangan Anggaran Biaya (RAB)</h2>
-        
+
         <div className={styles.rabInfo}>
           <p><strong>Total Anggaran yang diajukan:</strong> Rp 200.000,00</p>
           <p><strong>Tahun ke 1</strong></p>
         </div>
-        
+
         <div className={styles.tableContainer}>
           <table className={styles.table}>
             <thead>
@@ -230,7 +232,7 @@ const PageTinjauan: React.FC<PageTinjauanProps> = ({ onKembali, onSubmit, onTutu
       {/* Mitra */}
       <div className={styles.formSection}>
         <h2 className={styles.sectionTitle}>Mitra</h2>
-        
+
         <div className={styles.tableContainer}>
           <table className={styles.table}>
             <thead>

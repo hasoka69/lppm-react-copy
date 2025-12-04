@@ -269,7 +269,9 @@
   color: #d32f2f;
 }
 
-.input, .select, .textarea {
+.input,
+.select,
+.textarea {
   padding: 12px 16px;
   border: 2px solid #e0e0e0;
   border-radius: 6px;
@@ -281,7 +283,9 @@
   font-family: inherit;
 }
 
-.input:focus, .select:focus, .textarea:focus {
+.input:focus,
+.select:focus,
+.textarea:focus {
   outline: none;
   border-color: #1976d2;
   box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.1);
@@ -451,58 +455,58 @@
   .tabContainer {
     padding: 0 16px;
   }
-  
+
   .tab {
     padding: 12px 16px;
     font-size: 12px;
   }
-  
+
   .contentArea {
     padding: 16px;
   }
-  
+
   .header {
     padding: 20px 20px 0;
   }
-  
+
   .title {
     font-size: 24px;
   }
-  
+
   .progressContainer {
     padding: 0 20px;
     margin-bottom: 30px;
   }
-  
+
   .stepLabel {
     font-size: 11px;
   }
-  
+
   .formSection {
     padding: 20px;
   }
-  
+
   .infoBox {
     margin: 0 20px 24px;
     flex-direction: column;
     text-align: center;
   }
-  
+
   .infoIcon {
     margin-right: 0;
     margin-bottom: 8px;
   }
-  
+
   .sectionHeader {
     flex-direction: column;
     align-items: flex-start;
   }
-  
+
   .actionContainer {
     justify-content: center;
     padding: 20px;
   }
-  
+
   .actionContainer button {
     flex: 1;
     min-width: 120px;
@@ -514,22 +518,22 @@
     overflow-x: auto;
     padding-bottom: 8px;
   }
-  
+
   .progressContainer::before {
     left: 15%;
     right: 15%;
   }
-  
+
   .stepNumber {
     width: 32px;
     height: 32px;
     font-size: 12px;
   }
-  
+
   .tableContainer {
     border-radius: 4px;
   }
-  
+
   .table th,
   .table td {
     padding: 8px 12px;
@@ -558,8 +562,13 @@
 }
 
 @keyframes spin {
-  0% { transform: translate(-50%, -50%) rotate(0deg); }
-  100% { transform: translate(-50%, -50%) rotate(360deg); }
+  0% {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+
+  100% {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
 }
 
 /* Utility Classes */
@@ -638,18 +647,19 @@
 
 /* Print Styles */
 @media print {
+
   .tabContainer,
   .actionContainer,
   .addButton {
     display: none;
   }
-  
+
   .pageSection {
     box-shadow: none;
     border: 1px solid #000;
     margin-bottom: 20px;
   }
-  
+
   .tableContainer {
     border: 1px solid #000;
   }
@@ -800,20 +810,20 @@
     padding: 0 20px 20px;
     justify-content: center;
   }
-  
+
   .tableSection {
     padding: 0 20px 20px;
   }
-  
+
   .infoSection {
     margin: 0 20px 20px;
   }
-  
+
   .judulCell {
     max-width: 200px;
     min-width: 150px;
   }
-  
+
   .actionButtons {
     flex-direction: column;
     gap: 4px;
@@ -824,20 +834,20 @@
   .actionHeader {
     padding: 0 16px 16px;
   }
-  
+
   .tableSection {
     padding: 0 16px 16px;
   }
-  
+
   .infoSection {
     margin: 0 16px 16px;
   }
-  
+
   .infoTitle {
     padding: 12px 16px;
     font-size: 16px;
   }
-  
+
   .infoContent {
     padding: 16px;
   }
@@ -910,19 +920,19 @@
     align-items: stretch;
     padding: 16px 20px;
   }
-  
+
   .progressTabs {
     order: 2;
     overflow-x: auto;
     padding-bottom: 8px;
   }
-  
+
   .progressTab {
     padding: 10px 16px;
     font-size: 13px;
     flex-shrink: 0;
   }
-  
+
   .backButton {
     order: 1;
     align-self: flex-start;
@@ -933,17 +943,18 @@
   .progressTabContainer {
     padding: 12px 16px;
   }
-  
+
   .progressTab {
     padding: 8px 12px;
     font-size: 12px;
   }
-  
+
   .backButton {
     padding: 6px 12px;
     font-size: 13px;
   }
 }
+
 /* File Upload Styles */
 .fileUpload {
   display: flex;
@@ -1035,7 +1046,7 @@
     align-items: flex-start;
     gap: 8px;
   }
-  
+
   .fileLabel {
     width: 100%;
     text-align: center;
@@ -1043,7 +1054,8 @@
 }
 
 /* Table styles untuk luaran */
-.table th, .table td {
+.table th,
+.table td {
   padding: 12px 16px;
   text-align: left;
   border-bottom: 1px solid #e0e0e0;
@@ -1054,8 +1066,10 @@
   font-weight: 600;
   color: #2c3e50;
 }
+
 /* RAB Specific Styles */
-.selectSmall, .inputSmall {
+.selectSmall,
+.inputSmall {
   padding: 8px 12px;
   border: 2px solid #e0e0e0;
   border-radius: 4px;
@@ -1064,7 +1078,8 @@
   box-sizing: border-box;
 }
 
-.selectSmall:focus, .inputSmall:focus {
+.selectSmall:focus,
+.inputSmall:focus {
   outline: none;
   border-color: #1976d2;
 }
@@ -1162,17 +1177,19 @@
 
 /* Responsive Design untuk RAB */
 @media (max-width: 768px) {
-  .selectSmall, .inputSmall {
+
+  .selectSmall,
+  .inputSmall {
     padding: 6px 8px;
     font-size: 12px;
   }
-  
+
   .table th,
   .table td {
     padding: 6px 8px;
     font-size: 12px;
   }
-  
+
   .actionRow {
     flex-direction: column;
   }
@@ -1375,28 +1392,29 @@
 
 /* Print Styles untuk PDF */
 @media print {
+
   .tabContainer,
   .actionContainer,
   .alertWarning,
   .downloadButton {
     display: none;
   }
-  
+
   .pageSection {
     box-shadow: none;
     border: 1px solid #000;
     margin-bottom: 20px;
     break-inside: avoid;
   }
-  
+
   .tableContainer {
     border: 1px solid #000;
   }
-  
+
   .reviewItem {
     border: 1px solid #000;
   }
-  
+
   .masterContainer {
     background: white;
   }
@@ -1407,24 +1425,24 @@
   .reviewGrid {
     grid-template-columns: 1fr;
   }
-  
+
   .actionContainer {
     flex-direction: column;
     gap: 16px;
   }
-  
+
   .actionLeft,
   .actionRight {
     width: 100%;
     justify-content: center;
   }
-  
+
   .alertWarning {
     margin: 0 20px 20px;
     flex-direction: column;
     text-align: center;
   }
-  
+
   .alertIcon {
     margin-right: 0;
     margin-bottom: 8px;
@@ -1435,13 +1453,23 @@
   .reviewGrid {
     gap: 12px;
   }
-  
+
   .reviewItem {
     padding: 8px;
   }
-  
+
   .actionLeft,
   .actionRight {
     flex-direction: column;
+  }
+}
+
+@media print {
+  button {
+    display: none !important;
+  }
+
+  .alertWarning {
+    display: none !important;
   }
 }
