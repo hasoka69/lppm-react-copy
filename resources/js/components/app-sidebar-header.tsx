@@ -20,13 +20,13 @@ export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: Breadcrum
       <div className="flex items-center gap-3">
         {/* Logo yang bisa diklik */}
         <Link href="/dashboard" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-          <img 
-            src="/image/logo-asaindo.png" 
-            alt="Logo LPPM" 
+          <img
+            src="/image/logo-asaindo.png"
+            alt="Logo LPPM"
             className="h-8 w-8 object-contain"
           />
         </Link>
-        
+
         <div className="flex items-center gap-2">
           <SidebarTrigger className="-ml-1" />
           <Breadcrumbs breadcrumbs={breadcrumbs} />
@@ -37,16 +37,16 @@ export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: Breadcrum
       <div className="flex-1 mx-8">
         <div className="flex items-center justify-center gap-6">
           {/* Home */}
-          <Link 
-            href="/" 
+          <Link
+            href="/"
             className="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors px-3 py-2 rounded-md hover:bg-gray-100"
           >
             Home
           </Link>
 
           {/* Berita */}
-          <Link 
-            href="/berita" 
+          <Link
+            href="/berita"
             className="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors px-3 py-2 rounded-md hover:bg-gray-100"
           >
             Berita
@@ -54,7 +54,7 @@ export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: Breadcrum
 
           {/* Dropdown Pengajuan */}
           <div className="relative">
-            <button 
+            <button
               className="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors px-3 py-2 rounded-md hover:bg-gray-100 flex items-center gap-1"
               onClick={() => {
                 setIsPengajuanDropdownOpen(!isPengajuanDropdownOpen);
@@ -67,7 +67,7 @@ export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: Breadcrum
             {isPengajuanDropdownOpen && (
               <div className="absolute top-full left-0 mt-1 w-64 bg-white border border-gray-200 rounded-md shadow-lg z-50">
                 <div className="py-2">
-                  <Link href="/pengajuan/usulan" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-blue-600">Usulan</Link>
+                  <Link href="/pengajuan/Index" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-blue-600">Usulan</Link>
                   <Link href="/pengajuan/perbaikan" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-blue-600">Perbaikan</Link>
                   <Link href="/pengajuan/laporan-kemajuan" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-blue-600">Laporan Kemajuan</Link>
                   <Link href="/pengajuan/catatan-harian" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-blue-600">Catatan Harian</Link>
@@ -81,7 +81,7 @@ export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: Breadcrum
 
           {/* Dropdown Pengabdian */}
           <div className="relative">
-            <button 
+            <button
               className="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors px-3 py-2 rounded-md hover:bg-gray-100 flex items-center gap-1"
               onClick={() => {
                 setIsPengabdianDropdownOpen(!isPengabdianDropdownOpen);
@@ -108,7 +108,7 @@ export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: Breadcrum
 
           {/* Dropdown Admin */}
           <div className="relative">
-            <button 
+            <button
               className="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors px-3 py-2 rounded-md hover:bg-gray-100 flex items-center gap-1"
               onClick={() => {
                 setIsAdminDropdownOpen(!isAdminDropdownOpen);
@@ -152,7 +152,7 @@ export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: Breadcrum
 
         {/* User Dropdown */}
         <div className="relative">
-          <div 
+          <div
             className="flex items-center gap-3 p-2 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors border border-gray-200"
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
           >
@@ -163,13 +163,13 @@ export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: Breadcrum
               <p className="text-sm font-medium text-gray-900 truncate">Admin User</p>
               <p className="text-xs text-gray-500 truncate">Super Administrator</p>
             </div>
-            <svg 
+            <svg
               className={cn(
                 "w-4 h-4 text-gray-500 transition-transform",
                 isDropdownOpen && "rotate-180"
-              )} 
-              fill="none" 
-              stroke="currentColor" 
+              )}
+              fill="none"
+              stroke="currentColor"
               viewBox="0 0 24 24"
             >
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -193,9 +193,9 @@ export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: Breadcrum
                   Pengaturan
                 </Link>
                 <div className="h-px bg-gray-200 my-1"></div>
-                <Link 
-                  href="/logout" 
-                  method="post" 
+                <Link
+                  href="/logout"
+                  method="post"
                   as="button"
                   className="flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 hover:text-red-700 w-full text-left"
                 >

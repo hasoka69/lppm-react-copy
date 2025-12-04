@@ -1,5 +1,4 @@
 <?php
-// app/Http/Controllers/UsulanPenelitianController.php
 
 namespace App\Http\Controllers;
 
@@ -13,22 +12,34 @@ use Inertia\Inertia;
 class UsulanPenelitianController extends Controller
 {
     /**
-     * Tampilkan halaman index (daftar usulan)
+     * Tampilkan daftar usulan
      */
     public function index()
     {
-        $usulan = UsulanPenelitian::with(['ketua', 'anggotaDosen'])
-            ->where('user_id', Auth::id())
-            ->latest()
-            ->get();
+        $user = Auth::user();
 
-        return Inertia::render('pengajuan/Index', [
-            'usulanList' => $usulan,
+        $usulanList = UsulanPenelitian::where('user_id', $user->id)
+            ->latest()
+            ->get()
+            ->map(fn($u, $i) => [
+                'no' => $i + 1,
+                'id' => $u->id,
+                'skema' => $u->skema,
+                'judul' => $u->judul,
+                'tahun_pelaksanaan' => $u->tahun_pelaksanaan,
+                'makro_riset' => $u->makro_riset,
+                'peran' => $u->peran,
+                'status' => $u->status,
+            ]);
+
+        return Inertia::render('pengajuan/steps/page-usulan', [
+            'usulanList' => $usulanList,
         ]);
     }
 
+
     /**
-     * Simpan draft usulan (step 1)
+     * Simpan draft step 1
      */
     public function storeDraft(Request $request)
     {
@@ -38,7 +49,17 @@ class UsulanPenelitianController extends Controller
             'target_akhir_tkt' => 'nullable|integer|min:1|max:9',
             'kelompok_skema' => 'nullable|string',
             'ruang_lingkup' => 'nullable|string',
-            // ... tambahkan validasi lainnya
+            'kategori_sbk' => 'nullable|string',
+            'bidang_fokus' => 'nullable|string',
+            'tema_penelitian' => 'nullable|string',
+            'topik_penelitian' => 'nullable|string',
+            'rumpun_ilmu_1' => 'nullable|string',
+            'rumpun_ilmu_2' => 'nullable|string',
+            'rumpun_ilmu_3' => 'nullable|string',
+            'prioritas_riset' => 'nullable|string',
+            'tahun_pertama' => 'nullable|integer',
+            'lama_kegiatan' => 'nullable|integer',
+
         ]);
 
         try {
@@ -52,21 +73,27 @@ class UsulanPenelitianController extends Controller
 
             DB::commit();
 
-            return back()->with('success', 'Draft berhasil disimpan!');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return back()->with('error', 'Gagal menyimpan draft: ' . $e->getMessage());
-        }
+            // Kirim usulanId via flash supaya React tahu
+        return back()->with([
+            'success' => 'Draft berhasil disimpan!',
+            'usulanId' => $usulan->id,
+        ]);
+
+    } catch (\Exception $e) {
+        DB::rollBack();
+        return back()->with('error', 'Gagal menyimpan draft: ' . $e->getMessage());
     }
+}
+    
+
 
     /**
-     * Update usulan (untuk navigasi antar step)
+     * Update navigasi antar step
      */
     public function update(Request $request, UsulanPenelitian $usulan)
     {
-        // Cek authorization
         if ($usulan->user_id !== Auth::id()) {
-            abort(403, 'Unauthorized');
+            abort(403);
         }
 
         $validated = $request->validate([
@@ -76,14 +103,13 @@ class UsulanPenelitianController extends Controller
             'kelompok_makro_riset' => 'nullable|string',
             'rab_bahan' => 'nullable|array',
             'rab_pengumpulan_data' => 'nullable|array',
-            // ... validasi lainnya
+
         ]);
 
         try {
-            // Hitung total anggaran jika ada RAB
             if (isset($validated['rab_bahan']) || isset($validated['rab_pengumpulan_data'])) {
                 $totalBahan = collect($validated['rab_bahan'] ?? [])->sum('total');
-                $totalData = collect($validated['rab_pengumpulan_data'] ?? [])->sum('total');
+                $totalData  = collect($validated['rab_pengumpulan_data'] ?? [])->sum('total');
                 $validated['total_anggaran'] = $totalBahan + $totalData;
             }
 
@@ -95,22 +121,21 @@ class UsulanPenelitianController extends Controller
         }
     }
 
+
     /**
      * Upload file substansi
      */
     public function uploadSubstansi(Request $request, UsulanPenelitian $usulan)
     {
         $request->validate([
-            'file_substansi' => 'required|file|mimes:pdf,doc,docx|max:10240', // max 10MB
+            'file_substansi' => 'required|file|mimes:pdf,doc,docx|max:10240',
         ]);
 
         try {
-            // Hapus file lama jika ada
             if ($usulan->file_substansi) {
-                Storage::delete($usulan->file_substansi);
+                Storage::disk('public')->delete($usulan->file_substansi);
             }
 
-            // Upload file baru
             $path = $request->file('file_substansi')->store('substansi', 'public');
 
             $usulan->update(['file_substansi' => $path]);
@@ -121,17 +146,16 @@ class UsulanPenelitianController extends Controller
         }
     }
 
+
     /**
-     * Submit final usulan (dari draft ke submitted)
+     * Submit final
      */
     public function submit(UsulanPenelitian $usulan)
     {
-        // Cek authorization
         if ($usulan->user_id !== Auth::id()) {
             abort(403);
         }
 
-        // Validasi: pastikan data lengkap
         if (!$usulan->judul || !$usulan->kelompok_skema) {
             return back()->with('error', 'Data usulan belum lengkap!');
         }
@@ -139,15 +163,24 @@ class UsulanPenelitianController extends Controller
         try {
             $usulan->update(['status' => 'submitted']);
 
-            // TODO: Kirim notifikasi ke reviewer/admin
-
-            return redirect()
-                ->route('pengajuan.index')
+            return redirect()->route('pengajuan.index')
                 ->with('success', 'Usulan berhasil diajukan!');
         } catch (\Exception $e) {
             return back()->with('error', 'Gagal mengajukan usulan: ' . $e->getMessage());
         }
     }
+
+
+    public function edit($id)
+{
+    $usulan = UsulanPenelitian::findOrFail($id);
+
+    return Inertia::render('pengajuan/steps/page-identitas-1', [
+        'usulanId' => $usulan->id,
+        'usulan' => $usulan
+    ]);
+}
+
 
     /**
      * Hapus usulan
@@ -159,9 +192,8 @@ class UsulanPenelitianController extends Controller
         }
 
         try {
-            // Hapus file jika ada
             if ($usulan->file_substansi) {
-                Storage::delete($usulan->file_substansi);
+                Storage::disk('public')->delete($usulan->file_substansi);
             }
 
             $usulan->delete();
@@ -170,5 +202,41 @@ class UsulanPenelitianController extends Controller
         } catch (\Exception $e) {
             return back()->with('error', 'Gagal menghapus usulan: ' . $e->getMessage());
         }
+    }
+
+
+    /**
+     * Halaman Substansi (GET)
+     */
+    public function pageSubstansi($id)
+    {
+        $usulan = UsulanPenelitian::findOrFail($id);
+
+        if ($usulan->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        $makroRiset = [
+            ['value' => 'teknologi', 'label' => 'Teknologi Tinggi'],
+            ['value' => 'sains', 'label' => 'Sains Dasar'],
+            ['value' => 'sosial', 'label' => 'Sosial Humaniora'],
+        ];
+
+        $luaranTarget = [
+            [
+                'tahun' => 1,
+                'kategori' => 'Artikel di jurnal',
+                'luaran' => 'Artikel di jurnal bereputasi',
+                'status' => 'Accepted/Published',
+                'keterangan' => 'ajurnal.asaindo.ac.id',
+            ]
+        ];
+
+        return Inertia::render('pengajuan/steps/page-substansi-2', [
+            'usulan'         => $usulan,
+            'makroRisetList' => $makroRiset,
+            'luaranList'     => $luaranTarget,
+            'substansi'      => $usulan->file_substansi,
+        ]);
     }
 }
