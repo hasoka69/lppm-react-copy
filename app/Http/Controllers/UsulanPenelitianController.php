@@ -1,4 +1,5 @@
 <?php
+//app/Http/Controllers/UsulanPenelitianController.php
 
 namespace App\Http\Controllers;
 
@@ -24,22 +25,25 @@ class UsulanPenelitianController extends Controller
             ->map(fn($u, $i) => [
                 'no' => $i + 1,
                 'id' => $u->id,
-                'skema' => $u->skema,
+                'skema' => $u->kelompok_skema ?? 'N/A',
                 'judul' => $u->judul,
-                'tahun_pelaksanaan' => $u->tahun_pelaksanaan,
-                'makro_riset' => $u->makro_riset,
-                'peran' => $u->peran,
+                'tahun_pelaksanaan' => $u->tahun_pertama ?? date('Y'),
+                'makro_riset' => $u->kelompok_makro_riset ?? 'N/A',
+                'peran' => 'Ketua', // hardcoded, sesuaikan jika ada kolom peran
                 'status' => $u->status,
             ]);
 
-        return Inertia::render('pengajuan/steps/page-usulan', [
+        // Ambil data master untuk dropdown
+        $masterData = $this->getMasterData();
+
+        return Inertia::render('pengajuan/Index', [
             'usulanList' => $usulanList,
+            ...$masterData,
         ]);
     }
 
-
     /**
-     * Simpan draft step 1
+     * Simpan usulan sebagai draft
      */
     public function storeDraft(Request $request)
     {
@@ -59,7 +63,6 @@ class UsulanPenelitianController extends Controller
             'prioritas_riset' => 'nullable|string',
             'tahun_pertama' => 'nullable|integer',
             'lama_kegiatan' => 'nullable|integer',
-
         ]);
 
         try {
@@ -73,22 +76,18 @@ class UsulanPenelitianController extends Controller
 
             DB::commit();
 
-            // Kirim usulanId via flash supaya React tahu
-        return back()->with([
-            'success' => 'Draft berhasil disimpan!',
-            'usulanId' => $usulan->id,
-        ]);
-
-    } catch (\Exception $e) {
-        DB::rollBack();
-        return back()->with('error', 'Gagal menyimpan draft: ' . $e->getMessage());
+            return back()->with([
+                'success' => 'Draft berhasil disimpan!',
+                'usulanId' => $usulan->id,
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Gagal menyimpan draft: ' . $e->getMessage());
+        }
     }
-}
-    
-
 
     /**
-     * Update navigasi antar step
+     * Update usulan (navigasi antar step)
      */
     public function update(Request $request, UsulanPenelitian $usulan)
     {
@@ -100,10 +99,21 @@ class UsulanPenelitianController extends Controller
             'judul' => 'sometimes|required|string|max:500',
             'tkt_saat_ini' => 'nullable|integer',
             'target_akhir_tkt' => 'nullable|integer',
+            'kelompok_skema' => 'nullable|string',
+            'ruang_lingkup' => 'nullable|string',
+            'kategori_sbk' => 'nullable|string',
+            'bidang_fokus' => 'nullable|string',
+            'tema_penelitian' => 'nullable|string',
+            'topik_penelitian' => 'nullable|string',
+            'rumpun_ilmu_1' => 'nullable|string',
+            'rumpun_ilmu_2' => 'nullable|string',
+            'rumpun_ilmu_3' => 'nullable|string',
+            'prioritas_riset' => 'nullable|string',
+            'tahun_pertama' => 'nullable|integer',
+            'lama_kegiatan' => 'nullable|integer',
             'kelompok_makro_riset' => 'nullable|string',
             'rab_bahan' => 'nullable|array',
             'rab_pengumpulan_data' => 'nullable|array',
-
         ]);
 
         try {
@@ -121,6 +131,23 @@ class UsulanPenelitianController extends Controller
         }
     }
 
+    /**
+     * Edit usulan (redirect ke form dengan data)
+     */
+    public function edit($id)
+    {
+        $usulan = UsulanPenelitian::where('user_id', Auth::id())
+            ->findOrFail($id);
+
+        $masterData = $this->getMasterData();
+
+        return Inertia::render('pengajuan/Identitas', [
+            'usulanId' => $usulan->id,
+            'usulan' => $usulan,
+            'editMode' => true,
+            ...$masterData,
+        ]);
+    }
 
     /**
      * Upload file substansi
@@ -146,7 +173,6 @@ class UsulanPenelitianController extends Controller
         }
     }
 
-
     /**
      * Submit final
      */
@@ -170,18 +196,6 @@ class UsulanPenelitianController extends Controller
         }
     }
 
-
-    public function edit($id)
-{
-    $usulan = UsulanPenelitian::findOrFail($id);
-
-    return Inertia::render('pengajuan/steps/page-identitas-1', [
-        'usulanId' => $usulan->id,
-        'usulan' => $usulan
-    ]);
-}
-
-
     /**
      * Hapus usulan
      */
@@ -204,39 +218,22 @@ class UsulanPenelitianController extends Controller
         }
     }
 
-
     /**
-     * Halaman Substansi (GET)
+     * Helper: Ambil data master untuk dropdown
      */
-    public function pageSubstansi($id)
+    private function getMasterData()
     {
-        $usulan = UsulanPenelitian::findOrFail($id);
-
-        if ($usulan->user_id !== Auth::id()) {
-            abort(403);
-        }
-
-        $makroRiset = [
-            ['value' => 'teknologi', 'label' => 'Teknologi Tinggi'],
-            ['value' => 'sains', 'label' => 'Sains Dasar'],
-            ['value' => 'sosial', 'label' => 'Sosial Humaniora'],
+        return [
+            'kelompokSkemaList' => DB::table('kelompok_skema')->where('aktif', true)->get(),
+            'ruangLingkupList' => DB::table('ruang_lingkup')->where('aktif', true)->get(),
+            'kategoriSbkList' => DB::table('kategori_sbk')->where('aktif', true)->get(),
+            'bidangFokusList' => DB::table('bidang_fokus')->where('aktif', true)->get(),
+            'temaPenelitianList' => DB::table('tema_penelitian')->where('aktif', true)->get(),
+            'topikPenelitianList' => DB::table('topik_penelitian')->where('aktif', true)->get(),
+            'rumpunIlmuLevel1List' => DB::table('rumpun_ilmu_level1')->where('aktif', true)->get(),
+            'rumpunIlmuLevel2List' => DB::table('rumpun_ilmu_level2')->where('aktif', true)->get(),
+            'rumpunIlmuLevel3List' => DB::table('rumpun_ilmu_level3')->where('aktif', true)->get(),
+            'prioritasRisetList' => DB::table('prioritas_riset')->where('aktif', true)->get(),
         ];
-
-        $luaranTarget = [
-            [
-                'tahun' => 1,
-                'kategori' => 'Artikel di jurnal',
-                'luaran' => 'Artikel di jurnal bereputasi',
-                'status' => 'Accepted/Published',
-                'keterangan' => 'ajurnal.asaindo.ac.id',
-            ]
-        ];
-
-        return Inertia::render('pengajuan/steps/page-substansi-2', [
-            'usulan'         => $usulan,
-            'makroRisetList' => $makroRiset,
-            'luaranList'     => $luaranTarget,
-            'substansi'      => $usulan->file_substansi,
-        ]);
     }
 }
