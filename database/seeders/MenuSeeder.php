@@ -158,8 +158,5 @@ class MenuSeeder extends Seeder
         foreach ($permissions as $permName) {
             Permission::firstOrCreate(['name' => $permName]);
         }
-
-        $role = Role::firstOrCreate(['name' => 'user']);
-        $role->givePermissionTo('dashboard-view');
     }
 }

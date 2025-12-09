@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useForm } from '@inertiajs/react';
 import styles from '../../../../css/pengajuan.module.css';
-
+import IdentitasAnggotaPengajuan from '../../../components/Pengajuan/IdentityAnggota';
 interface UsulanData {
   judul: string;
   tkt_saat_ini: number | string;
@@ -325,6 +325,8 @@ const PageIdentitas: React.FC<PageIdentitasProps> = ({
             </div>
           </div>
         </div>
+
+        <div><IdentitasAnggotaPengajuan></IdentitasAnggotaPengajuan></div>
 
         {/* Tombol aksi */}
         <div className={styles.actionContainer}>

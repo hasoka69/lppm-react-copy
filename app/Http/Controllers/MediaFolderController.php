@@ -11,40 +11,36 @@ class MediaFolderController extends Controller
 {
     use AuthorizesRequests;
 
+    // Display the list of folders and their files
     public function index(Request $request)
     {
         $user = $request->user();
         $folderId = $request->input('folder_id');
 
-        // Ambil semua folder
+        // Retrieve all folders for the user
         $folders = $user->mediaFolders()->orderBy('name')->get();
 
-        // Pastikan folder valid
-        $currentFolder = null;
-        if ($folderId) {
-            $currentFolder = $user->mediaFolders()->find($folderId);
-            if (!$currentFolder) {
-                return redirect('/files');
-            }
+        // Retrieve the current folder if the folderId exists
+        $currentFolder = $folderId ? $user->mediaFolders()->find($folderId) : null;
+
+        if ($folderId && !$currentFolder) {
+            return redirect('/files');
         }
 
-        // Ambil file sesuai folder
+        // Retrieve files based on folderId
         $files = $user->media()
             ->where('collection_name', 'files')
             ->when($folderId, function ($query) use ($folderId) {
-                $query->whereRaw("JSON_UNQUOTE(JSON_EXTRACT(custom_properties, '$.folder_id')) = ?", [(string)$folderId]);
+                $query->whereJsonContains('custom_properties->folder_id', (string) $folderId);
             }, function ($query) {
-                $query->where(function ($q) {
-                    $q->whereNull('custom_properties->folder_id')
-                        ->orWhereRaw("JSON_EXTRACT(custom_properties, '$.folder_id') IS NULL");
-                });
+                $query->whereNull('custom_properties->folder_id');
             })
             ->get();
 
         return Inertia::render('files/Index', [
             'folders' => $folders,
             'currentFolderId' => $folderId,
-            'currentFolder' => $currentFolder, // wajib!
+            'currentFolder' => $currentFolder, // ensure this is always set
             'files' => $files->map(fn($media) => [
                 'id' => $media->id,
                 'name' => $media->name,
@@ -56,6 +52,7 @@ class MediaFolderController extends Controller
         ]);
     }
 
+    // Store a new folder
     public function store(Request $request)
     {
         $request->validate([
@@ -63,7 +60,7 @@ class MediaFolderController extends Controller
             'parent_id' => 'nullable|exists:media_folders,id',
         ]);
 
-        $request->user()->mediaFolders()->create([
+        $folder = $request->user()->mediaFolders()->create([
             'name' => $request->name,
             'parent_id' => $request->parent_id,
         ]);
@@ -71,28 +68,30 @@ class MediaFolderController extends Controller
         return back()->with('success', 'Folder berhasil dibuat.');
     }
 
+    // Destroy a folder and its files
     public function destroy(MediaFolder $medium)
     {
         $folder = $medium;
         $user = $folder->user;
 
-        // 🔁 Hapus semua file dalam folder ini
+        // Delete all files inside the folder
         $files = $user->media()
             ->where('collection_name', 'files')
-            ->whereRaw("JSON_UNQUOTE(JSON_EXTRACT(custom_properties, '$.folder_id')) = ?", [(string)$folder->id])
+            ->whereJsonContains('custom_properties->folder_id', (string)$folder->id)
             ->get();
 
         foreach ($files as $file) {
+            // You can also delete files from storage here if needed
             $file->delete();
         }
 
-        // 🔁 Hapus subfolder langsung (1 level)
+        // Delete all direct subfolders of the current folder
         $childFolders = $user->mediaFolders()->where('parent_id', $folder->id)->get();
         foreach ($childFolders as $child) {
             $child->delete();
         }
 
-        // 🗑️ Hapus folder utama
+        // Delete the main folder itself
         $folder->delete();
 
         return redirect('/files')->with('success', 'Folder berhasil dihapus.');

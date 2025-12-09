@@ -28,6 +28,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Store Draft - Simpan usulan baru sebagai draft
         Route::post('/draft', [UsulanPenelitianController::class, 'storeDraft'])
             ->name('draft');
+
+            // Edit Usulan
+        Route::get('/{usulan}/edit', [UsulanPenelitianController::class, 'edit'])
+        ->name('edit');
         
         // Update - Update usulan per step
         Route::put('/{usulan}', [UsulanPenelitianController::class, 'update'])
