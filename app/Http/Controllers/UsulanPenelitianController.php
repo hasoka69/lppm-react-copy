@@ -49,7 +49,7 @@ class UsulanPenelitianController extends Controller
     public function storeDraft(Request $request)
     {
         $validated = $request->validate([
-            'judul' => 'required|string|max:500',
+            'judul' => 'nullable|string|max:500',
             'tkt_saat_ini' => 'nullable|integer|min:1|max:9',
             'target_akhir_tkt' => 'nullable|integer|min:1|max:9',
             'kelompok_skema' => 'nullable|string',
