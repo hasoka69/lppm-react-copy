@@ -22,6 +22,7 @@ interface PageProps extends InertiaPageProps {
 interface PageUsulanProps {
   onTambahUsulan?: () => void;
   onEditUsulan?: (usulan: Usulan) => void;
+  usulanList?: Usulan[]; // Optional - reads from usePage if not provided
 }
 
 const PageUsulan: React.FC<PageUsulanProps> = ({ onTambahUsulan, onEditUsulan }) => {

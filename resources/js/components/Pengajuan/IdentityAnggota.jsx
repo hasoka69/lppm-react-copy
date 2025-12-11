@@ -457,4 +457,4 @@ const IdentityAnggota = ({ usulanId, onCreateDraft }) => {
     );
 };
 
-export default IdentitasAnggotaPengajuan;
+export default IdentityAnggota;

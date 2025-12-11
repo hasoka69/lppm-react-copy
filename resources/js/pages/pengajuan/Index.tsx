@@ -37,7 +37,7 @@ type ActiveView = 'daftar' | 'pengajuan';
 
 const PengajuanIndex = () => {
     const { props } = usePage();
-    const usulanList: Usulan[] = props.usulanList || [];
+    const usulanList: Usulan[] = (props.usulanList as Usulan[]) || [];
 
     const [activeView, setActiveView] = useState<ActiveView>('daftar');
     const [activeTab, setActiveTab] = useState<'daftar' | 'pengajuan' | 'riwayat' | 'panduan'>('daftar');

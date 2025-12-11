@@ -26,7 +26,7 @@ interface PageIdentitasProps {
   onSelanjutnya?: () => void;
   onTutupForm?: () => void;
   usulanId?: number;
-  usulan?: UsulanData; // data draft jika ada
+  usulan?: Partial<UsulanData>; // data draft jika ada (optional fields)
 }
 
 const PageIdentitas: React.FC<PageIdentitasProps> = ({
