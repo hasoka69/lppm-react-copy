@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useForm } from '@inertiajs/react';
+import axios from 'axios';
 import styles from '../../../../css/pengajuan.module.css';
 import IdentitasAnggotaPengajuan from '../../../components/Pengajuan/IdentityAnggota';
 
@@ -80,33 +81,43 @@ const PageIdentitas: React.FC<PageIdentitasProps> = ({
 
   // Auto-create draft when needed (for anggota component)
   const ensureDraftExists = async (): Promise<number | null> => {
-    return new Promise<number | null>((resolve) => {
-      if (currentUsulanId) {
-        console.log('Draft already exists:', currentUsulanId);
-        resolve(currentUsulanId);
-        return;
-      }
+    if (currentUsulanId) {
+      console.log('Draft already exists:', currentUsulanId);
+      return currentUsulanId;
+    }
 
-      console.log('Creating draft via ensureDraftExists...');
-      post('/pengajuan/draft', {
-        preserveScroll: true,
-        onSuccess: (page) => {
-          const id = (page.props.flash as Record<string, unknown>)?.usulanId as number | undefined;
-          console.log('Draft created with ID:', id);
-          if (id) {
-            setCurrentUsulanId(id);
-            resolve(id);
-          } else {
-            console.warn('No usulanId in response');
-            resolve(null);
-          }
-        },
-        onError: () => {
-          console.error('Failed to create draft');
-          resolve(null);
+    console.log('Creating draft via ensureDraftExists...');
+    try {
+      // Use axios directly to create draft and get response with usulanId
+      const response = await axios.post('/pengajuan/draft', {}, {
+        headers: {
+          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
         },
       });
-    });
+
+      console.log('Draft created successfully');
+      console.log('Full response:', response);
+
+      // In Laravel Inertia, the response contains the props with flash data
+      // Extract usulanId from the response data
+      const responseData = response.data as Record<string, unknown>;
+      const propsData = responseData?.props as Record<string, unknown>;
+      const flashData = propsData?.flash as Record<string, unknown>;
+      const id = flashData?.usulanId as number | undefined;
+
+      console.log('Extracted ID from flash:', id);
+
+      if (id) {
+        setCurrentUsulanId(id);
+        return id;
+      } else {
+        console.warn('No usulanId in response. Flash data:', flashData);
+        return null;
+      }
+    } catch (error) {
+      console.error('Failed to create draft:', error);
+      return null;
+    }
   };
 
   // Selanjutnya (lanjut ke step berikutnya)
