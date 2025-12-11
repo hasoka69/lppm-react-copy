@@ -82,19 +82,28 @@ const PageIdentitas: React.FC<PageIdentitasProps> = ({
   const ensureDraftExists = async (): Promise<number | null> => {
     return new Promise<number | null>((resolve) => {
       if (currentUsulanId) {
+        console.log('Draft already exists:', currentUsulanId);
         resolve(currentUsulanId);
         return;
       }
+
+      console.log('Creating draft via ensureDraftExists...');
       post('/pengajuan/draft', {
         preserveScroll: true,
         onSuccess: (page) => {
           const id = (page.props.flash as Record<string, unknown>)?.usulanId as number | undefined;
+          console.log('Draft created with ID:', id);
           if (id) {
             setCurrentUsulanId(id);
             resolve(id);
           } else {
+            console.warn('No usulanId in response');
             resolve(null);
           }
+        },
+        onError: () => {
+          console.error('Failed to create draft');
+          resolve(null);
         },
       });
     });

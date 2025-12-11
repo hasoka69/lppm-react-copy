@@ -89,25 +89,32 @@ const IdentityAnggota = ({ usulanId, onCreateDraft }) => {
 
     // Handler Anggota Dosen
     const handleTambahDosen = async () => {
+        console.log('handleTambahDosen called, usulanId:', usulanId);
+        
         if (!usulanId && !onCreateDraft) {
-            alert('Error: Cannot create member');
+            alert('Error: Cannot create member - no draft creator available');
             return;
         }
 
         let validUsulanId = usulanId;
         if (!validUsulanId && onCreateDraft) {
             try {
+                console.log('Creating draft before adding member...');
                 validUsulanId = await onCreateDraft();
+                console.log('Draft created with ID:', validUsulanId);
+                
                 if (!validUsulanId) {
                     alert('Failed to create proposal draft');
                     return;
                 }
             } catch (error) {
+                console.error('Error creating draft:', error);
                 alert('Error creating draft: ' + error.message);
                 return;
             }
         }
 
+        console.log('Showing form for new member, usulanId:', validUsulanId);
         handleShowFormDosen();
     };
 
@@ -174,25 +181,32 @@ const IdentityAnggota = ({ usulanId, onCreateDraft }) => {
 
     // Handler Anggota Non-Dosen
     const handleTambahNonDosen = async () => {
+        console.log('handleTambahNonDosen called, usulanId:', usulanId);
+        
         if (!usulanId && !onCreateDraft) {
-            alert('Error: Cannot create member');
+            alert('Error: Cannot create member - no draft creator available');
             return;
         }
 
         let validUsulanId = usulanId;
         if (!validUsulanId && onCreateDraft) {
             try {
+                console.log('Creating draft before adding non-dosen member...');
                 validUsulanId = await onCreateDraft();
+                console.log('Draft created with ID:', validUsulanId);
+                
                 if (!validUsulanId) {
                     alert('Failed to create proposal draft');
                     return;
                 }
             } catch (error) {
+                console.error('Error creating draft:', error);
                 alert('Error creating draft: ' + error.message);
                 return;
             }
         }
 
+        console.log('Showing form for new non-dosen member, usulanId:', validUsulanId);
         handleShowFormNonDosen();
     };
 
