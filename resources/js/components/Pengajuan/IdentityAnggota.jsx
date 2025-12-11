@@ -90,7 +90,7 @@ const IdentityAnggota = ({ usulanId, onCreateDraft }) => {
     // Handler Anggota Dosen
     const handleTambahDosen = async () => {
         console.log('handleTambahDosen called, usulanId:', usulanId);
-        
+
         if (!usulanId && !onCreateDraft) {
             alert('Error: Cannot create member - no draft creator available');
             return;
@@ -102,7 +102,7 @@ const IdentityAnggota = ({ usulanId, onCreateDraft }) => {
                 console.log('Creating draft before adding member...');
                 validUsulanId = await onCreateDraft();
                 console.log('Draft created with ID:', validUsulanId);
-                
+
                 if (!validUsulanId) {
                     alert('Failed to create proposal draft');
                     return;
@@ -182,7 +182,7 @@ const IdentityAnggota = ({ usulanId, onCreateDraft }) => {
     // Handler Anggota Non-Dosen
     const handleTambahNonDosen = async () => {
         console.log('handleTambahNonDosen called, usulanId:', usulanId);
-        
+
         if (!usulanId && !onCreateDraft) {
             alert('Error: Cannot create member - no draft creator available');
             return;
@@ -194,7 +194,7 @@ const IdentityAnggota = ({ usulanId, onCreateDraft }) => {
                 console.log('Creating draft before adding non-dosen member...');
                 validUsulanId = await onCreateDraft();
                 console.log('Draft created with ID:', validUsulanId);
-                
+
                 if (!validUsulanId) {
                     alert('Failed to create proposal draft');
                     return;
@@ -466,6 +466,192 @@ const IdentityAnggota = ({ usulanId, onCreateDraft }) => {
                     </div>
                 </div>
             </div>
+
+            {/* MODAL FORM DOSEN */}
+            {formDosenVisible && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
+                        <h2 className="text-xl font-bold mb-4 text-gray-800">
+                            {editingDosenId ? 'Edit Anggota Dosen' : 'Tambah Anggota Dosen'}
+                        </h2>
+
+                        <div className="space-y-4">
+                            {/* NIDN */}
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">NIDN/NIDK</label>
+                                <input
+                                    type="text"
+                                    placeholder="Masukkan NIDN/NIDK"
+                                    value={formDosenData.nuptik}
+                                    onChange={(e) => setFormDosenData({ ...formDosenData, nuptik: e.target.value })}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                />
+                            </div>
+
+                            {/* Nama */}
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">Nama</label>
+                                <input
+                                    type="text"
+                                    placeholder="Masukkan nama lengkap"
+                                    value={formDosenData.nama}
+                                    onChange={(e) => setFormDosenData({ ...formDosenData, nama: e.target.value })}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                />
+                            </div>
+
+                            {/* Peran */}
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">Peran</label>
+                                <select
+                                    value={formDosenData.peran}
+                                    onChange={(e) => setFormDosenData({ ...formDosenData, peran: e.target.value })}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                >
+                                    <option value="anggota">Anggota</option>
+                                    <option value="ketua">Ketua</option>
+                                </select>
+                            </div>
+
+                            {/* Institusi */}
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">Institusi</label>
+                                <input
+                                    type="text"
+                                    placeholder="Masukkan institusi"
+                                    value={formDosenData.institusi}
+                                    onChange={(e) => setFormDosenData({ ...formDosenData, institusi: e.target.value })}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                />
+                            </div>
+
+                            {/* Tugas */}
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">Uraian Tugas</label>
+                                <textarea
+                                    placeholder="Deskripsikan tugas dalam penelitian"
+                                    rows={3}
+                                    value={formDosenData.tugas}
+                                    onChange={(e) => setFormDosenData({ ...formDosenData, tugas: e.target.value })}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="mt-6 flex justify-end gap-2">
+                            <button
+                                onClick={() => setFormDosenVisible(false)}
+                                type="button"
+                                className="px-4 py-2 border border-gray-300 rounded text-gray-700 hover:bg-gray-50 font-medium"
+                            >
+                                Batal
+                            </button>
+                            <button
+                                onClick={() => handleSaveDosen(usulanId)}
+                                disabled={loadingDosen}
+                                type="button"
+                                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 font-medium disabled:bg-gray-400"
+                            >
+                                {loadingDosen ? 'Menyimpan...' : 'Simpan'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* MODAL FORM NON-DOSEN */}
+            {formNonDosenVisible && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
+                        <h2 className="text-xl font-bold mb-4 text-gray-800">
+                            {editingNonDosenId ? 'Edit Anggota Non-Dosen' : 'Tambah Anggota Non-Dosen'}
+                        </h2>
+
+                        <div className="space-y-4">
+                            {/* Jenis */}
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">Jenis Anggota</label>
+                                <select
+                                    value={formNonDosenData.jenis}
+                                    onChange={(e) => setFormNonDosenData({ ...formNonDosenData, jenis: e.target.value })}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                >
+                                    <option value="">Pilih Jenis</option>
+                                    <option value="mahasiswa">Mahasiswa</option>
+                                    <option value="peneliti_lain">Peneliti Lain</option>
+                                    <option value="teknisi">Teknisi</option>
+                                </select>
+                            </div>
+
+                            {/* No Identitas */}
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">No Identitas (NIM/KTP)</label>
+                                <input
+                                    type="text"
+                                    placeholder="Masukkan NIM atau KTP"
+                                    value={formNonDosenData.identitasId}
+                                    onChange={(e) => setFormNonDosenData({ ...formNonDosenData, identitasId: e.target.value })}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                />
+                            </div>
+
+                            {/* Nama */}
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">Nama</label>
+                                <input
+                                    type="text"
+                                    placeholder="Masukkan nama lengkap"
+                                    value={formNonDosenData.nama}
+                                    onChange={(e) => setFormNonDosenData({ ...formNonDosenData, nama: e.target.value })}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                />
+                            </div>
+
+                            {/* Instansi */}
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">Instansi/Universitas</label>
+                                <input
+                                    type="text"
+                                    placeholder="Masukkan instansi"
+                                    value={formNonDosenData.instansi}
+                                    onChange={(e) => setFormNonDosenData({ ...formNonDosenData, instansi: e.target.value })}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                />
+                            </div>
+
+                            {/* Tugas */}
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">Uraian Tugas</label>
+                                <textarea
+                                    placeholder="Deskripsikan tugas dalam penelitian"
+                                    rows={3}
+                                    value={formNonDosenData.tugas}
+                                    onChange={(e) => setFormNonDosenData({ ...formNonDosenData, tugas: e.target.value })}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="mt-6 flex justify-end gap-2">
+                            <button
+                                onClick={() => setFormNonDosenVisible(false)}
+                                type="button"
+                                className="px-4 py-2 border border-gray-300 rounded text-gray-700 hover:bg-gray-50 font-medium"
+                            >
+                                Batal
+                            </button>
+                            <button
+                                onClick={() => handleSaveNonDosen(usulanId)}
+                                disabled={loadingNonDosen}
+                                type="button"
+                                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 font-medium disabled:bg-gray-400"
+                            >
+                                {loadingNonDosen ? 'Menyimpan...' : 'Simpan'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
         </div>
     );
