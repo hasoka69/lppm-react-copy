@@ -16,7 +16,6 @@ export interface Usulan {
 
 interface PageProps extends InertiaPageProps {
   usulanList: Usulan[];
-  [key: string]: any;
 }
 
 interface PageUsulanProps {

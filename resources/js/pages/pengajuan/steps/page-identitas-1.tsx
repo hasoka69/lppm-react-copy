@@ -78,6 +78,28 @@ const PageIdentitas: React.FC<PageIdentitasProps> = ({
     }
   };
 
+  // Auto-create draft when needed (for anggota component)
+  const ensureDraftExists = async (): Promise<number | null> => {
+    return new Promise<number | null>((resolve) => {
+      if (currentUsulanId) {
+        resolve(currentUsulanId);
+        return;
+      }
+      post('/pengajuan/draft', {
+        preserveScroll: true,
+        onSuccess: (page) => {
+          const id = (page.props.flash as Record<string, unknown>)?.usulanId as number | undefined;
+          if (id) {
+            setCurrentUsulanId(id);
+            resolve(id);
+          } else {
+            resolve(null);
+          }
+        },
+      });
+    });
+  };
+
   // Selanjutnya (lanjut ke step berikutnya)
   const handleNext = (e: React.FormEvent) => {
     e.preventDefault();
@@ -328,7 +350,10 @@ const PageIdentitas: React.FC<PageIdentitasProps> = ({
           </div>
         </div>
 
-        <div><IdentitasAnggotaPengajuan></IdentitasAnggotaPengajuan></div>
+        <IdentitasAnggotaPengajuan
+          usulanId={currentUsulanId}
+          onCreateDraft={ensureDraftExists}
+        />
 
         {/* Tombol aksi */}
         <div className={styles.actionContainer}>
