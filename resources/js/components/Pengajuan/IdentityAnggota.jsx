@@ -1,81 +1,260 @@
-import React, { useState } from 'react';
-// Import usePage dari Inertia untuk data user login
-// Di lingkungan asli Anda: import { usePage } from '@inertiajs/react';
+import React, { useState, useEffect } from 'react';
+import { usePage } from '@inertiajs/react';
+import axios from 'axios';
 
-// --- MOCK / SIMULASI INERTIA (Hapus bagian ini di kode asli Anda) ---
-const usePage = () => {
-    return {
-        props: {
-            auth: {
-                user: {
-                    id: '123-user-id',
-                    name: 'Agus Santoso, S.Kom., M.T.', // Nama User Login (Ketua)
-                    nidn: '0412345678',
-                    role: 'dosen'
-                }
-            }
-        }
-    };
-};
-// -------------------------------------------------------------------
+// CSRF-enabled axios instance
+const api = axios.create({
+    baseURL: '/',
+    headers: {
+        'X-Requested-With': 'XMLHttpRequest',
+    },
+});
 
-const IdentitasAnggotaPengajuan = () => {
-    // 1. Ambil data User Login (Ketua)
+api.interceptors.request.use((config) => {
+    const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+    if (token) {
+        config.headers['X-CSRF-TOKEN'] = token;
+    }
+    return config;
+});
+
+const IdentityAnggota = ({ usulanId, onCreateDraft }) => {
     const { props } = usePage();
     const userKetua = props.auth.user;
-
+    // 1. Ambil data User Login (Ketua)
     // 2. State untuk Uraian Tugas Ketua
     const [tugasKetua, setTugasKetua] = useState('');
 
-    // 3. Data Dummy Anggota Dosen
-    const [anggotaDosen, setAnggotaDosen] = useState([
-        {
-            id: 1,
-            nidn: '082981928',
-            nama: 'Alexxxx',
-            peran: 'Anggota Pengusul',
-            institusi: 'Politeknik Pertanian',
-            tugas: 'Analisis Data',
-            status: 'Menunggu' // Menunggu / Disetujui
+    // 3. State untuk Anggota Dosen (dari backend)
+    const [anggotaDosen, setAnggotaDosen] = useState([]);
+    const [loadingDosen, setLoadingDosen] = useState(false);
+    const [formDosenVisible, setFormDosenVisible] = useState(false);
+    const [editingDosenId, setEditingDosenId] = useState(null);
+    const [formDosenData, setFormDosenData] = useState({
+        nuptik: '',
+        nama: '',
+        peran: 'anggota',
+        institusi: '',
+        tugas: '',
+    });
+
+    // 4. State untuk Anggota Non-Dosen (dari backend)
+    const [anggotaNonDosen, setAnggotaNonDosen] = useState([]);
+    const [loadingNonDosen, setLoadingNonDosen] = useState(false);
+    const [formNonDosenVisible, setFormNonDosenVisible] = useState(false);
+    const [editingNonDosenId, setEditingNonDosenId] = useState(null);
+    const [formNonDosenData, setFormNonDosenData] = useState({
+        jenis_anggota: '',
+        no_identitas: '',
+        nama: '',
+        institusi: '',
+        tugas: '',
+    });
+
+    // Load data dari backend saat usulanId berubah
+    useEffect(() => {
+        if (usulanId) {
+            loadAnggotaDosen();
+            loadAnggotaNonDosen();
         }
-    ]);
+    }, [usulanId]);
 
-    // 4. Data Dummy Anggota Non-Dosen (Mahasiswa/Luar)
-    const [anggotaNonDosen, setAnggotaNonDosen] = useState([
-        {
-            id: 1,
-            jenis: 'Mahasiswa',
-            identitasId: '01363726816', // NIM atau KTP
-            nama: 'Budi (Mahasiswa)',
-            instansi: 'Politeknik Pertanian',
-            tugas: 'Survey Lapangan'
+    // Load anggota dosen dari backend
+    const loadAnggotaDosen = async () => {
+        if (!usulanId) return;
+        setLoadingDosen(true);
+        try {
+            const response = await api.get(`/pengajuan/${usulanId}/anggota-dosen`);
+            setAnggotaDosen(response.data.data || []);
+        } catch (error) {
+            console.error('Error loading dosen:', error);
+        } finally {
+            setLoadingDosen(false);
         }
-    ]);
-
-    // Handler Tambah Dummy (Simulasi tombol Tambah)
-    const handleTambahDosen = () => {
-        const newId = anggotaDosen.length + 1;
-        setAnggotaDosen([
-            ...anggotaDosen,
-            { id: newId, nidn: '', nama: 'Dosen Baru (Dummy)', peran: 'Anggota', institusi: '-', tugas: '', status: 'Draft' }
-        ]);
     };
 
-    const handleTambahNonDosen = () => {
-        const newId = anggotaNonDosen.length + 1;
-        setAnggotaNonDosen([
-            ...anggotaNonDosen,
-            { id: newId, jenis: '-', identitasId: '', nama: 'Anggota Baru (Dummy)', instansi: '-', tugas: '' }
-        ]);
+    // Load anggota non-dosen dari backend
+    const loadAnggotaNonDosen = async () => {
+        if (!usulanId) return;
+        setLoadingNonDosen(true);
+        try {
+            const response = await api.get(`/pengajuan/${usulanId}/anggota-non-dosen`);
+            setAnggotaNonDosen(response.data.data || []);
+        } catch (error) {
+            console.error('Error loading non-dosen:', error);
+        } finally {
+            setLoadingNonDosen(false);
+        }
     };
 
-    // Handler Hapus
-    const handleHapusDosen = (id) => {
-        setAnggotaDosen(anggotaDosen.filter(item => item.id !== id));
+    // Handler Anggota Dosen
+    const handleTambahDosen = async () => {
+        if (!usulanId && !onCreateDraft) {
+            alert('Error: Cannot create member');
+            return;
+        }
+
+        let validUsulanId = usulanId;
+        if (!validUsulanId && onCreateDraft) {
+            try {
+                validUsulanId = await onCreateDraft();
+                if (!validUsulanId) {
+                    alert('Failed to create proposal draft');
+                    return;
+                }
+            } catch (error) {
+                alert('Error creating draft: ' + error.message);
+                return;
+            }
+        }
+
+        handleShowFormDosen();
     };
 
-    const handleHapusNonDosen = (id) => {
-        setAnggotaNonDosen(anggotaNonDosen.filter(item => item.id !== id));
+    const handleShowFormDosen = () => {
+        setFormDosenData({
+            nuptik: '',
+            nama: '',
+            peran: 'anggota',
+            institusi: '',
+            tugas: '',
+        });
+        setEditingDosenId(null);
+        setFormDosenVisible(true);
+    };
+
+    const handleEditDosen = (anggota) => {
+        setFormDosenData({
+            nuptik: anggota.nuptik || '',
+            nama: anggota.nama || '',
+            peran: anggota.peran || 'anggota',
+            institusi: anggota.institusi || '',
+            tugas: anggota.tugas || '',
+        });
+        setEditingDosenId(anggota.id);
+        setFormDosenVisible(true);
+    };
+
+    const handleSaveDosenSubmit = async (e) => {
+        e?.preventDefault();
+        if (!usulanId) {
+            alert('Error: No proposal ID');
+            return;
+        }
+
+        try {
+            if (editingDosenId) {
+                // Update
+                await api.put(`/pengajuan/anggota-dosen/${editingDosenId}`, formDosenData);
+                alert('Dosen updated successfully');
+            } else {
+                // Create
+                await api.post(`/pengajuan/${usulanId}/anggota-dosen`, formDosenData);
+                alert('Dosen added successfully');
+            }
+            setFormDosenVisible(false);
+            loadAnggotaDosen();
+        } catch (error) {
+            const message = error.response?.data?.message || error.message;
+            alert('Error: ' + message);
+        }
+    };
+
+    const handleDeleteDosen = async (id) => {
+        if (!confirm('Delete this member?')) return;
+        try {
+            await api.delete(`/pengajuan/anggota-dosen/${id}`);
+            alert('Dosen deleted successfully');
+            loadAnggotaDosen();
+        } catch (error) {
+            const message = error.response?.data?.message || error.message;
+            alert('Error: ' + message);
+        }
+    };
+
+    // Handler Anggota Non-Dosen
+    const handleTambahNonDosen = async () => {
+        if (!usulanId && !onCreateDraft) {
+            alert('Error: Cannot create member');
+            return;
+        }
+
+        let validUsulanId = usulanId;
+        if (!validUsulanId && onCreateDraft) {
+            try {
+                validUsulanId = await onCreateDraft();
+                if (!validUsulanId) {
+                    alert('Failed to create proposal draft');
+                    return;
+                }
+            } catch (error) {
+                alert('Error creating draft: ' + error.message);
+                return;
+            }
+        }
+
+        handleShowFormNonDosen();
+    };
+
+    const handleShowFormNonDosen = () => {
+        setFormNonDosenData({
+            jenis_anggota: '',
+            no_identitas: '',
+            nama: '',
+            institusi: '',
+            tugas: '',
+        });
+        setEditingNonDosenId(null);
+        setFormNonDosenVisible(true);
+    };
+
+    const handleEditNonDosen = (anggota) => {
+        setFormNonDosenData({
+            jenis_anggota: anggota.jenis_anggota || '',
+            no_identitas: anggota.no_identitas || '',
+            nama: anggota.nama || '',
+            institusi: anggota.institusi || '',
+            tugas: anggota.tugas || '',
+        });
+        setEditingNonDosenId(anggota.id);
+        setFormNonDosenVisible(true);
+    };
+
+    const handleSaveNonDosenSubmit = async (e) => {
+        e?.preventDefault();
+        if (!usulanId) {
+            alert('Error: No proposal ID');
+            return;
+        }
+
+        try {
+            if (editingNonDosenId) {
+                // Update
+                await api.put(`/pengajuan/anggota-non-dosen/${editingNonDosenId}`, formNonDosenData);
+                alert('Non-dosen member updated successfully');
+            } else {
+                // Create
+                await api.post(`/pengajuan/${usulanId}/anggota-non-dosen`, formNonDosenData);
+                alert('Non-dosen member added successfully');
+            }
+            setFormNonDosenVisible(false);
+            loadAnggotaNonDosen();
+        } catch (error) {
+            const message = error.response?.data?.message || error.message;
+            alert('Error: ' + message);
+        }
+    };
+
+    const handleDeleteNonDosen = async (id) => {
+        if (!confirm('Delete this member?')) return;
+        try {
+            await api.delete(`/pengajuan/anggota-non-dosen/${id}`);
+            alert('Non-dosen member deleted successfully');
+            loadAnggotaNonDosen();
+        } catch (error) {
+            const message = error.response?.data?.message || error.message;
+            alert('Error: ' + message);
+        }
     };
 
     return (
@@ -168,15 +347,21 @@ const IdentitasAnggotaPengajuan = () => {
                                             </td>
                                             <td className="border border-gray-200 px-4 py-2 text-center">
                                                 <div className="flex justify-center gap-2">
-                                                    <button className="text-yellow-500 hover:text-yellow-600" title="Edit">
+                                                    <button 
+                                                        onClick={() => handleEditDosen(item)}
+                                                        className="text-yellow-500 hover:text-yellow-600" 
+                                                        title="Edit"
+                                                        type="button"
+                                                    >
                                                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                                                             <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
                                                         </svg>
                                                     </button>
                                                     <button
-                                                        onClick={() => handleHapusDosen(item.id)}
+                                                        onClick={() => handleDeleteDosen(item.id)}
                                                         className="text-red-500 hover:text-red-600"
                                                         title="Hapus"
+                                                        type="button"
                                                     >
                                                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                                                             <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm6 0a1 1 0 01-2 0v6a1 1 0 112 0V8z" clipRule="evenodd" />
@@ -237,15 +422,21 @@ const IdentitasAnggotaPengajuan = () => {
                                             </td>
                                             <td className="border border-gray-200 px-4 py-2 text-center">
                                                 <div className="flex justify-center gap-2">
-                                                    <button className="text-yellow-500 hover:text-yellow-600" title="Edit">
+                                                    <button 
+                                                        onClick={() => handleEditNonDosen(item)}
+                                                        className="text-yellow-500 hover:text-yellow-600" 
+                                                        title="Edit"
+                                                        type="button"
+                                                    >
                                                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                                                             <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
                                                         </svg>
                                                     </button>
                                                     <button
-                                                        onClick={() => handleHapusNonDosen(item.id)}
+                                                        onClick={() => handleDeleteNonDosen(item.id)}
                                                         className="text-red-500 hover:text-red-600"
                                                         title="Hapus"
+                                                        type="button"
                                                     >
                                                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                                                             <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm6 0a1 1 0 01-2 0v6a1 1 0 112 0V8z" clipRule="evenodd" />
