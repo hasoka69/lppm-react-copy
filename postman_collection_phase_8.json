@@ -1,0 +1,989 @@
+{
+    "info": {
+        "_postman_id": "pengajuan-penelitian-api-tests",
+        "name": "Pengajuan Penelitian API - Phase 8 Testing",
+        "description": "Complete test suite for Luaran & RAB endpoints\n\n**Created:** December 10, 2025\n**Total Requests:** 20+ test cases\n**Status:** Ready for execution\n\n## Setup Instructions:\n1. Import this collection into Postman\n2. Set up environment variables:\n   - {{base_url}}: http://localhost:8000\n   - {{usulan_id}}: 1 (update after creating proposal)\n   - {{csrf_token}}: Get from page source <meta name=\"csrf-token\">\n3. Login to the application in browser\n4. Run requests in sequence\n\n## Test Scenarios:\n- Luaran CRUD (GET, POST, PUT, DELETE)\n- RAB CRUD with auto-calculation\n- Error handling & validation\n- Authorization checks\n- Edge cases",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "Setup & Variables",
+            "description": "Environment setup - set these variables before testing",
+            "item": [
+                {
+                    "name": "Environment Variables Reference",
+                    "description": "Copy these into your Postman environment:\n\n| Variable | Value | Example |\n|---|---|---|\n| base_url | Your Laravel base URL | http://localhost:8000 |\n| usulan_id | ID of test proposal | 1 |\n| csrf_token | CSRF token from meta tag | abc123... |\n| luaran_id | ID of created luaran | 1 |\n| rab_id | ID of created RAB item | 1 |\n\n**How to get CSRF token:**\n1. Open browser DevTools (F12)\n2. Go to Application > Cookies > XSRF-TOKEN\n3. Copy the value\n4. Paste as {{csrf_token}}",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                ""
+                            ]
+                        },
+                        "description": "Not an actual request - just reference for setup"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "LUARAN - Endpoint Tests",
+            "description": "Tests for Luaran (Research Output) endpoints",
+            "item": [
+                {
+                    "name": "1.1 GET - List all Luaran items",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Status code is 200', function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test('Response has success flag', function () {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData).to.have.property('success');",
+                                    "    pm.expect(jsonData.success).to.equal(true);",
+                                    "});",
+                                    "",
+                                    "pm.test('Response has data array', function () {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData).to.have.property('data');",
+                                    "    pm.expect(jsonData.data).to.be.an('array');",
+                                    "});",
+                                    "",
+                                    "// Save first luaran_id if items exist",
+                                    "if (pm.response.json().data.length > 0) {",
+                                    "    pm.environment.set('luaran_id', pm.response.json().data[0].id);",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "X-CSRF-TOKEN",
+                                "value": "{{csrf_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/pengajuan/{{usulan_id}}/luaran",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "pengajuan",
+                                "{{usulan_id}}",
+                                "luaran"
+                            ]
+                        },
+                        "description": "Retrieve all Luaran items for a proposal\n\n**Expected:** 200 OK with array of Luaran objects"
+                    }
+                },
+                {
+                    "name": "1.2 POST - Create new Luaran (Valid)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Status code is 201 or 200', function () {",
+                                    "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                                    "});",
+                                    "",
+                                    "pm.test('Response contains created Luaran', function () {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData).to.have.property('data');",
+                                    "    pm.expect(jsonData.data).to.have.property('id');",
+                                    "    pm.expect(jsonData.data).to.have.property('tahun', 1);",
+                                    "    pm.expect(jsonData.data).to.have.property('kategori');",
+                                    "    pm.expect(jsonData.data).to.have.property('deskripsi');",
+                                    "    pm.expect(jsonData.data).to.have.property('status');",
+                                    "    ",
+                                    "    // Save for future tests",
+                                    "    pm.environment.set('luaran_id', jsonData.data.id);",
+                                    "});",
+                                    "",
+                                    "pm.test('Response contains success message', function () {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData).to.have.property('message');",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "X-CSRF-TOKEN",
+                                "value": "{{csrf_token}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"tahun\": 1,\n  \"kategori\": \"Artikel di jurnal\",\n  \"deskripsi\": \"Publikasi artikel di jurnal internasional bereputasi\",\n  \"status\": \"Rencana\",\n  \"keterangan\": \"Target Q4 2026\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/pengajuan/{{usulan_id}}/luaran",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "pengajuan",
+                                "{{usulan_id}}",
+                                "luaran"
+                            ]
+                        },
+                        "description": "Create a new Luaran item with valid data\n\n**Expected:** 201 Created (or 200 OK) with created object"
+                    }
+                },
+                {
+                    "name": "1.3 POST - Validation Error (Missing deskripsi)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Status code is 422 (Unprocessable Entity)', function () {",
+                                    "    pm.response.to.have.status(422);",
+                                    "});",
+                                    "",
+                                    "pm.test('Response contains validation errors', function () {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData).to.have.property('errors');",
+                                    "    pm.expect(jsonData.errors).to.have.property('deskripsi');",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "X-CSRF-TOKEN",
+                                "value": "{{csrf_token}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"tahun\": 1,\n  \"kategori\": \"Artikel di jurnal\",\n  \"status\": \"Rencana\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/pengajuan/{{usulan_id}}/luaran",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "pengajuan",
+                                "{{usulan_id}}",
+                                "luaran"
+                            ]
+                        },
+                        "description": "Test validation error when required field is missing\n\n**Expected:** 422 Unprocessable Entity with errors object"
+                    }
+                },
+                {
+                    "name": "1.4 POST - Validation Error (Invalid tahun)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": [
+                                "pm.test('Status code is 422', function () {",
+                                "    pm.response.to.have.status(422);",
+                                "});",
+                                "",
+                                "pm.test('Response contains tahun validation error', function () {",
+                                "    var jsonData = pm.response.json();",
+                                "    pm.expect(jsonData.errors).to.have.property('tahun');",
+                                "});"
+                            ]
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "X-CSRF-TOKEN",
+                                "value": "{{csrf_token}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"tahun\": 10,\n  \"kategori\": \"Artikel di jurnal\",\n  \"deskripsi\": \"Test invalid tahun\",\n  \"status\": \"Rencana\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/pengajuan/{{usulan_id}}/luaran",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "pengajuan",
+                                "{{usulan_id}}",
+                                "luaran"
+                            ]
+                        },
+                        "description": "Test validation error when tahun is out of range (should be 1-5)\n\n**Expected:** 422 with tahun validation error"
+                    }
+                },
+                {
+                    "name": "1.5 PUT - Update Luaran (Valid)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": [
+                                "pm.test('Status code is 200', function () {",
+                                "    pm.response.to.have.status(200);",
+                                "});",
+                                "",
+                                "pm.test('Response shows updated data', function () {",
+                                "    var jsonData = pm.response.json();",
+                                "    pm.expect(jsonData.data).to.have.property('tahun', 2);",
+                                "    pm.expect(jsonData.data).to.have.property('status', 'Dalam Proses');",
+                                "});"
+                            ]
+                        }
+                    ],
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "X-CSRF-TOKEN",
+                                "value": "{{csrf_token}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"tahun\": 2,\n  \"kategori\": \"Produk Terkomersial\",\n  \"deskripsi\": \"Produk teknologi yang sudah diregistrasi\",\n  \"status\": \"Dalam Proses\",\n  \"keterangan\": \"Sedang dalam proses registrasi paten\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/pengajuan/luaran/{{luaran_id}}",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "pengajuan",
+                                "luaran",
+                                "{{luaran_id}}"
+                            ]
+                        },
+                        "description": "Update an existing Luaran item\n\n**Expected:** 200 OK with updated object"
+                    }
+                },
+                {
+                    "name": "1.6 DELETE - Delete Luaran",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": [
+                                "pm.test('Status code is 200', function () {",
+                                "    pm.response.to.have.status(200);",
+                                "});",
+                                "",
+                                "pm.test('Response contains success message', function () {",
+                                "    var jsonData = pm.response.json();",
+                                "    pm.expect(jsonData).to.have.property('success', true);",
+                                "});"
+                            ]
+                        }
+                    ],
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "X-CSRF-TOKEN",
+                                "value": "{{csrf_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/pengajuan/luaran/{{luaran_id}}",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "pengajuan",
+                                "luaran",
+                                "{{luaran_id}}"
+                            ]
+                        },
+                        "description": "Delete a Luaran item\n\n**Expected:** 200 OK with success message"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "RAB - Endpoint Tests",
+            "description": "Tests for RAB (Budget Items) endpoints with auto-calculation",
+            "item": [
+                {
+                    "name": "2.1 GET - List RAB items with total",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": [
+                                "pm.test('Status code is 200', function () {",
+                                "    pm.response.to.have.status(200);",
+                                "});",
+                                "",
+                                "pm.test('Response includes total_anggaran', function () {",
+                                "    var jsonData = pm.response.json();",
+                                "    pm.expect(jsonData).to.have.property('total_anggaran');",
+                                "    pm.expect(jsonData).to.have.property('data');",
+                                "});",
+                                "",
+                                "// Save first RAB item ID if exists",
+                                "if (pm.response.json().data.length > 0) {",
+                                "    pm.environment.set('rab_id', pm.response.json().data[0].id);",
+                                "}"
+                            ]
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "X-CSRF-TOKEN",
+                                "value": "{{csrf_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/pengajuan/{{usulan_id}}/rab",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "pengajuan",
+                                "{{usulan_id}}",
+                                "rab"
+                            ]
+                        },
+                        "description": "Retrieve all RAB items with total budget calculation\n\n**Expected:** 200 OK with data array and total_anggaran"
+                    }
+                },
+                {
+                    "name": "2.2 POST - Create RAB item with auto-calculation",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": [
+                                "pm.test('Status code is 201 or 200', function () {",
+                                "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                                "});",
+                                "",
+                                "pm.test('Total is auto-calculated (volume * harga_satuan)', function () {",
+                                "    var jsonData = pm.response.json();",
+                                "    var expectedTotal = jsonData.data.volume * jsonData.data.harga_satuan;",
+                                "    pm.expect(jsonData.data.total).to.equal(expectedTotal);",
+                                "    console.log('✓ Auto-calculation verified: ' + jsonData.data.volume + ' × ' + jsonData.data.harga_satuan + ' = ' + jsonData.data.total);",
+                                "});",
+                                "",
+                                "pm.test('Response contains all required fields', function () {",
+                                "    var jsonData = pm.response.json();",
+                                "    pm.expect(jsonData.data).to.have.property('id');",
+                                "    pm.expect(jsonData.data).to.have.property('tipe');",
+                                "    pm.expect(jsonData.data).to.have.property('kategori');",
+                                "    pm.expect(jsonData.data).to.have.property('total');",
+                                "    pm.expect(jsonData.data).to.have.property('total_anggaran');",
+                                "    pm.environment.set('rab_id', jsonData.data.id);",
+                                "});"
+                            ]
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "X-CSRF-TOKEN",
+                                "value": "{{csrf_token}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"tipe\": \"bahan\",\n  \"kategori\": \"Peralatan\",\n  \"item\": \"Laptop\",\n  \"satuan\": \"unit\",\n  \"volume\": 2,\n  \"harga_satuan\": 15000000,\n  \"keterangan\": \"Untuk penelitian data processing\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/pengajuan/{{usulan_id}}/rab",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "pengajuan",
+                                "{{usulan_id}}",
+                                "rab"
+                            ]
+                        },
+                        "description": "Create new RAB item with auto-calculation\n\n**Key Test:** Verify total = volume × harga_satuan\n**Expected:** 201 Created with auto-calculated total"
+                    }
+                },
+                {
+                    "name": "2.3 POST - RAB Validation Error (Missing volume)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": [
+                                "pm.test('Status code is 422', function () {",
+                                "    pm.response.to.have.status(422);",
+                                "});",
+                                "",
+                                "pm.test('Response has volume error', function () {",
+                                "    var jsonData = pm.response.json();",
+                                "    pm.expect(jsonData.errors).to.have.property('volume');",
+                                "});"
+                            ]
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "X-CSRF-TOKEN",
+                                "value": "{{csrf_token}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"tipe\": \"bahan\",\n  \"kategori\": \"Peralatan\",\n  \"item\": \"Laptop\",\n  \"satuan\": \"unit\",\n  \"harga_satuan\": 15000000\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/pengajuan/{{usulan_id}}/rab",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "pengajuan",
+                                "{{usulan_id}}",
+                                "rab"
+                            ]
+                        },
+                        "description": "Test validation when volume is missing\n\n**Expected:** 422 with volume error"
+                    }
+                },
+                {
+                    "name": "2.4 POST - RAB Validation Error (Invalid tipe)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": [
+                                "pm.test('Status code is 422', function () {",
+                                "    pm.response.to.have.status(422);",
+                                "});",
+                                "",
+                                "pm.test('Response has tipe error', function () {",
+                                "    var jsonData = pm.response.json();",
+                                "    pm.expect(jsonData.errors).to.have.property('tipe');",
+                                "});"
+                            ]
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "X-CSRF-TOKEN",
+                                "value": "{{csrf_token}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"tipe\": \"invalid_type\",\n  \"kategori\": \"Peralatan\",\n  \"item\": \"Laptop\",\n  \"satuan\": \"unit\",\n  \"volume\": 2,\n  \"harga_satuan\": 15000000\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/pengajuan/{{usulan_id}}/rab",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "pengajuan",
+                                "{{usulan_id}}",
+                                "rab"
+                            ]
+                        },
+                        "description": "Test validation when tipe is invalid (should be 'bahan' or 'pengumpulan_data')\n\n**Expected:** 422 with tipe error"
+                    }
+                },
+                {
+                    "name": "2.5 PUT - Update RAB with recalculation",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": [
+                                "pm.test('Status code is 200', function () {",
+                                "    pm.response.to.have.status(200);",
+                                "});",
+                                "",
+                                "pm.test('Total is recalculated on update', function () {",
+                                "    var jsonData = pm.response.json();",
+                                "    var expectedTotal = jsonData.data.volume * jsonData.data.harga_satuan;",
+                                "    pm.expect(jsonData.data.total).to.equal(expectedTotal);",
+                                "    console.log('✓ Recalculation verified: ' + jsonData.data.volume + ' × ' + jsonData.data.harga_satuan + ' = ' + jsonData.data.total);",
+                                "});",
+                                "",
+                                "pm.test('Response shows updated values', function () {",
+                                "    var jsonData = pm.response.json();",
+                                "    pm.expect(jsonData.data.volume).to.equal(10);",
+                                "    pm.expect(jsonData.data.harga_satuan).to.equal(5000000);",
+                                "});"
+                            ]
+                        }
+                    ],
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "X-CSRF-TOKEN",
+                                "value": "{{csrf_token}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"tipe\": \"pengumpulan_data\",\n  \"kategori\": \"Survey Lapangan\",\n  \"item\": \"Honorarium Enumerator\",\n  \"satuan\": \"orang\",\n  \"volume\": 10,\n  \"harga_satuan\": 5000000,\n  \"keterangan\": \"Pembayaran enumerator survei lapangan\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/pengajuan/rab/{{rab_id}}",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "pengajuan",
+                                "rab",
+                                "{{rab_id}}"
+                            ]
+                        },
+                        "description": "Update RAB item and verify auto-recalculation\n\n**Key Test:** Before (2 × 15M = 30M) → After (10 × 5M = 50M)\n**Expected:** 200 OK with recalculated total"
+                    }
+                },
+                {
+                    "name": "2.6 DELETE - Delete RAB item",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": [
+                                "pm.test('Status code is 200', function () {",
+                                "    pm.response.to.have.status(200);",
+                                "});",
+                                "",
+                                "pm.test('Response includes updated total_anggaran', function () {",
+                                "    var jsonData = pm.response.json();",
+                                "    pm.expect(jsonData).to.have.property('total_anggaran');",
+                                "});"
+                            ]
+                        }
+                    ],
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "X-CSRF-TOKEN",
+                                "value": "{{csrf_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/pengajuan/rab/{{rab_id}}",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "pengajuan",
+                                "rab",
+                                "{{rab_id}}"
+                            ]
+                        },
+                        "description": "Delete a RAB item and update total budget\n\n**Expected:** 200 OK with updated total_anggaran"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Integration Tests",
+            "description": "Full workflow tests combining multiple operations",
+            "item": [
+                {
+                    "name": "Workflow A: Complete Luaran Cycle",
+                    "description": "Test complete Luaran lifecycle: Create → Read → Update → Delete",
+                    "item": [
+                        {
+                            "name": "A1: Create 3 Luaran items",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    },
+                                    {
+                                        "key": "X-CSRF-TOKEN",
+                                        "value": "{{csrf_token}}"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"tahun\": 1,\n  \"kategori\": \"Artikel di jurnal\",\n  \"deskripsi\": \"Publikasi di jurnal internasional\",\n  \"status\": \"Rencana\",\n  \"keterangan\": \"Q4 2026\"\n}"
+                                },
+                                "url": {
+                                    "raw": "{{base_url}}/pengajuan/{{usulan_id}}/luaran",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "pengajuan",
+                                        "{{usulan_id}}",
+                                        "luaran"
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            "name": "A2: Create item 2",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    },
+                                    {
+                                        "key": "X-CSRF-TOKEN",
+                                        "value": "{{csrf_token}}"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"tahun\": 2,\n  \"kategori\": \"Produk Terkomersial\",\n  \"deskripsi\": \"Produk teknologi terdaftar\",\n  \"status\": \"Rencana\"\n}"
+                                },
+                                "url": {
+                                    "raw": "{{base_url}}/pengajuan/{{usulan_id}}/luaran",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "pengajuan",
+                                        "{{usulan_id}}",
+                                        "luaran"
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            "name": "A3: List all Luaran (should have 2-3)",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "X-CSRF-TOKEN",
+                                        "value": "{{csrf_token}}"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{base_url}}/pengajuan/{{usulan_id}}/luaran",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "pengajuan",
+                                        "{{usulan_id}}",
+                                        "luaran"
+                                    ]
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Workflow B: Complete RAB Cycle with Totals",
+                    "description": "Test RAB operations with total budget validation",
+                    "item": [
+                        {
+                            "name": "B1: Create RAB Item 1",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    },
+                                    {
+                                        "key": "X-CSRF-TOKEN",
+                                        "value": "{{csrf_token}}"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"tipe\": \"bahan\",\n  \"kategori\": \"ATK\",\n  \"item\": \"Kertas A4\",\n  \"satuan\": \"rim\",\n  \"volume\": 5,\n  \"harga_satuan\": 50000,\n  \"keterangan\": \"Kertas untuk dokumentasi\"\n}"
+                                },
+                                "url": {
+                                    "raw": "{{base_url}}/pengajuan/{{usulan_id}}/rab",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "pengajuan",
+                                        "{{usulan_id}}",
+                                        "rab"
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            "name": "B2: Create RAB Item 2",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    },
+                                    {
+                                        "key": "X-CSRF-TOKEN",
+                                        "value": "{{csrf_token}}"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"tipe\": \"pengumpulan_data\",\n  \"kategori\": \"Honor\",\n  \"item\": \"Asisten Peneliti\",\n  \"satuan\": \"orang\",\n  \"volume\": 2,\n  \"harga_satuan\": 3000000,\n  \"keterangan\": \"Bayar asisten selama 6 bulan\"\n}"
+                                },
+                                "url": {
+                                    "raw": "{{base_url}}/pengajuan/{{usulan_id}}/rab",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "pengajuan",
+                                        "{{usulan_id}}",
+                                        "rab"
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            "name": "B3: GET all RAB items and verify total",
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": [
+                                        "pm.test('Total budget is calculated correctly', function () {",
+                                        "    var jsonData = pm.response.json();",
+                                        "    var calculatedTotal = 0;",
+                                        "    jsonData.data.forEach(function(item) {",
+                                        "        calculatedTotal += item.total;",
+                                        "    });",
+                                        "    pm.expect(jsonData.total_anggaran).to.equal(calculatedTotal);",
+                                        "    console.log('✓ Total verified: Rp ' + jsonData.total_anggaran.toLocaleString('id-ID'));",
+                                        "});"
+                                    ]
+                                }
+                            ],
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "X-CSRF-TOKEN",
+                                        "value": "{{csrf_token}}"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{base_url}}/pengajuan/{{usulan_id}}/rab",
+                                    "host": [
+                                        "{{base_url}}"
+                                    ],
+                                    "path": [
+                                        "pengajuan",
+                                        "{{usulan_id}}",
+                                        "rab"
+                                    ]
+                                }
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Error & Edge Cases",
+            "description": "Test error handling and edge cases",
+            "item": [
+                {
+                    "name": "E1: GET non-existent usulan (404)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": [
+                                "pm.test('Returns 404 for non-existent usulan', function () {",
+                                "    pm.response.to.have.status(404);",
+                                "});"
+                            ]
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "X-CSRF-TOKEN",
+                                "value": "{{csrf_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/pengajuan/99999/luaran",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "pengajuan",
+                                "99999",
+                                "luaran"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "E2: DELETE non-existent Luaran (404)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": [
+                                "pm.test('Returns 404 for non-existent Luaran', function () {",
+                                "    pm.response.to.have.status(404);",
+                                "});"
+                            ]
+                        }
+                    ],
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "X-CSRF-TOKEN",
+                                "value": "{{csrf_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/pengajuan/luaran/99999",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "pengajuan",
+                                "luaran",
+                                "99999"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "E3: Missing CSRF token (should fail or warn)",
+                    "description": "This request intentionally omits X-CSRF-TOKEN to test CSRF protection",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"tahun\": 1,\n  \"kategori\": \"Test\",\n  \"deskripsi\": \"Test\",\n  \"status\": \"Rencana\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/pengajuan/{{usulan_id}}/luaran",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "pengajuan",
+                                "{{usulan_id}}",
+                                "luaran"
+                            ]
+                        }
+                    }
+                }
+            ]
+        }
+    ]
+}

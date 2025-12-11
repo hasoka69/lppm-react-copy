@@ -7,6 +7,31 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * @property int $id
+ * @property int $user_id
+ * @property string $judul
+ * @property string|null $kelompok_skema
+ * @property string|null $file_substansi
+ * @property string $status
+ * @property array|null $rab_bahan
+ * @property array|null $rab_pengumpulan_data
+ * @property float|null $total_anggaran
+ * @property int|null $tkt_saat_ini
+ * @property int|null $target_akhir_tkt
+ * @property string|null $ruang_lingkup
+ * @property string|null $kategori_sbk
+ * @property string|null $bidang_fokus
+ * @property string|null $tema_penelitian
+ * @property string|null $topik_penelitian
+ * @property string|null $rumpun_ilmu_1
+ * @property string|null $rumpun_ilmu_2
+ * @property string|null $rumpun_ilmu_3
+ * @property string|null $prioritas_riset
+ * @property int|null $tahun_pertama
+ * @property int|null $lama_kegiatan
+ * @property string|null $kelompok_makro_riset
+ */
 class UsulanPenelitian extends Model
 {
     use HasFactory, SoftDeletes;

@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useForm } from '@inertiajs/react';
 import styles from '../../../../css/pengajuan.module.css';
 import IdentitasAnggotaPengajuan from '../../../components/Pengajuan/IdentityAnggota';
+
 interface UsulanData {
   judul: string;
   tkt_saat_ini: number | string;
@@ -18,6 +19,7 @@ interface UsulanData {
   prioritas_riset: string;
   tahun_pertama: number | string;
   lama_kegiatan: number | string;
+  [key: string]: string | number; // Index signature for FormDataType
 }
 
 interface PageIdentitasProps {
@@ -69,7 +71,7 @@ const PageIdentitas: React.FC<PageIdentitasProps> = ({
       post('/pengajuan/draft', {
         preserveScroll: true,
         onSuccess: (page) => {
-          const id = page.props.flash?.usulanId;
+          const id = (page.props.flash as Record<string, unknown>)?.usulanId as number | undefined;
           if (id) setCurrentUsulanId(id);
         },
       });
@@ -89,7 +91,7 @@ const PageIdentitas: React.FC<PageIdentitasProps> = ({
       post('/pengajuan/draft', {
         preserveScroll: true,
         onSuccess: (page) => {
-          const id = page.props.flash?.usulanId;
+          const id = (page.props.flash as Record<string, unknown>)?.usulanId as number | undefined;
           if (id) setCurrentUsulanId(id);
           onSelanjutnya?.();
         },

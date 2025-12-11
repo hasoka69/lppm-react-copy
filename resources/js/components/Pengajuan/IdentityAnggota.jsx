@@ -347,9 +347,9 @@ const IdentityAnggota = ({ usulanId, onCreateDraft }) => {
                                             </td>
                                             <td className="border border-gray-200 px-4 py-2 text-center">
                                                 <div className="flex justify-center gap-2">
-                                                    <button 
+                                                    <button
                                                         onClick={() => handleEditDosen(item)}
-                                                        className="text-yellow-500 hover:text-yellow-600" 
+                                                        className="text-yellow-500 hover:text-yellow-600"
                                                         title="Edit"
                                                         type="button"
                                                     >
@@ -422,9 +422,9 @@ const IdentityAnggota = ({ usulanId, onCreateDraft }) => {
                                             </td>
                                             <td className="border border-gray-200 px-4 py-2 text-center">
                                                 <div className="flex justify-center gap-2">
-                                                    <button 
+                                                    <button
                                                         onClick={() => handleEditNonDosen(item)}
-                                                        className="text-yellow-500 hover:text-yellow-600" 
+                                                        className="text-yellow-500 hover:text-yellow-600"
                                                         title="Edit"
                                                         type="button"
                                                     >

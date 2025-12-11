@@ -18,6 +18,7 @@ class UsulanPenelitianController extends Controller
     public function index()
     {
         $user = Auth::user();
+        /** @var \App\Models\User $user */
 
         $usulanList = UsulanPenelitian::where('user_id', $user->id)
             ->latest()
@@ -91,6 +92,7 @@ class UsulanPenelitianController extends Controller
      */
     public function update(Request $request, UsulanPenelitian $usulan)
     {
+        /** @var \App\Models\UsulanPenelitian $usulan */
         if ($usulan->user_id !== Auth::id()) {
             abort(403);
         }
@@ -178,6 +180,7 @@ class UsulanPenelitianController extends Controller
      */
     public function submit(UsulanPenelitian $usulan)
     {
+        /** @var \App\Models\UsulanPenelitian $usulan */
         if ($usulan->user_id !== Auth::id()) {
             abort(403);
         }
@@ -201,6 +204,7 @@ class UsulanPenelitianController extends Controller
      */
     public function destroy(UsulanPenelitian $usulan)
     {
+        /** @var \App\Models\UsulanPenelitian $usulan */
         if ($usulan->user_id !== Auth::id()) {
             abort(403);
         }
