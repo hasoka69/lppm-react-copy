@@ -6,5 +6,38 @@ use Illuminate\Database\Eloquent\Model;
 
 class AnggotaPenelitian extends Model
 {
-    //
+
+    protected $table = 'anggota_penelitian';
+
+    protected $fillable = [
+        'usulan_id',
+        'dosen_id',
+        'nidn',
+        'nama',
+        'peran',
+        'institusi',
+        'tugas',
+        'status_approval',
+        'approval_comment',
+        'approved_at',
+    ];
+
+    protected $casts = [
+        'approved_at' => 'datetime',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
+
+    /**
+     * Relationships
+     */
+    public function usulanPenelitian()
+    {
+        return $this->belongsTo(UsulanPenelitian::class, 'usulan_id');
+    }
+
+    public function dosen()
+    {
+        return $this->belongsTo(Dosen::class, 'dosen_id');
+    }
 }

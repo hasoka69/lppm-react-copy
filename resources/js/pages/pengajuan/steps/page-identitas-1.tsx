@@ -88,34 +88,28 @@ const PageIdentitas: React.FC<PageIdentitasProps> = ({
 
     console.log('Creating draft via ensureDraftExists...');
     try {
-      // Use axios directly to create draft and get response with usulanId
       const response = await axios.post('/pengajuan/draft', {}, {
         headers: {
           'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+          'X-Requested-With': 'XMLHttpRequest',
         },
       });
 
-      console.log('Draft created successfully');
-      console.log('Full response:', response);
+      console.log('Draft created successfully:', response.data);
 
-      // In Laravel Inertia, the response contains the props with flash data
-      // Extract usulanId from the response data
-      const responseData = response.data as Record<string, unknown>;
-      const propsData = responseData?.props as Record<string, unknown>;
-      const flashData = propsData?.flash as Record<string, unknown>;
-      const id = flashData?.usulanId as number | undefined;
-
-      console.log('Extracted ID from flash:', id);
-
-      if (id) {
-        setCurrentUsulanId(id);
-        return id;
+      if (response.data?.usulanId) {
+        setCurrentUsulanId(response.data.usulanId);
+        return response.data.usulanId;
       } else {
-        console.warn('No usulanId in response. Flash data:', flashData);
+        console.warn('No usulanId in response:', response.data);
+        alert('Gagal membuat draft: Tidak ada ID usulan yang dikembalikan');
         return null;
       }
-    } catch (error) {
+    } catch (error: unknown) {
+      const axiosError = error as { response?: { data?: { message?: string } } };
+      const errorMessage = axiosError?.response?.data?.message || 'Gagal membuat draft';
       console.error('Failed to create draft:', error);
+      alert('Error: ' + errorMessage);
       return null;
     }
   };

@@ -7,6 +7,7 @@ use App\Models\UsulanPenelitian;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
@@ -77,12 +78,32 @@ class UsulanPenelitianController extends Controller
 
             DB::commit();
 
+            // If request expects JSON (axios), return JSON
+            if ($request->expectsJson() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Draft berhasil disimpan!',
+                    'usulanId' => $usulan->id,
+                    'data' => $usulan,
+                ]);
+            }
+
+            // Otherwise use Inertia redirect
             return back()->with([
                 'success' => 'Draft berhasil disimpan!',
                 'usulanId' => $usulan->id,
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
+            
+            // If request expects JSON, return JSON error
+            if ($request->expectsJson() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Gagal menyimpan draft: ' . $e->getMessage(),
+                ], 400);
+            }
+
             return back()->with('error', 'Gagal menyimpan draft: ' . $e->getMessage());
         }
     }
@@ -239,5 +260,75 @@ class UsulanPenelitianController extends Controller
             'rumpunIlmuLevel3List' => DB::table('rumpun_ilmu_level3')->where('aktif', true)->get(),
             'prioritasRisetList' => DB::table('prioritas_riset')->where('aktif', true)->get(),
         ];
+    }
+
+    /**
+     * GET: Fetch anggota dosen untuk usulan tertentu
+     */
+    public function getAnggotaDosen(UsulanPenelitian $usulan)
+    {
+        try {
+            Log::info('getAnggotaDosen called', ['usulan_id' => $usulan->id, 'user_id' => Auth::id()]);
+            
+            // Check authorization
+            if ($usulan->user_id !== Auth::id()) {
+                Log::warning('Unauthorized access', ['usulan_user' => $usulan->user_id, 'auth_user' => Auth::id()]);
+                return response()->json(['message' => 'Unauthorized'], 403);
+            }
+
+            $anggota = $usulan->anggotaDosen()
+                ->with('dosen')
+                ->orderBy('created_at', 'desc')
+                ->get()
+                ->map(fn($item) => [
+                    'id' => $item->id,
+                    'nidn' => $item->dosen->nidn ?? null,
+                    'nama' => $item->dosen->nama ?? null,
+                    'peran' => $item->peran,
+                    'status_approval' => $item->status_approval,
+                    'created_at' => $item->created_at,
+                ]);
+
+            Log::info('getAnggotaDosen success', ['count' => count($anggota)]);
+            return response()->json(['data' => $anggota]);
+        } catch (\Exception $e) {
+            Log::error('getAnggotaDosen error', ['message' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+            return response()->json(['message' => 'Error: ' . $e->getMessage(), 'trace' => $e->getTraceAsString()], 500);
+        }
+    }
+
+    /**
+     * GET: Fetch anggota non-dosen untuk usulan tertentu
+     */
+    public function getAnggotaNonDosen(UsulanPenelitian $usulan)
+    {
+        try {
+            Log::info('getAnggotaNonDosen called', ['usulan_id' => $usulan->id]);
+            
+            // Check authorization
+            if ($usulan->user_id !== Auth::id()) {
+                Log::warning('Unauthorized access to non-dosen', ['usulan_user' => $usulan->user_id, 'auth_user' => Auth::id()]);
+                return response()->json(['message' => 'Unauthorized'], 403);
+            }
+
+            $anggota = $usulan->anggotaNonDosen()
+                ->orderBy('created_at', 'desc')
+                ->get()
+                ->map(fn($item) => [
+                    'id' => $item->id,
+                    'no_identitas' => $item->no_identitas,
+                    'nama' => $item->nama,
+                    'institusi' => $item->institusi,
+                    'tugas' => $item->tugas,
+                    'status_approval' => $item->status_approval,
+                    'created_at' => $item->created_at,
+                ]);
+
+            Log::info('getAnggotaNonDosen success', ['count' => count($anggota)]);
+            return response()->json(['data' => $anggota]);
+        } catch (\Exception $e) {
+            Log::error('getAnggotaNonDosen error', ['message' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+            return response()->json(['message' => 'Error: ' . $e->getMessage(), 'trace' => $e->getTraceAsString()], 500);
+        }
     }
 }

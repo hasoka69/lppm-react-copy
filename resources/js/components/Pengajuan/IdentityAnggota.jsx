@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { usePage } from '@inertiajs/react';
 import axios from 'axios';
+import SearchableDosenSelect from './SearchableDosenSelect';
+import SearchableMahasiswaSelect from './SearchableMahasiswaSelect';
 
 // CSRF-enabled axios instance
 const api = axios.create({
     baseURL: '/',
+    withCredentials: true,
     headers: {
         'X-Requested-With': 'XMLHttpRequest',
     },
@@ -354,9 +357,15 @@ const IdentityAnggota = ({ usulanId, onCreateDraft }) => {
                                                 {item.tugas || 'Belum diisi'}
                                             </td>
                                             <td className="border border-gray-200 px-4 py-2 text-center">
-                                                <span className={`px-2 py-1 rounded text-xs font-semibold ${item.status === 'Disetujui' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
+                                                <span className={`px-2 py-1 rounded text-xs font-semibold ${item.status_approval === 'approved'
+                                                    ? 'bg-green-100 text-green-700'
+                                                    : item.status_approval === 'rejected'
+                                                        ? 'bg-red-100 text-red-700'
+                                                        : 'bg-yellow-100 text-yellow-700'
                                                     }`}>
-                                                    {item.status}
+                                                    {item.status_approval === 'approved' ? 'Disetujui' :
+                                                        item.status_approval === 'rejected' ? 'Ditolak' :
+                                                            'Menunggu'}
                                                 </span>
                                             </td>
                                             <td className="border border-gray-200 px-4 py-2 text-center">
@@ -417,22 +426,35 @@ const IdentityAnggota = ({ usulanId, onCreateDraft }) => {
                                     <th className="border border-gray-200 px-4 py-3 text-left">Nama</th>
                                     <th className="border border-gray-200 px-4 py-3 text-left">Instansi</th>
                                     <th className="border border-gray-200 px-4 py-3 text-left">Tugas</th>
+                                    <th className="border border-gray-200 px-4 py-3 text-center w-24">Status</th>
                                     <th className="border border-gray-200 px-4 py-3 text-center w-24">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {anggotaNonDosen.length === 0 ? (
-                                    <tr><td colSpan={7} className="p-4 text-center text-gray-500">Belum ada anggota non-dosen.</td></tr>
+                                    <tr><td colSpan={8} className="p-4 text-center text-gray-500">Belum ada anggota non-dosen.</td></tr>
                                 ) : (
                                     anggotaNonDosen.map((item, idx) => (
                                         <tr key={item.id} className="hover:bg-gray-50">
                                             <td className="border border-gray-200 px-4 py-2 text-center">{idx + 1}</td>
-                                            <td className="border border-gray-200 px-4 py-2">{item.jenis}</td>
-                                            <td className="border border-gray-200 px-4 py-2">{item.identitasId}</td>
+                                            <td className="border border-gray-200 px-4 py-2">{item.jenis_anggota}</td>
+                                            <td className="border border-gray-200 px-4 py-2">{item.no_identitas}</td>
                                             <td className="border border-gray-200 px-4 py-2 font-medium">{item.nama}</td>
-                                            <td className="border border-gray-200 px-4 py-2">{item.instansi}</td>
+                                            <td className="border border-gray-200 px-4 py-2">{item.institusi}</td>
                                             <td className="border border-gray-200 px-4 py-2 text-gray-600 italic">
                                                 {item.tugas || 'Belum diisi'}
+                                            </td>
+                                            <td className="border border-gray-200 px-4 py-2 text-center">
+                                                <span className={`px-2 py-1 rounded text-xs font-semibold ${item.status_approval === 'approved'
+                                                    ? 'bg-green-100 text-green-700'
+                                                    : item.status_approval === 'rejected'
+                                                        ? 'bg-red-100 text-red-700'
+                                                        : 'bg-yellow-100 text-yellow-700'
+                                                    }`}>
+                                                    {item.status_approval === 'approved' ? 'Disetujui' :
+                                                        item.status_approval === 'rejected' ? 'Ditolak' :
+                                                            'Menunggu'}
+                                                </span>
                                             </td>
                                             <td className="border border-gray-200 px-4 py-2 text-center">
                                                 <div className="flex justify-center gap-2">
@@ -440,6 +462,16 @@ const IdentityAnggota = ({ usulanId, onCreateDraft }) => {
                                                         onClick={() => handleEditNonDosen(item)}
                                                         className="text-yellow-500 hover:text-yellow-600"
                                                         title="Edit"
+                                                        type="button"
+                                                    >
+                                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                                            <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                                                        </svg>
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDeleteNonDosen(item.id)}
+                                                        className="text-red-500 hover:text-red-600"
+                                                        title="Hapus"
                                                         type="button"
                                                     >
                                                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -476,29 +508,55 @@ const IdentityAnggota = ({ usulanId, onCreateDraft }) => {
                         </h2>
 
                         <div className="space-y-4">
-                            {/* NIDN */}
+                            {/* Searchable Dosen Select */}
                             <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-1">NIDN/NIDK</label>
-                                <input
-                                    type="text"
-                                    placeholder="Masukkan NIDN/NIDK"
-                                    value={formDosenData.nuptik}
-                                    onChange={(e) => setFormDosenData({ ...formDosenData, nuptik: e.target.value })}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">Cari Dosen</label>
+                                <SearchableDosenSelect
+                                    value={
+                                        formDosenData.nuptik && formDosenData.nama && typeof formDosenData.nuptik === 'string' && typeof formDosenData.nama === 'string'
+                                            ? {
+                                                value: formDosenData.nuptik,
+                                                label: `${String(formDosenData.nuptik).trim()} - ${String(formDosenData.nama).trim()}`,
+                                                dosen: {
+                                                    id: formDosenData.nuptik,
+                                                    nidn: formDosenData.nuptik,
+                                                    nama: formDosenData.nama,
+                                                    email: formDosenData.institusi || ''
+                                                }
+                                            }
+                                            : null
+                                    }
+                                    onChange={(selected) => {
+                                        if (selected && selected.dosen) {
+                                            setFormDosenData({
+                                                ...formDosenData,
+                                                nuptik: selected.dosen.nidn,
+                                                nama: selected.dosen.nama,
+                                                institusi: selected.dosen.email || ''
+                                            });
+                                        } else {
+                                            setFormDosenData({
+                                                ...formDosenData,
+                                                nuptik: '',
+                                                nama: '',
+                                            });
+                                        }
+                                    }}
+                                    placeholder="Cari NIDN atau Nama Dosen..."
                                 />
                             </div>
 
-                            {/* Nama */}
-                            <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-1">Nama</label>
-                                <input
-                                    type="text"
-                                    placeholder="Masukkan nama lengkap"
-                                    value={formDosenData.nama}
-                                    onChange={(e) => setFormDosenData({ ...formDosenData, nama: e.target.value })}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                />
-                            </div>
+                            {/* NIDN (Hidden but still tracked) */}
+                            <input
+                                type="hidden"
+                                value={formDosenData.nuptik}
+                            />
+
+                            {/* Nama (Hidden but still tracked) */}
+                            <input
+                                type="hidden"
+                                value={formDosenData.nama}
+                            />
 
                             {/* Peran */}
                             <div>
@@ -572,8 +630,8 @@ const IdentityAnggota = ({ usulanId, onCreateDraft }) => {
                             <div>
                                 <label className="block text-sm font-semibold text-gray-700 mb-1">Jenis Anggota</label>
                                 <select
-                                    value={formNonDosenData.jenis}
-                                    onChange={(e) => setFormNonDosenData({ ...formNonDosenData, jenis: e.target.value })}
+                                    value={formNonDosenData.jenis_anggota}
+                                    onChange={(e) => setFormNonDosenData({ ...formNonDosenData, jenis_anggota: e.target.value, no_identitas: '', nama: '' })}
                                     className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                 >
                                     <option value="">Pilih Jenis</option>
@@ -583,29 +641,76 @@ const IdentityAnggota = ({ usulanId, onCreateDraft }) => {
                                 </select>
                             </div>
 
-                            {/* No Identitas */}
-                            <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-1">No Identitas (NIM/KTP)</label>
-                                <input
-                                    type="text"
-                                    placeholder="Masukkan NIM atau KTP"
-                                    value={formNonDosenData.identitasId}
-                                    onChange={(e) => setFormNonDosenData({ ...formNonDosenData, identitasId: e.target.value })}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                />
-                            </div>
+                            {/* Searchable Mahasiswa Select - Only show if jenis is mahasiswa */}
+                            {formNonDosenData.jenis_anggota === 'mahasiswa' && (
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-1">Cari Mahasiswa</label>
+                                    <SearchableMahasiswaSelect
+                                        value={
+                                            formNonDosenData.no_identitas && formNonDosenData.nama && typeof formNonDosenData.no_identitas === 'string' && typeof formNonDosenData.nama === 'string'
+                                                ? {
+                                                    value: formNonDosenData.no_identitas,
+                                                    label: `${String(formNonDosenData.no_identitas).trim()} - ${String(formNonDosenData.nama).trim()}`,
+                                                    mahasiswa: {
+                                                        id: formNonDosenData.no_identitas,
+                                                        nim: formNonDosenData.no_identitas,
+                                                        nama: formNonDosenData.nama,
+                                                        jurusan: formNonDosenData.institusi || '',
+                                                        angkatan: new Date().getFullYear(),
+                                                        email: '',
+                                                        status: 'aktif'
+                                                    }
+                                                }
+                                                : null
+                                        }
+                                        onChange={(selected) => {
+                                            if (selected && selected.mahasiswa) {
+                                                setFormNonDosenData({
+                                                    ...formNonDosenData,
+                                                    no_identitas: selected.mahasiswa.nim,
+                                                    nama: selected.mahasiswa.nama,
+                                                    institusi: selected.mahasiswa.jurusan || ''
+                                                });
+                                            } else {
+                                                setFormNonDosenData({
+                                                    ...formNonDosenData,
+                                                    no_identitas: '',
+                                                    nama: '',
+                                                });
+                                            }
+                                        }}
+                                        placeholder="Cari NIM atau Nama Mahasiswa..."
+                                    />
+                                </div>
+                            )}
 
-                            {/* Nama */}
-                            <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-1">Nama</label>
-                                <input
-                                    type="text"
-                                    placeholder="Masukkan nama lengkap"
-                                    value={formNonDosenData.nama}
-                                    onChange={(e) => setFormNonDosenData({ ...formNonDosenData, nama: e.target.value })}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                />
-                            </div>
+                            {/* No Identitas - Show for non-mahasiswa types */}
+                            {formNonDosenData.jenis_anggota !== 'mahasiswa' && (
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-1">No Identitas (KTP)</label>
+                                    <input
+                                        type="text"
+                                        placeholder="Masukkan KTP"
+                                        value={formNonDosenData.no_identitas}
+                                        onChange={(e) => setFormNonDosenData({ ...formNonDosenData, no_identitas: e.target.value })}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                    />
+                                </div>
+                            )}
+
+                            {/* Nama - Show for non-mahasiswa types */}
+                            {formNonDosenData.jenis_anggota !== 'mahasiswa' && (
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-1">Nama</label>
+                                    <input
+                                        type="text"
+                                        placeholder="Masukkan nama lengkap"
+                                        value={formNonDosenData.nama}
+                                        onChange={(e) => setFormNonDosenData({ ...formNonDosenData, nama: e.target.value })}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                    />
+                                </div>
+                            )}
 
                             {/* Instansi */}
                             <div>

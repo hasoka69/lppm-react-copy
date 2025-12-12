@@ -1,4 +1,5 @@
 import { useForm } from "@inertiajs/react";
+import { FormEvent } from "react";
 
 export default function Login() {
     const { data, setData, post, processing, errors } = useForm({
@@ -6,9 +7,11 @@ export default function Login() {
         password: "",
     });
 
-    function submit(e: React.FormEvent) {
+    function submit(e: FormEvent) {
         e.preventDefault();
-        post(route("login"));
+        console.log("Form submitted with:", data);
+        // Use direct path instead of route() helper
+        post("/login");
     }
 
     return (
@@ -95,17 +98,27 @@ export default function Login() {
                             )}
                         </div>
 
-                        {/* Button */}
-                        <button
-                            type="submit"
-                            disabled={processing}
-                            className="w-full py-3 mt-2 rounded-full bg-red-700 hover:bg-red-800
-                                       font-semibold text-white tracking-wide
-                                       shadow-lg hover:shadow-xl hover:scale-[1.02]
-                                       disabled:opacity-60 transition"
-                        >
-                            {processing ? "Loading..." : "Login"}
-                        </button>
+                        {/* Submit Button with Debug */}
+                        <div>
+                            <button
+                                type="submit"
+                                disabled={processing}
+                                className="w-full py-3 mt-2 rounded-full bg-red-700 hover:bg-red-800
+                                           font-semibold text-white tracking-wide
+                                           shadow-lg hover:shadow-xl hover:scale-[1.02]
+                                           disabled:opacity-60 transition"
+                            >
+                                {processing ? "Loading..." : "Login"}
+                            </button>
+                            {Object.keys(errors).length > 0 && (
+                                <div className="mt-3 p-3 bg-red-500/20 border border-red-400 rounded text-red-200 text-sm">
+                                    <p className="font-semibold mb-1">Login Error:</p>
+                                    {Object.entries(errors).map(([key, value]) => (
+                                        <p key={key}>{value}</p>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
                     </form>
 
                     <div className="text-center text-xs text-gray-200 opacity-80 mt-6 space-x-4">

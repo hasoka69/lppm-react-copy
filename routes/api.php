@@ -6,6 +6,7 @@ use App\Models\MediaFolder;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Route;
 
 class MediaFolderController extends Controller
 {
@@ -49,3 +50,9 @@ class MediaFolderController extends Controller
         return response()->json(['message' => 'File deleted successfully']);
     }
 }
+
+// API Routes for Dosen and Mahasiswa search
+Route::middleware('auth')->group(function () {
+    Route::get('/dosen/search', [\App\Http\Controllers\Api\DosenController::class, 'search']);
+    Route::get('/mahasiswa/search', [\App\Http\Controllers\Api\MahasiswaController::class, 'search']);
+});

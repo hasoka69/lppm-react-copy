@@ -11,8 +11,8 @@ use App\Http\Controllers\UserFileController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\SettingAppController;
 use App\Http\Controllers\MediaFolderController;
-use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\UsulanPenelitianController;
+use App\Http\Controllers\AnggotaApprovalController;
 use App\Models\Berita;
 
 // Group untuk authenticated users
@@ -48,6 +48,22 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Delete - Hapus usulan
         Route::delete('/{usulan}', [UsulanPenelitianController::class, 'destroy'])
             ->name('destroy');
+
+        // Anggota Fetch Routes (GET)
+        Route::get('/{usulan}/anggota-dosen', [UsulanPenelitianController::class, 'getAnggotaDosen'])
+            ->name('anggota-dosen.get');
+        Route::get('/{usulan}/anggota-non-dosen', [UsulanPenelitianController::class, 'getAnggotaNonDosen'])
+            ->name('anggota-non-dosen.get');
+
+        // Anggota Approval Routes
+        Route::post('/{usulan}/anggota-dosen/{anggota}/approve', [AnggotaApprovalController::class, 'approveDosen'])
+            ->name('anggota-dosen.approve');
+        Route::post('/{usulan}/anggota-dosen/{anggota}/reject', [AnggotaApprovalController::class, 'rejectDosen'])
+            ->name('anggota-dosen.reject');
+        Route::post('/{usulan}/anggota-non-dosen/{anggota}/approve', [AnggotaApprovalController::class, 'approveNonDosen'])
+            ->name('anggota-non-dosen.approve');
+        Route::post('/{usulan}/anggota-non-dosen/{anggota}/reject', [AnggotaApprovalController::class, 'rejectNonDosen'])
+            ->name('anggota-non-dosen.reject');
     });
 });
 
@@ -68,15 +84,7 @@ Route::get('/berita', function () {
     ]);
 });
 
-// Otentikasi
-Route::get('/login', function () {
-    return Inertia::render('Login');
-})->name('login');
-
-Route::post('/login', [AuthenticatedSessionController::class, 'store'])->name('login.store');
-
-Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
-
+// Otentikasi dihandle di routes/auth.php (already included at bottom)
 
 // ==========================================================
 // RUTE DASHBOARD ROLE-SPECIFIC
@@ -165,6 +173,10 @@ Route::middleware(['auth', 'menu.permission'])->group(function () {
     Route::get('/pengajuan/Index', function () {
         return Inertia::render('pengajuan/Index');
     })->name('pengajuan.index')->middleware('can:pengajuan-form-view');
+
+    // API Routes for Master Data Search
+    Route::get('/api/dosen/search', [\App\Http\Controllers\Api\DosenController::class, 'search']);
+    Route::get('/api/mahasiswa/search', [\App\Http\Controllers\Api\MahasiswaController::class, 'search']);
 
 });
 
