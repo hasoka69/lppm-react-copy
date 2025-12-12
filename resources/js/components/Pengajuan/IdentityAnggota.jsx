@@ -605,7 +605,7 @@ const IdentityAnggota = ({ usulanId, onCreateDraft }) => {
                                 Batal
                             </button>
                             <button
-                                onClick={() => handleSaveDosen(usulanId)}
+                                onClick={handleSaveDosenSubmit}
                                 disabled={loadingDosen}
                                 type="button"
                                 className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 font-medium disabled:bg-gray-400"
@@ -631,7 +631,16 @@ const IdentityAnggota = ({ usulanId, onCreateDraft }) => {
                                 <label className="block text-sm font-semibold text-gray-700 mb-1">Jenis Anggota</label>
                                 <select
                                     value={formNonDosenData.jenis_anggota}
-                                    onChange={(e) => setFormNonDosenData({ ...formNonDosenData, jenis_anggota: e.target.value, no_identitas: '', nama: '' })}
+                                    onChange={(e) => {
+                                        // Reset no_identitas dan nama saat jenis berubah
+                                        setFormNonDosenData({
+                                            ...formNonDosenData,
+                                            jenis_anggota: e.target.value,
+                                            no_identitas: '',
+                                            nama: '',
+                                            institusi: ''
+                                        });
+                                    }}
                                     className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                 >
                                     <option value="">Pilih Jenis</option>
@@ -647,12 +656,12 @@ const IdentityAnggota = ({ usulanId, onCreateDraft }) => {
                                     <label className="block text-sm font-semibold text-gray-700 mb-1">Cari Mahasiswa</label>
                                     <SearchableMahasiswaSelect
                                         value={
-                                            formNonDosenData.no_identitas && formNonDosenData.nama && typeof formNonDosenData.no_identitas === 'string' && typeof formNonDosenData.nama === 'string'
+                                            formNonDosenData.no_identitas && formNonDosenData.nama
                                                 ? {
                                                     value: formNonDosenData.no_identitas,
-                                                    label: `${String(formNonDosenData.no_identitas).trim()} - ${String(formNonDosenData.nama).trim()}`,
+                                                    label: `${formNonDosenData.no_identitas} - ${formNonDosenData.nama}`,
                                                     mahasiswa: {
-                                                        id: formNonDosenData.no_identitas,
+                                                        id: 0, // Temporary ID
                                                         nim: formNonDosenData.no_identitas,
                                                         nama: formNonDosenData.nama,
                                                         jurusan: formNonDosenData.institusi || '',
@@ -664,6 +673,7 @@ const IdentityAnggota = ({ usulanId, onCreateDraft }) => {
                                                 : null
                                         }
                                         onChange={(selected) => {
+                                            console.log('Mahasiswa onChange called with:', selected);
                                             if (selected && selected.mahasiswa) {
                                                 setFormNonDosenData({
                                                     ...formNonDosenData,
@@ -672,20 +682,28 @@ const IdentityAnggota = ({ usulanId, onCreateDraft }) => {
                                                     institusi: selected.mahasiswa.jurusan || ''
                                                 });
                                             } else {
+                                                // Clear when selection is removed
                                                 setFormNonDosenData({
                                                     ...formNonDosenData,
                                                     no_identitas: '',
                                                     nama: '',
+                                                    institusi: ''
                                                 });
                                             }
                                         }}
                                         placeholder="Cari NIM atau Nama Mahasiswa..."
                                     />
+                                    {/* Show selected values below for debugging */}
+                                    {formNonDosenData.no_identitas && (
+                                        <div className="mt-2 p-2 bg-gray-50 rounded text-xs text-gray-600">
+                                            <strong>Selected:</strong> {formNonDosenData.no_identitas} - {formNonDosenData.nama}
+                                        </div>
+                                    )}
                                 </div>
                             )}
 
                             {/* No Identitas - Show for non-mahasiswa types */}
-                            {formNonDosenData.jenis_anggota !== 'mahasiswa' && (
+                            {formNonDosenData.jenis_anggota !== 'mahasiswa' && formNonDosenData.jenis_anggota !== '' && (
                                 <div>
                                     <label className="block text-sm font-semibold text-gray-700 mb-1">No Identitas (KTP)</label>
                                     <input
@@ -699,7 +717,7 @@ const IdentityAnggota = ({ usulanId, onCreateDraft }) => {
                             )}
 
                             {/* Nama - Show for non-mahasiswa types */}
-                            {formNonDosenData.jenis_anggota !== 'mahasiswa' && (
+                            {formNonDosenData.jenis_anggota !== 'mahasiswa' && formNonDosenData.jenis_anggota !== '' && (
                                 <div>
                                     <label className="block text-sm font-semibold text-gray-700 mb-1">Nama</label>
                                     <input
@@ -714,13 +732,16 @@ const IdentityAnggota = ({ usulanId, onCreateDraft }) => {
 
                             {/* Instansi */}
                             <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-1">Instansi/Universitas</label>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">
+                                    {formNonDosenData.jenis_anggota === 'mahasiswa' ? 'Jurusan' : 'Instansi/Universitas'}
+                                </label>
                                 <input
                                     type="text"
-                                    placeholder="Masukkan instansi"
-                                    value={formNonDosenData.instansi}
-                                    onChange={(e) => setFormNonDosenData({ ...formNonDosenData, instansi: e.target.value })}
+                                    placeholder={formNonDosenData.jenis_anggota === 'mahasiswa' ? 'Jurusan' : 'Masukkan instansi'}
+                                    value={formNonDosenData.institusi}
+                                    onChange={(e) => setFormNonDosenData({ ...formNonDosenData, institusi: e.target.value })}
                                     className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                    disabled={formNonDosenData.jenis_anggota === 'mahasiswa'} // Auto-filled from search
                                 />
                             </div>
 
@@ -739,17 +760,27 @@ const IdentityAnggota = ({ usulanId, onCreateDraft }) => {
 
                         <div className="mt-6 flex justify-end gap-2">
                             <button
-                                onClick={() => setFormNonDosenVisible(false)}
+                                onClick={() => {
+                                    setFormNonDosenVisible(false);
+                                    // Reset form when closing
+                                    setFormNonDosenData({
+                                        jenis_anggota: '',
+                                        no_identitas: '',
+                                        nama: '',
+                                        institusi: '',
+                                        tugas: '',
+                                    });
+                                }}
                                 type="button"
                                 className="px-4 py-2 border border-gray-300 rounded text-gray-700 hover:bg-gray-50 font-medium"
                             >
                                 Batal
                             </button>
                             <button
-                                onClick={() => handleSaveNonDosen(usulanId)}
-                                disabled={loadingNonDosen}
+                                onClick={handleSaveNonDosenSubmit}
+                                disabled={loadingNonDosen || !formNonDosenData.jenis_anggota || !formNonDosenData.no_identitas || !formNonDosenData.nama}
                                 type="button"
-                                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 font-medium disabled:bg-gray-400"
+                                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 font-medium disabled:bg-gray-400 disabled:cursor-not-allowed"
                             >
                                 {loadingNonDosen ? 'Menyimpan...' : 'Simpan'}
                             </button>

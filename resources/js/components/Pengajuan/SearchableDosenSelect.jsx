@@ -30,18 +30,16 @@ const SearchableDosenSelect = ({
     const [isLoading, setIsLoading] = useState(false);
     const [selectedDosen, setSelectedDosen] = useState(null);
 
-    // Sync selectedDosen with parent's value prop
+    // ✅ FIX: Sync selectedDosen with parent's value prop
     useEffect(() => {
-        // Ensure value is not a Promise
-        if (value && value instanceof Promise) {
-            console.warn('SearchableDosenSelect received a Promise as value:', value);
-            setSelectedDosen(null);
+        if (value && typeof value === 'object' && !Array.isArray(value) && !(value instanceof Promise)) {
+            setSelectedDosen(value);
         } else {
-            setSelectedDosen(value || null);
+            setSelectedDosen(null);
         }
     }, [value]);
 
-    // Handle search
+    // ✅ FIX: Handle search with proper async
     const handleInputChange = async (inputValue) => {
         if (!inputValue || inputValue.length < 2) {
             setOptions([]);
@@ -57,12 +55,16 @@ const SearchableDosenSelect = ({
                 }
             });
 
-            const formatted = response.data.data.map(dosen => ({
-                value: dosen.id,
+            console.log('Dosen search response:', response.data);
+
+            // ✅ FIX: Use NIDN as value, not ID (to match parent structure)
+            const formatted = (response.data.data || []).map(dosen => ({
+                value: dosen.nidn,  // ✅ Changed from dosen.id to dosen.nidn
                 label: `${dosen.nidn} - ${dosen.nama}`,
-                dosen: dosen // Store full dosen object
+                dosen: dosen
             }));
 
+            console.log('Formatted options:', formatted);
             setOptions(formatted);
         } catch (error) {
             console.error('Error searching dosen:', error);
@@ -73,6 +75,7 @@ const SearchableDosenSelect = ({
     };
 
     const handleSelectChange = (selected) => {
+        console.log('Selected dosen:', selected);
         setSelectedDosen(selected);
         if (onChange) {
             onChange(selected);
@@ -90,12 +93,17 @@ const SearchableDosenSelect = ({
             placeholder={placeholder}
             isClearable={isClearable}
             isSearchable={isSearchable}
-            noOptionsMessage={() => 'Tidak ada dosen ditemukan'}
+            noOptionsMessage={({ inputValue }) => {
+                if (!inputValue) return 'Ketik untuk mencari...';
+                if (inputValue.length < 2) return 'Ketik minimal 2 karakter';
+                return 'Tidak ada dosen ditemukan';
+            }}
             classNamePrefix="react-select"
             styles={{
                 control: (base) => ({
                     ...base,
                     minHeight: '38px',
+                    borderColor: '#d1d5db',
                 }),
                 option: (base, state) => ({
                     ...base,

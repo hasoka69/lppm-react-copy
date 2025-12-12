@@ -30,18 +30,16 @@ const SearchableMahasiswaSelect = ({
     const [isLoading, setIsLoading] = useState(false);
     const [selectedMahasiswa, setSelectedMahasiswa] = useState(null);
 
-    // Sync selectedMahasiswa with parent's value prop
+    // ✅ FIX: Sync selectedMahasiswa with parent's value prop
     useEffect(() => {
-        // Ensure value is not a Promise
-        if (value && value instanceof Promise) {
-            console.warn('SearchableMahasiswaSelect received a Promise as value:', value);
-            setSelectedMahasiswa(null);
+        if (value && typeof value === 'object' && !Array.isArray(value) && !(value instanceof Promise)) {
+            setSelectedMahasiswa(value);
         } else {
-            setSelectedMahasiswa(value || null);
+            setSelectedMahasiswa(null);
         }
     }, [value]);
 
-    // Handle search
+    // ✅ FIX: Handle search with proper async
     const handleInputChange = async (inputValue) => {
         if (!inputValue || inputValue.length < 2) {
             setOptions([]);
@@ -57,12 +55,16 @@ const SearchableMahasiswaSelect = ({
                 }
             });
 
-            const formatted = response.data.data.map(mhs => ({
-                value: mhs.id,
+            console.log('Mahasiswa search response:', response.data);
+
+            // ✅ FIX: Use NIM as value, not ID (to match parent structure)
+            const formatted = (response.data.data || []).map(mhs => ({
+                value: mhs.nim,  // ✅ Changed from mhs.id to mhs.nim
                 label: `${mhs.nim} - ${mhs.nama} (${mhs.jurusan})`,
-                mahasiswa: mhs // Store full mahasiswa object
+                mahasiswa: mhs
             }));
 
+            console.log('Formatted options:', formatted);
             setOptions(formatted);
         } catch (error) {
             console.error('Error searching mahasiswa:', error);
@@ -73,6 +75,7 @@ const SearchableMahasiswaSelect = ({
     };
 
     const handleSelectChange = (selected) => {
+        console.log('Selected mahasiswa:', selected);
         setSelectedMahasiswa(selected);
         if (onChange) {
             onChange(selected);
@@ -90,12 +93,17 @@ const SearchableMahasiswaSelect = ({
             placeholder={placeholder}
             isClearable={isClearable}
             isSearchable={isSearchable}
-            noOptionsMessage={() => 'Tidak ada mahasiswa ditemukan'}
+            noOptionsMessage={({ inputValue }) => {
+                if (!inputValue) return 'Ketik untuk mencari...';
+                if (inputValue.length < 2) return 'Ketik minimal 2 karakter';
+                return 'Tidak ada mahasiswa ditemukan';
+            }}
             classNamePrefix="react-select"
             styles={{
                 control: (base) => ({
                     ...base,
                     minHeight: '38px',
+                    borderColor: '#d1d5db',
                 }),
                 option: (base, state) => ({
                     ...base,
