@@ -15,7 +15,7 @@ class AnggotaNonDosen extends Model
         'jenis_anggota',
         'no_identitas',
         'nama',
-        'institusi',
+        'jurusan',
         'tugas',
         'status_approval',
         'approval_comment',

@@ -15,7 +15,7 @@ class AnggotaPenelitian extends Model
         'nidn',
         'nama',
         'peran',
-        'institusi',
+        'prodi',
         'tugas',
         'status_approval',
         'approval_comment',

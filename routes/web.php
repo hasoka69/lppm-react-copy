@@ -13,6 +13,8 @@ use App\Http\Controllers\SettingAppController;
 use App\Http\Controllers\MediaFolderController;
 use App\Http\Controllers\UsulanPenelitianController;
 use App\Http\Controllers\AnggotaApprovalController;
+use App\Http\Controllers\AnggotaNonDosenController;
+use App\Http\Controllers\AnggotaPenelitianController;
 use App\Models\Berita;
 
 // Group untuk authenticated users
@@ -49,11 +51,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('/{usulan}', [UsulanPenelitianController::class, 'destroy'])
             ->name('destroy');
 
-        // Anggota Fetch Routes (GET)
+        // Anggota Fetch Routes (GET) POST
         Route::get('/{usulan}/anggota-dosen', [UsulanPenelitianController::class, 'getAnggotaDosen'])
             ->name('anggota-dosen.get');
+            Route::post(
+            '/{usulan}/anggota-penelitian',
+            [AnggotaPenelitianController::class, 'store']
+        )->name('anggota-dosen.store'); 
         Route::get('/{usulan}/anggota-non-dosen', [UsulanPenelitianController::class, 'getAnggotaNonDosen'])
             ->name('anggota-non-dosen.get');
+        Route::post(
+            '/{usulan}/anggota-non-dosen',
+            [AnggotaNonDosenController::class, 'store']
+        )->name('anggota-non-dosen.store'); 
 
         // Anggota Approval Routes
         Route::post('/{usulan}/anggota-dosen/{anggota}/approve', [AnggotaApprovalController::class, 'approveDosen'])
@@ -166,7 +176,7 @@ Route::middleware(['auth', 'menu.permission'])->group(function () {
     // === PENGAJUAN ===
     // Pengajuan Usulan (Misalnya: dilihat oleh Dosen, Kaprodi, LPPM)
     Route::get('/pengajuan/page-usulan', function () {
-        return Inertia::render('pengajuan/page-usulan');
+        return Inertia::render('pengajuan/steps/page-usulan');
     })->name('pengajuan.usulan')->middleware('can:pengajuan-usulan-view');
 
     // Pengajuan Form (Misalnya: Hanya Dosen yang boleh mengakses form)
@@ -177,6 +187,8 @@ Route::middleware(['auth', 'menu.permission'])->group(function () {
     // API Routes for Master Data Search
     Route::get('/api/dosen/search', [\App\Http\Controllers\Api\DosenController::class, 'search']);
     Route::get('/api/mahasiswa/search', [\App\Http\Controllers\Api\MahasiswaController::class, 'search']);
+    Route::post('/api/dosen/search', [\App\Http\Controllers\Api\DosenController::class, 'search']);
+    Route::post('/api/mahasiswa/search', [\App\Http\Controllers\Api\MahasiswaController::class, 'search']);
 
 });
 

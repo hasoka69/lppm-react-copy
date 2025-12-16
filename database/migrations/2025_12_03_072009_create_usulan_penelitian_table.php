@@ -53,10 +53,9 @@ return new class extends Migration
         Schema::create('anggota_penelitian', function (Blueprint $table) {
             $table->id();
             $table->foreignId('usulan_id')->constrained('usulan_penelitian')->onDelete('cascade');
-            $table->string('nuptik');
+            $table->string('nidn');
             $table->string('nama');
             $table->enum('peran', ['ketua', 'anggota']);
-            $table->string('institusi');
             $table->text('tugas')->nullable();
             $table->enum('status_persetujuan', ['menunggu', 'menyetujui', 'menolak'])->default('menunggu');
             $table->timestamps();
@@ -69,7 +68,7 @@ return new class extends Migration
             $table->string('jenis_anggota'); // mahasiswa, tenaga lapangan, dll
             $table->string('no_identitas');
             $table->string('nama');
-            $table->string('instansi');
+            $table->string('jurusan');
             $table->text('tugas')->nullable();
             $table->timestamps();
         });

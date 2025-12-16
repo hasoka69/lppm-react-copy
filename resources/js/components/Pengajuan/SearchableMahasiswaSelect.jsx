@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Select from 'react-select';
 import axios from 'axios';
 
-// CSRF-enabled axios instance
+/* =======================
+   AXIOS INSTANCE (CSRF)
+======================= */
 const api = axios.create({
     baseURL: '/',
     withCredentials: true,
@@ -12,76 +14,130 @@ const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
-    const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+    const token = document
+        .querySelector('meta[name="csrf-token"]')
+        ?.getAttribute('content');
+
     if (token) {
         config.headers['X-CSRF-TOKEN'] = token;
     }
     return config;
 });
 
+/* =======================
+   COMPONENT
+======================= */
 const SearchableMahasiswaSelect = ({
     value,
     onChange,
     placeholder = "Cari NIM atau Nama Mahasiswa...",
     isClearable = true,
-    isSearchable = true
+    isSearchable = true,
 }) => {
     const [options, setOptions] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [selectedMahasiswa, setSelectedMahasiswa] = useState(null);
 
-    // ✅ FIX: Sync selectedMahasiswa with parent's value prop
+    const debounceRef = useRef(null);
+    const abortRef = useRef(null);
+
+    /* =======================
+       SYNC VALUE FROM PARENT
+    ======================= */
     useEffect(() => {
-        if (value && typeof value === 'object' && !Array.isArray(value) && !(value instanceof Promise)) {
+        if (
+            value &&
+            typeof value === 'object' &&
+            !Array.isArray(value) &&
+            !(value instanceof Promise)
+        ) {
             setSelectedMahasiswa(value);
         } else {
             setSelectedMahasiswa(null);
         }
     }, [value]);
 
-    // ✅ FIX: Handle search with proper async
-    const handleInputChange = async (inputValue) => {
-        if (!inputValue || inputValue.length < 2) {
+    /* =======================
+       SEARCH WITH DEBOUNCE
+    ======================= */
+    const searchMahasiswa = (keyword) => {
+        if (!keyword || keyword.length < 2) {
             setOptions([]);
             return;
         }
 
-        setIsLoading(true);
-        try {
-            const response = await api.get('/api/mahasiswa/search', {
-                params: {
-                    q: inputValue,
-                    limit: 10
-                }
-            });
-
-            console.log('Mahasiswa search response:', response.data);
-
-            // ✅ FIX: Use NIM as value, not ID (to match parent structure)
-            const formatted = (response.data.data || []).map(mhs => ({
-                value: mhs.nim,  // ✅ Changed from mhs.id to mhs.nim
-                label: `${mhs.nim} - ${mhs.nama} (${mhs.jurusan})`,
-                mahasiswa: mhs
-            }));
-
-            console.log('Formatted options:', formatted);
-            setOptions(formatted);
-        } catch (error) {
-            console.error('Error searching mahasiswa:', error);
-            setOptions([]);
-        } finally {
-            setIsLoading(false);
+        // debounce
+        if (debounceRef.current) {
+            clearTimeout(debounceRef.current);
         }
+
+        debounceRef.current = setTimeout(async () => {
+            // cancel previous request
+            if (abortRef.current) {
+                abortRef.current.abort();
+            }
+
+            abortRef.current = new AbortController();
+            setIsLoading(true);
+
+            try {
+                const response = await api.get('/api/mahasiswa/search', {
+                    params: {
+                        q: keyword,
+                        limit: 10,
+                    },
+                    signal: abortRef.current.signal,
+                });
+
+                const formatted = (response.data.data || []).map((mhs) => ({
+                    value: mhs.nim,
+                    label: `${mhs.nim} - ${mhs.nama} (${mhs.jurusan})`,
+                    mahasiswa: mhs,
+                }));
+
+                setOptions(formatted);
+            } catch (error) {
+                if (error.name !== 'CanceledError') {
+                    console.error('Error searching mahasiswa:', error);
+                }
+                setOptions([]);
+            } finally {
+                setIsLoading(false);
+            }
+        }, 300);
     };
 
+    /* =======================
+       INPUT CHANGE (SYNC)
+    ======================= */
+    const handleInputChange = (inputValue) => {
+        searchMahasiswa(inputValue);
+        return inputValue; // 🔥 WAJIB
+    };
+
+    /* =======================
+       SELECT CHANGE
+    ======================= */
     const handleSelectChange = (selected) => {
-        console.log('Selected mahasiswa:', selected);
         setSelectedMahasiswa(selected);
         if (onChange) {
             onChange(selected);
         }
     };
 
+    /* =======================
+       CLEANUP
+    ======================= */
+    useEffect(() => {
+        return () => {
+            if (debounceRef.current) clearTimeout(debounceRef.current);
+            if (abortRef.current) abortRef.current.abort();
+        };
+    }, []);
+
+    /* =======================
+       RENDER
+    ======================= */
     return (
         <Select
             inputId="mahasiswa-select"
@@ -107,7 +163,11 @@ const SearchableMahasiswaSelect = ({
                 }),
                 option: (base, state) => ({
                     ...base,
-                    backgroundColor: state.isSelected ? '#3b82f6' : state.isFocused ? '#e5e7eb' : 'white',
+                    backgroundColor: state.isSelected
+                        ? '#2563eb'
+                        : state.isFocused
+                            ? '#e5e7eb'
+                            : 'white',
                     color: state.isSelected ? 'white' : 'black',
                     padding: '8px 12px',
                 }),

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Mahasiswa;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class MahasiswaController extends Controller
 {
@@ -19,7 +20,15 @@ class MahasiswaController extends Controller
         $query = $request->input('q', '');
         $limit = $request->input('limit', 10);
 
+        // ✅ Debug log
+        Log::info('Mahasiswa search API called', [
+            'query' => $query,
+            'limit' => $limit,
+            'user_id' => auth()->id(),
+        ]);
+
         if (empty($query)) {
+            Log::info('Mahasiswa search: Empty query');
             return response()->json(['data' => []]);
         }
 
@@ -30,11 +39,17 @@ class MahasiswaController extends Controller
         ->limit($limit)
         ->get(['id', 'nim', 'nama', 'angkatan', 'jurusan', 'email', 'status']);
 
+        // ✅ Debug log
+        Log::info('Mahasiswa search results', [
+            'query' => $query,
+            'count' => $mahasiswa->count(),
+            'results' => $mahasiswa->toArray(),
+        ]);
+
         return response()->json([
             'data' => $mahasiswa,
         ]);
     }
-
     /**
      * Display a listing of the resource.
      */

@@ -23,6 +23,14 @@ class DatabaseSeeder extends Seeder
             RolePermissionSeeder::class,
         ]);
 
+        // Panggil seeder untuk master data (Dosen, Mahasiswa, MakroRiset, MasterPenelitian)
+        $this->call([
+            DosenSeeder::class,
+            MahasiswaSeeder::class,
+            MakroRisetSeeder::class,
+            MasterPenelitianSeeder::class,
+        ]);
+
         // ==========================================================
         // BUAT DAN TUGASKAN PERAN UNTUK PENGGUNA ADMIN
         // ==========================================================

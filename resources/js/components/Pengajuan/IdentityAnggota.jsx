@@ -34,10 +34,10 @@ const IdentityAnggota = ({ usulanId, onCreateDraft }) => {
     const [formDosenVisible, setFormDosenVisible] = useState(false);
     const [editingDosenId, setEditingDosenId] = useState(null);
     const [formDosenData, setFormDosenData] = useState({
-        nuptik: '',
+        nidn: '',
         nama: '',
         peran: 'anggota',
-        institusi: '',
+        prodi: '',
         tugas: '',
     });
 
@@ -50,7 +50,7 @@ const IdentityAnggota = ({ usulanId, onCreateDraft }) => {
         jenis_anggota: '',
         no_identitas: '',
         nama: '',
-        institusi: '',
+        jurusan: '',
         tugas: '',
     });
 
@@ -123,10 +123,10 @@ const IdentityAnggota = ({ usulanId, onCreateDraft }) => {
 
     const handleShowFormDosen = () => {
         setFormDosenData({
-            nuptik: '',
+            nidn: '',
             nama: '',
             peran: 'anggota',
-            institusi: '',
+            prodi: '',
             tugas: '',
         });
         setEditingDosenId(null);
@@ -135,10 +135,10 @@ const IdentityAnggota = ({ usulanId, onCreateDraft }) => {
 
     const handleEditDosen = (anggota) => {
         setFormDosenData({
-            nuptik: anggota.nuptik || '',
+            nidn: anggota.nidn || '',
             nama: anggota.nama || '',
             peran: anggota.peran || 'anggota',
-            institusi: anggota.institusi || '',
+            prodi: anggota.prodi || '',
             tugas: anggota.tugas || '',
         });
         setEditingDosenId(anggota.id);
@@ -155,11 +155,11 @@ const IdentityAnggota = ({ usulanId, onCreateDraft }) => {
         try {
             if (editingDosenId) {
                 // Update
-                await api.put(`/pengajuan/anggota-dosen/${editingDosenId}`, formDosenData);
+                await api.put(`/pengajuan/anggota-penelitian/${editingDosenId}`, formDosenData);
                 alert('Dosen updated successfully');
             } else {
                 // Create
-                await api.post(`/pengajuan/${usulanId}/anggota-dosen`, formDosenData);
+                await api.post(`/pengajuan/${usulanId}/anggota-penelitian`, formDosenData);
                 alert('Dosen added successfully');
             }
             setFormDosenVisible(false);
@@ -218,7 +218,7 @@ const IdentityAnggota = ({ usulanId, onCreateDraft }) => {
             jenis_anggota: '',
             no_identitas: '',
             nama: '',
-            institusi: '',
+            jurusan: '',
             tugas: '',
         });
         setEditingNonDosenId(null);
@@ -230,7 +230,7 @@ const IdentityAnggota = ({ usulanId, onCreateDraft }) => {
             jenis_anggota: anggota.jenis_anggota || '',
             no_identitas: anggota.no_identitas || '',
             nama: anggota.nama || '',
-            institusi: anggota.institusi || '',
+            jurusan: anggota.jurusan || '',
             tugas: anggota.tugas || '',
         });
         setEditingNonDosenId(anggota.id);
@@ -336,7 +336,7 @@ const IdentityAnggota = ({ usulanId, onCreateDraft }) => {
                                     <th className="border border-gray-200 px-4 py-3 text-left">NIDN/NIDK</th>
                                     <th className="border border-gray-200 px-4 py-3 text-left">Nama</th>
                                     <th className="border border-gray-200 px-4 py-3 text-left">Peran</th>
-                                    <th className="border border-gray-200 px-4 py-3 text-left">Institusi</th>
+                                    <th className="border border-gray-200 px-4 py-3 text-left">Prodi</th>
                                     <th className="border border-gray-200 px-4 py-3 text-left">Tugas</th>
                                     <th className="border border-gray-200 px-4 py-3 text-center w-24">Status</th>
                                     <th className="border border-gray-200 px-4 py-3 text-center w-24">Aksi</th>
@@ -352,7 +352,7 @@ const IdentityAnggota = ({ usulanId, onCreateDraft }) => {
                                             <td className="border border-gray-200 px-4 py-2">{item.nidn}</td>
                                             <td className="border border-gray-200 px-4 py-2 font-medium">{item.nama}</td>
                                             <td className="border border-gray-200 px-4 py-2">{item.peran}</td>
-                                            <td className="border border-gray-200 px-4 py-2">{item.institusi}</td>
+                                            <td className="border border-gray-200 px-4 py-2">{item.prodi}</td>
                                             <td className="border border-gray-200 px-4 py-2 text-gray-600 italic">
                                                 {item.tugas || 'Belum diisi'}
                                             </td>
@@ -424,7 +424,7 @@ const IdentityAnggota = ({ usulanId, onCreateDraft }) => {
                                     <th className="border border-gray-200 px-4 py-3 text-left">Jenis Anggota</th>
                                     <th className="border border-gray-200 px-4 py-3 text-left">No Identitas (NIM/KTP)</th>
                                     <th className="border border-gray-200 px-4 py-3 text-left">Nama</th>
-                                    <th className="border border-gray-200 px-4 py-3 text-left">Instansi</th>
+                                    <th className="border border-gray-200 px-4 py-3 text-left">Jurusan</th>
                                     <th className="border border-gray-200 px-4 py-3 text-left">Tugas</th>
                                     <th className="border border-gray-200 px-4 py-3 text-center w-24">Status</th>
                                     <th className="border border-gray-200 px-4 py-3 text-center w-24">Aksi</th>
@@ -440,7 +440,7 @@ const IdentityAnggota = ({ usulanId, onCreateDraft }) => {
                                             <td className="border border-gray-200 px-4 py-2">{item.jenis_anggota}</td>
                                             <td className="border border-gray-200 px-4 py-2">{item.no_identitas}</td>
                                             <td className="border border-gray-200 px-4 py-2 font-medium">{item.nama}</td>
-                                            <td className="border border-gray-200 px-4 py-2">{item.institusi}</td>
+                                            <td className="border border-gray-200 px-4 py-2">{item.jurusan}</td>
                                             <td className="border border-gray-200 px-4 py-2 text-gray-600 italic">
                                                 {item.tugas || 'Belum diisi'}
                                             </td>
@@ -513,15 +513,14 @@ const IdentityAnggota = ({ usulanId, onCreateDraft }) => {
                                 <label className="block text-sm font-semibold text-gray-700 mb-1">Cari Dosen</label>
                                 <SearchableDosenSelect
                                     value={
-                                        formDosenData.nuptik && formDosenData.nama && typeof formDosenData.nuptik === 'string' && typeof formDosenData.nama === 'string'
+                                        formDosenData.nidn && formDosenData.nama && typeof formDosenData.nidn === 'string' && typeof formDosenData.nama === 'string'
                                             ? {
-                                                value: formDosenData.nuptik,
-                                                label: `${String(formDosenData.nuptik).trim()} - ${String(formDosenData.nama).trim()}`,
+                                                value: formDosenData.nidn,
+                                                label: `${String(formDosenData.nidn).trim()} - ${String(formDosenData.nama).trim()}`,
                                                 dosen: {
-                                                    id: formDosenData.nuptik,
-                                                    nidn: formDosenData.nuptik,
+                                                    id: formDosenData.nidn,
+                                                    nidn: formDosenData.nidn,
                                                     nama: formDosenData.nama,
-                                                    email: formDosenData.institusi || ''
                                                 }
                                             }
                                             : null
@@ -530,14 +529,13 @@ const IdentityAnggota = ({ usulanId, onCreateDraft }) => {
                                         if (selected && selected.dosen) {
                                             setFormDosenData({
                                                 ...formDosenData,
-                                                nuptik: selected.dosen.nidn,
+                                                nidn: selected.dosen.nidn,
                                                 nama: selected.dosen.nama,
-                                                institusi: selected.dosen.email || ''
                                             });
                                         } else {
                                             setFormDosenData({
                                                 ...formDosenData,
-                                                nuptik: '',
+                                                nidn: '',
                                                 nama: '',
                                             });
                                         }
@@ -549,7 +547,7 @@ const IdentityAnggota = ({ usulanId, onCreateDraft }) => {
                             {/* NIDN (Hidden but still tracked) */}
                             <input
                                 type="hidden"
-                                value={formDosenData.nuptik}
+                                value={formDosenData.nidn}
                             />
 
                             {/* Nama (Hidden but still tracked) */}
@@ -571,14 +569,14 @@ const IdentityAnggota = ({ usulanId, onCreateDraft }) => {
                                 </select>
                             </div>
 
-                            {/* Institusi */}
+                            {/* Prodi */}
                             <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-1">Institusi</label>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">Program Studi</label>
                                 <input
                                     type="text"
-                                    placeholder="Masukkan institusi"
-                                    value={formDosenData.institusi}
-                                    onChange={(e) => setFormDosenData({ ...formDosenData, institusi: e.target.value })}
+                                    placeholder="Masukkan program studi"
+                                    value={formDosenData.prodi}
+                                    onChange={(e) => setFormDosenData({ ...formDosenData, prodi: e.target.value })}
                                     className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                 />
                             </div>
@@ -638,7 +636,7 @@ const IdentityAnggota = ({ usulanId, onCreateDraft }) => {
                                             jenis_anggota: e.target.value,
                                             no_identitas: '',
                                             nama: '',
-                                            institusi: ''
+                                            jurusan: ''
                                         });
                                     }}
                                     className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -664,7 +662,7 @@ const IdentityAnggota = ({ usulanId, onCreateDraft }) => {
                                                         id: 0, // Temporary ID
                                                         nim: formNonDosenData.no_identitas,
                                                         nama: formNonDosenData.nama,
-                                                        jurusan: formNonDosenData.institusi || '',
+                                                        jurusan: formNonDosenData.jurusan || '',
                                                         angkatan: new Date().getFullYear(),
                                                         email: '',
                                                         status: 'aktif'
@@ -679,7 +677,7 @@ const IdentityAnggota = ({ usulanId, onCreateDraft }) => {
                                                     ...formNonDosenData,
                                                     no_identitas: selected.mahasiswa.nim,
                                                     nama: selected.mahasiswa.nama,
-                                                    institusi: selected.mahasiswa.jurusan || ''
+                                                    jurusan: selected.mahasiswa.jurusan || ''
                                                 });
                                             } else {
                                                 // Clear when selection is removed
@@ -687,7 +685,7 @@ const IdentityAnggota = ({ usulanId, onCreateDraft }) => {
                                                     ...formNonDosenData,
                                                     no_identitas: '',
                                                     nama: '',
-                                                    institusi: ''
+                                                    jurusan: ''
                                                 });
                                             }
                                         }}
@@ -733,13 +731,13 @@ const IdentityAnggota = ({ usulanId, onCreateDraft }) => {
                             {/* Instansi */}
                             <div>
                                 <label className="block text-sm font-semibold text-gray-700 mb-1">
-                                    {formNonDosenData.jenis_anggota === 'mahasiswa' ? 'Jurusan' : 'Instansi/Universitas'}
+                                    {formNonDosenData.jenis_anggota === 'mahasiswa' ? 'Jurusan' : 'Jurusan'}
                                 </label>
                                 <input
                                     type="text"
-                                    placeholder={formNonDosenData.jenis_anggota === 'mahasiswa' ? 'Jurusan' : 'Masukkan instansi'}
-                                    value={formNonDosenData.institusi}
-                                    onChange={(e) => setFormNonDosenData({ ...formNonDosenData, institusi: e.target.value })}
+                                    placeholder={formNonDosenData.jenis_anggota === 'mahasiswa' ? 'Jurusan' : 'Masukkan jurusan'}
+                                    value={formNonDosenData.jurusan}
+                                    onChange={(e) => setFormNonDosenData({ ...formNonDosenData, jurusan: e.target.value })}
                                     className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                     disabled={formNonDosenData.jenis_anggota === 'mahasiswa'} // Auto-filled from search
                                 />
@@ -767,7 +765,7 @@ const IdentityAnggota = ({ usulanId, onCreateDraft }) => {
                                         jenis_anggota: '',
                                         no_identitas: '',
                                         nama: '',
-                                        institusi: '',
+                                        jurusan: '',
                                         tugas: '',
                                     });
                                 }}

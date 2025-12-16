@@ -277,14 +277,15 @@ class UsulanPenelitianController extends Controller
             }
 
             $anggota = $usulan->anggotaDosen()
-                ->with('dosen')
                 ->orderBy('created_at', 'desc')
                 ->get()
                 ->map(fn($item) => [
                     'id' => $item->id,
-                    'nidn' => $item->dosen->nidn ?? null,
-                    'nama' => $item->dosen->nama ?? null,
+                    'nidn' => $item->nidn,
+                    'nama' => $item->nama,
                     'peran' => $item->peran,
+                    'prodi' => $item->prodi,
+                    'tugas' => $item->tugas,
                     'status_approval' => $item->status_approval,
                     'created_at' => $item->created_at,
                 ]);
@@ -316,9 +317,10 @@ class UsulanPenelitianController extends Controller
                 ->get()
                 ->map(fn($item) => [
                     'id' => $item->id,
+                    'jenis_anggota' => $item->jenis_anggota,
                     'no_identitas' => $item->no_identitas,
                     'nama' => $item->nama,
-                    'institusi' => $item->institusi,
+                    'jurusan' => $item->jurusan,
                     'tugas' => $item->tugas,
                     'status_approval' => $item->status_approval,
                     'created_at' => $item->created_at,
