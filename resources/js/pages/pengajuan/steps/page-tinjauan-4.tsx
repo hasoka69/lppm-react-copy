@@ -5,24 +5,49 @@ interface PageTinjauanProps {
   onKembali?: () => void;
   onKonfirmasi?: () => void;
   onTutupForm?: () => void;
+  usulanId?: number; // ✅ TAMBAHKAN INI
+
 }
 
 const PageTinjauan: React.FC<PageTinjauanProps> = ({
   onKembali,
   onKonfirmasi,
-  onTutupForm
+  onTutupForm,
+  usulanId // ✅ TAMBAHKAN INI
 }) => {
+
+  // ✅ Debug log
+  console.log('🔍 PageTinjauan - usulanId:', usulanId);
 
   const handlePrintPDF = () => {
     window.print();
   };
 
   const handleSubmit = () => {
+    if (!usulanId) {
+      alert('Usulan ID tidak ditemukan. Tidak dapat submit.');
+      return;
+    }
     onKonfirmasi?.();
   };
 
   return (
     <>
+
+      {/* ✅ Warning jika usulanId tidak ada */}
+      {!usulanId && (
+        <div style={{
+          padding: '12px',
+          backgroundColor: '#fee',
+          border: '1px solid #fcc',
+          borderRadius: '4px',
+          marginBottom: '16px',
+          color: '#c00'
+        }}>
+          ⚠️ <strong>Warning:</strong> Usulan ID tidak ditemukan. Tidak dapat submit usulan.
+        </div>
+      )}
+
       {/* Informasi Status */}
       <div className={styles.alertWarning}>
         <div className={styles.alertIcon}>⚠️</div>

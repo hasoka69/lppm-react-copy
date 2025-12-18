@@ -1,5 +1,4 @@
 <?php
-//app/Http/Controllers/UsulanPenelitianController.php
 
 namespace App\Http\Controllers;
 
@@ -8,18 +7,17 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Storage; // ✅ TAMBAHKAN INI
 use Inertia\Inertia;
 
 class UsulanPenelitianController extends Controller
 {
     /**
-     * Tampilkan daftar usulan
+     * Tampilkan daftar usulan + auto-resume draft terakhir
      */
     public function index()
     {
         $user = Auth::user();
-        /** @var \App\Models\User $user */
 
         $usulanList = UsulanPenelitian::where('user_id', $user->id)
             ->latest()
@@ -31,41 +29,66 @@ class UsulanPenelitianController extends Controller
                 'judul' => $u->judul,
                 'tahun_pelaksanaan' => $u->tahun_pertama ?? date('Y'),
                 'makro_riset' => $u->kelompok_makro_riset ?? 'N/A',
-                'peran' => 'Ketua', // hardcoded, sesuaikan jika ada kolom peran
+                'peran' => 'Ketua',
                 'status' => $u->status,
             ]);
 
-        // Ambil data master untuk dropdown
+        // ✅ TAMBAHAN: Ambil draft terakhir yang sedang dikerjakan
+        $latestDraft = UsulanPenelitian::where('user_id', $user->id)
+            ->where('status', 'draft')
+            ->latest()
+            ->first();
+
+        // Ambil data master
         $masterData = $this->getMasterData();
 
         return Inertia::render('pengajuan/Index', [
             'usulanList' => $usulanList,
+            'latestDraft' => $latestDraft ? [
+                'id' => $latestDraft->id,
+                'judul' => $latestDraft->judul,
+                'tkt_saat_ini' => $latestDraft->tkt_saat_ini,
+                'target_akhir_tkt' => $latestDraft->target_akhir_tkt,
+                'kelompok_skema' => $latestDraft->kelompok_skema,
+                'ruang_lingkup' => $latestDraft->ruang_lingkup,
+                'kategori_sbk' => $latestDraft->kategori_sbk,
+                'bidang_fokus' => $latestDraft->bidang_fokus,
+                'tema_penelitian' => $latestDraft->tema_penelitian,
+                'topik_penelitian' => $latestDraft->topik_penelitian,
+                'rumpun_ilmu_1' => $latestDraft->rumpun_ilmu_1,
+                'rumpun_ilmu_2' => $latestDraft->rumpun_ilmu_2,
+                'rumpun_ilmu_3' => $latestDraft->rumpun_ilmu_3,
+                'prioritas_riset' => $latestDraft->prioritas_riset,
+                'tahun_pertama' => $latestDraft->tahun_pertama,
+                'lama_kegiatan' => $latestDraft->lama_kegiatan,
+            ] : null,
+            'makroRisetList' => DB::table('makro_riset')->where('aktif', true)->get(), // ✅ TAMBAHAN
             ...$masterData,
         ]);
     }
 
     /**
-     * Simpan usulan sebagai draft
+     * Simpan draft baru
      */
-    public function storeDraft(Request $request)
-    {
-        $validated = $request->validate([
-            'judul' => 'nullable|string|max:500',
-            'tkt_saat_ini' => 'nullable|integer|min:1|max:9',
-            'target_akhir_tkt' => 'nullable|integer|min:1|max:9',
-            'kelompok_skema' => 'nullable|string',
-            'ruang_lingkup' => 'nullable|string',
-            'kategori_sbk' => 'nullable|string',
-            'bidang_fokus' => 'nullable|string',
-            'tema_penelitian' => 'nullable|string',
-            'topik_penelitian' => 'nullable|string',
-            'rumpun_ilmu_1' => 'nullable|string',
-            'rumpun_ilmu_2' => 'nullable|string',
-            'rumpun_ilmu_3' => 'nullable|string',
-            'prioritas_riset' => 'nullable|string',
-            'tahun_pertama' => 'nullable|integer',
-            'lama_kegiatan' => 'nullable|integer',
-        ]);
+public function storeDraft(Request $request)
+{
+    $validated = $request->validate([
+        'judul' => 'nullable|string|max:500',
+        'tkt_saat_ini' => 'nullable|integer|min:1|max:9',
+        'target_akhir_tkt' => 'nullable|integer|min:1|max:9',
+        'kelompok_skema' => 'nullable|string',
+        'ruang_lingkup' => 'nullable|string',
+        'kategori_sbk' => 'nullable|string',
+        'bidang_fokus' => 'nullable|string',
+        'tema_penelitian' => 'nullable|string',
+        'topik_penelitian' => 'nullable|string',
+        'rumpun_ilmu_1' => 'nullable|string',
+        'rumpun_ilmu_2' => 'nullable|string',
+        'rumpun_ilmu_3' => 'nullable|string',
+        'prioritas_riset' => 'nullable|string',
+        'tahun_pertama' => 'nullable|integer',
+        'lama_kegiatan' => 'nullable|integer',
+    ]);
 
         try {
             DB::beginTransaction();
@@ -78,42 +101,31 @@ class UsulanPenelitianController extends Controller
 
             DB::commit();
 
-            // If request expects JSON (axios), return JSON
-            if ($request->expectsJson() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Draft berhasil disimpan!',
-                    'usulanId' => $usulan->id,
-                    'data' => $usulan,
-                ]);
-            }
+            Log::info('Draft created', ['usulan_id' => $usulan->id]);
 
-            // Otherwise use Inertia redirect
-            return back()->with([
-                'success' => 'Draft berhasil disimpan!',
+            // ✅ PENTING: RETURN JSON
+            return response()->json([
+                'success' => true,
                 'usulanId' => $usulan->id,
-            ]);
+            ], 201);
+
         } catch (\Exception $e) {
             DB::rollBack();
-            
-            // If request expects JSON, return JSON error
-            if ($request->expectsJson() || $request->header('X-Requested-With') === 'XMLHttpRequest') {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Gagal menyimpan draft: ' . $e->getMessage(),
-                ], 400);
-            }
+            Log::error('Failed to create draft', ['error' => $e->getMessage()]);
 
-            return back()->with('error', 'Gagal menyimpan draft: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menyimpan draft',
+            ], 500);
         }
     }
 
+
     /**
-     * Update usulan (navigasi antar step)
+     * Update usulan
      */
     public function update(Request $request, UsulanPenelitian $usulan)
     {
-        /** @var \App\Models\UsulanPenelitian $usulan */
         if ($usulan->user_id !== Auth::id()) {
             abort(403);
         }
@@ -134,18 +146,9 @@ class UsulanPenelitianController extends Controller
             'prioritas_riset' => 'nullable|string',
             'tahun_pertama' => 'nullable|integer',
             'lama_kegiatan' => 'nullable|integer',
-            'kelompok_makro_riset' => 'nullable|string',
-            'rab_bahan' => 'nullable|array',
-            'rab_pengumpulan_data' => 'nullable|array',
         ]);
 
         try {
-            if (isset($validated['rab_bahan']) || isset($validated['rab_pengumpulan_data'])) {
-                $totalBahan = collect($validated['rab_bahan'] ?? [])->sum('total');
-                $totalData  = collect($validated['rab_pengumpulan_data'] ?? [])->sum('total');
-                $validated['total_anggaran'] = $totalBahan + $totalData;
-            }
-
             $usulan->update($validated);
 
             return back()->with('success', 'Data berhasil diperbarui!');
@@ -164,7 +167,7 @@ class UsulanPenelitianController extends Controller
 
         $masterData = $this->getMasterData();
 
-        return Inertia::render('pengajuan/Identitas', [
+        return Inertia::render('pengajuan/steps/page-identitas-1', [
             'usulanId' => $usulan->id,
             'usulan' => $usulan,
             'editMode' => true,
@@ -298,6 +301,38 @@ class UsulanPenelitianController extends Controller
         }
     }
 
+
+    // TAMBAHKAN method ini di UsulanPenelitianController.php
+
+/**
+ * Helper: Get master data for form
+ */
+private function getMasterDataWithMakroRiset()
+{
+    return [
+        'makroRisetList' => DB::table('makro_riset')->where('aktif', true)->get(),
+        'kelompokSkemaList' => DB::table('kelompok_skema')->where('aktif', true)->get(),
+        'ruangLingkupList' => DB::table('ruang_lingkup')->where('aktif', true)->get(),
+        // ... data master lainnya
+    ];
+}
+
+/**
+ * Show form for specific step
+ */
+public function showStep($usulanId, $step)
+{
+    $usulan = UsulanPenelitian::where('user_id', Auth::id())->findOrFail($usulanId);
+    
+    $masterData = $this->getMasterDataWithMakroRiset();
+    
+    return Inertia::render("pengajuan/Index", [
+        'usulanId' => $usulan->id,
+        'usulan' => $usulan,
+        'currentStep' => $step,
+        ...$masterData,
+    ]);
+}
     /**
      * GET: Fetch anggota non-dosen untuk usulan tertentu
      */

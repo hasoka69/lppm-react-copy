@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { usePage } from '@inertiajs/react';
 import Header from "@/components/Header";
 import Footer from "@/components/footer";
@@ -10,7 +10,6 @@ import PageStatus from './steps/page-status';
 import PageTinjauan from './steps/page-tinjauan-4';
 import styles from '../../../css/pengajuan.module.css';
 
-// Tipe dasar
 export interface Usulan {
     no: number;
     id: number;
@@ -22,7 +21,6 @@ export interface Usulan {
     status: string;
 }
 
-// Tipe lengkap untuk PageIdentitas
 export interface UsulanData extends Usulan {
     tkt_saat_ini: string;
     target_akhir_tkt: string;
@@ -30,23 +28,32 @@ export interface UsulanData extends Usulan {
     ruang_lingkup: string;
 }
 
-// Steps
 export type CurrentStep = 1 | 2 | 3 | 4;
 type ActiveView = 'daftar' | 'pengajuan';
 
 const PengajuanIndex = () => {
     const { props } = usePage();
     const usulanList: Usulan[] = (props.usulanList as Usulan[]) || [];
+    const latestDraft = (props.latestDraft as Partial<UsulanData>) || null; // ✅ TAMBAHAN
 
     const [activeView, setActiveView] = useState<ActiveView>('daftar');
     const [activeTab, setActiveTab] = useState<'daftar' | 'pengajuan' | 'riwayat' | 'panduan'>('daftar');
     const [currentStep, setCurrentStep] = useState<CurrentStep>(1);
     const [editingUsulan, setEditingUsulan] = useState<Partial<UsulanData> | null>(null);
-
-    // PENTING: State untuk menyimpan usulanId yang aktif
     const [currentUsulanId, setCurrentUsulanId] = useState<number | null>(null);
 
-    // Draft dummy jika belum ada
+    // ✅ TAMBAHAN: Auto-resume draft terakhir saat pertama kali load
+    useEffect(() => {
+        if (latestDraft && latestDraft.id) {
+            console.log('🔄 Auto-resuming draft:', latestDraft.id);
+            setCurrentUsulanId(latestDraft.id);
+            setEditingUsulan(latestDraft);
+
+            // ✅ OPTIONAL: Tampilkan notifikasi
+            alert(`Draft terakhir (ID: ${latestDraft.id}) berhasil dimuat`);
+        }
+    }, [latestDraft]); // Run only once on mount
+
     const defaultDraft: UsulanData = {
         id: 0,
         no: 0,
@@ -64,10 +71,26 @@ const PengajuanIndex = () => {
 
     const usulanToEdit: Partial<UsulanData> = editingUsulan || defaultDraft;
 
-    // Event handlers
     const handleTambahUsulan = () => {
-        setEditingUsulan(null);
-        setCurrentUsulanId(null); // Reset ID
+        // ✅ KONFIRMASI: Jika ada draft, tanya user
+        if (currentUsulanId && latestDraft) {
+            const confirm = window.confirm(
+                'Anda memiliki draft yang belum selesai. Ingin melanjutkan draft tersebut atau membuat baru?'
+            );
+
+            if (confirm) {
+                // Lanjutkan draft existing
+                setEditingUsulan(latestDraft);
+            } else {
+                // Buat draft baru
+                setEditingUsulan(null);
+                setCurrentUsulanId(null);
+            }
+        } else {
+            setEditingUsulan(null);
+            setCurrentUsulanId(null);
+        }
+
         setActiveView('pengajuan');
         setActiveTab('pengajuan');
         setCurrentStep(1);
@@ -75,7 +98,7 @@ const PengajuanIndex = () => {
 
     const handleEditUsulan = (usulan: Usulan) => {
         setEditingUsulan({ ...defaultDraft, ...usulan });
-        setCurrentUsulanId(usulan.id); // Set ID dari usulan yang diedit
+        setCurrentUsulanId(usulan.id);
         setActiveView('pengajuan');
         setActiveTab('pengajuan');
         setCurrentStep(1);
@@ -85,7 +108,8 @@ const PengajuanIndex = () => {
         setActiveView('daftar');
         setActiveTab('daftar');
         setCurrentStep(1);
-        setCurrentUsulanId(null); // Reset ID
+        // ✅ JANGAN reset usulanId agar draft tetap tersimpan
+        // setCurrentUsulanId(null); // ❌ HAPUS INI
     };
 
     const handleSelanjutnya = () => {
@@ -96,14 +120,22 @@ const PengajuanIndex = () => {
         if (currentStep > 1) setCurrentStep((prev) => (prev - 1) as CurrentStep);
     };
 
-    // Handler untuk update usulanId setelah draft dibuat
     const handleDraftCreated = (usulanId: number) => {
-        console.log('Draft created with ID:', usulanId);
+        console.log('✅ Draft created/updated with ID:', usulanId);
+
+        if (!usulanId || usulanId <= 0) {
+            console.error('❌ Invalid usulanId received:', usulanId);
+            alert('Error: ID usulan tidak valid');
+            return;
+        }
+
         setCurrentUsulanId(usulanId);
+        console.log('✅ State updated - currentUsulanId:', usulanId);
     };
 
-    // Render steps
     const renderStepContent = () => {
+        console.log('🔍 Rendering Step:', currentStep, 'with usulanId:', currentUsulanId);
+
         switch (currentStep) {
             case 1:
                 return (
@@ -112,7 +144,7 @@ const PengajuanIndex = () => {
                         usulanId={currentUsulanId ?? undefined}
                         onSelanjutnya={handleSelanjutnya}
                         onTutupForm={handleKembaliKeDaftar}
-                        onDraftCreated={handleDraftCreated} // Pass callback
+                        onDraftCreated={handleDraftCreated}
                     />
                 );
             case 2:
@@ -120,7 +152,7 @@ const PengajuanIndex = () => {
                     <PageSubstansi
                         onKembali={handleKembali}
                         onSelanjutnya={handleSelanjutnya}
-                        usulanId={currentUsulanId ?? undefined} // Pass usulanId
+                        usulanId={currentUsulanId ?? undefined}
                     />
                 );
             case 3:
@@ -128,7 +160,7 @@ const PengajuanIndex = () => {
                     <PageRAB
                         onKembali={handleKembali}
                         onSelanjutnya={handleSelanjutnya}
-                        usulanId={currentUsulanId ?? undefined} // Pass usulanId
+                        usulanId={currentUsulanId ?? undefined}
                     />
                 );
             case 4:
@@ -136,7 +168,7 @@ const PengajuanIndex = () => {
                     <PageTinjauan
                         onKembali={handleKembali}
                         onKonfirmasi={handleKembaliKeDaftar}
-                        usulanId={currentUsulanId ?? undefined} // Pass usulanId
+                        usulanId={currentUsulanId ?? undefined}
                     />
                 );
             default:
@@ -144,15 +176,52 @@ const PengajuanIndex = () => {
         }
     };
 
-    // Render content
     const renderContent = () => {
         if (activeView === 'daftar') {
             return (
-                <PageUsulan
-                    onTambahUsulan={handleTambahUsulan}
-                    onEditUsulan={handleEditUsulan}
-                    usulanList={usulanList}
-                />
+                <>
+                    {/* ✅ TAMBAHAN: Banner Draft Notification */}
+                    {latestDraft && latestDraft.id && (
+                        <div style={{
+                            backgroundColor: '#dbeafe',
+                            border: '1px solid #3b82f6',
+                            borderRadius: '8px',
+                            padding: '12px 16px',
+                            marginBottom: '16px',
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center'
+                        }}>
+                            <div>
+                                <strong>📝 Draft Terakhir:</strong> {latestDraft.judul || 'Belum ada judul'} (ID: {latestDraft.id})
+                            </div>
+                            <button
+                                onClick={() => {
+                                    setEditingUsulan(latestDraft);
+                                    setCurrentUsulanId(latestDraft.id!);
+                                    setActiveView('pengajuan');
+                                    setActiveTab('pengajuan');
+                                }}
+                                style={{
+                                    backgroundColor: '#3b82f6',
+                                    color: 'white',
+                                    padding: '6px 12px',
+                                    borderRadius: '6px',
+                                    border: 'none',
+                                    cursor: 'pointer'
+                                }}
+                            >
+                                Lanjutkan Draft
+                            </button>
+                        </div>
+                    )}
+
+                    <PageUsulan
+                        onTambahUsulan={handleTambahUsulan}
+                        onEditUsulan={handleEditUsulan}
+                        usulanList={usulanList}
+                    />
+                </>
             );
         }
         return (

@@ -30,8 +30,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('index');
         
         // Store Draft - Simpan usulan baru sebagai draft
+        // ✅ FIXED
         Route::post('/draft', [UsulanPenelitianController::class, 'storeDraft'])
-            ->name('draft');
+        ->name('draft');
 
             // Edit Usulan
         Route::get('/{usulan}/edit', [UsulanPenelitianController::class, 'edit'])
@@ -76,6 +77,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('anggota-non-dosen.approve');
         Route::post('/{usulan}/anggota-non-dosen/{anggota}/reject', [AnggotaApprovalController::class, 'rejectNonDosen'])
             ->name('anggota-non-dosen.reject');
+
+            // ✅ TAMBAHKAN: Get master data for steps
+        Route::get('/{usulan}/step/{step}', [UsulanPenelitianController::class, 'showStep'])
+            ->name('step.show');
     
     // ============================================
         // LUARAN PENELITIAN ROUTES (Step 2)

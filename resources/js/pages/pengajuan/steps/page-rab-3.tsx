@@ -14,9 +14,10 @@ interface RABItem {
 interface PageRABProps {
   onKembali?: () => void;
   onSelanjutnya?: () => void;
+  usulanId?: number; // ✅ TAMBAHKAN INI
 }
 
-const PageRAB: React.FC<PageRABProps> = ({ onKembali, onSelanjutnya }) => {
+const PageRAB: React.FC<PageRABProps> = ({ onKembali, onSelanjutnya, usulanId }) => { // ✅ TAMBAHKAN usulanId
   const [bahanItems, setBahanItems] = useState<RABItem[]>([
     { id: 1, komponen: 'Pilih Komponen', item: '✔', satuan: '✔', volume: 1, hargaSatuan: 0, total: 0 }
   ]);
@@ -24,6 +25,12 @@ const PageRAB: React.FC<PageRABProps> = ({ onKembali, onSelanjutnya }) => {
   const [pengumpulanDataItems, setPengumpulanDataItems] = useState<RABItem[]>([
     { id: 1, komponen: 'Pilih Komponen', item: '✔', satuan: '✔', volume: 1, hargaSatuan: 0, total: 0 }
   ]);
+
+  // ✅ Debug log
+  console.log('🔍 PageRAB - usulanId:', usulanId);
+
+  // Rest of the component code...
+  // (Semua code lainnya tetap sama)
 
   const addBahanItem = () => {
     const newItem: RABItem = {
@@ -95,6 +102,20 @@ const PageRAB: React.FC<PageRABProps> = ({ onKembali, onSelanjutnya }) => {
 
   return (
     <>
+      {/* ✅ Warning jika usulanId tidak ada */}
+      {!usulanId && (
+        <div style={{
+          padding: '12px',
+          backgroundColor: '#fee',
+          border: '1px solid #fcc',
+          borderRadius: '4px',
+          marginBottom: '16px',
+          color: '#c00'
+        }}>
+          ⚠️ <strong>Warning:</strong> Usulan ID tidak ditemukan. Silakan simpan draft terlebih dahulu.
+        </div>
+      )}
+
       {/* Informasi Section */}
       <div className={styles.formSection}>
         <h2 className={styles.sectionTitle}>Rencana Anggaran Belanja</h2>
@@ -112,7 +133,7 @@ const PageRAB: React.FC<PageRABProps> = ({ onKembali, onSelanjutnya }) => {
       <div className={styles.formSection}>
         <div className={styles.sectionHeader}>
           <h3 className={styles.subTitle}>Bahan</h3>
-          <button className={styles.addButton} onClick={addBahanItem}>
+          <button className={styles.addButton} onClick={addBahanItem} disabled={!usulanId}>
             + Tambah
           </button>
         </div>
@@ -140,6 +161,7 @@ const PageRAB: React.FC<PageRABProps> = ({ onKembali, onSelanjutnya }) => {
                       className={styles.selectSmall}
                       value={item.komponen}
                       onChange={(e) => updateBahanItem(item.id, 'komponen', e.target.value)}
+                      disabled={!usulanId}
                     >
                       <option value="Pilih Komponen">Pilih Komponen</option>
                       <option value="Bahan Habis Pakai">Bahan Habis Pakai</option>
@@ -154,6 +176,7 @@ const PageRAB: React.FC<PageRABProps> = ({ onKembali, onSelanjutnya }) => {
                       value={item.item}
                       onChange={(e) => updateBahanItem(item.id, 'item', e.target.value)}
                       placeholder="Item"
+                      disabled={!usulanId}
                     />
                   </td>
                   <td>
@@ -163,6 +186,7 @@ const PageRAB: React.FC<PageRABProps> = ({ onKembali, onSelanjutnya }) => {
                       value={item.satuan}
                       onChange={(e) => updateBahanItem(item.id, 'satuan', e.target.value)}
                       placeholder="Satuan"
+                      disabled={!usulanId}
                     />
                   </td>
                   <td>
@@ -172,6 +196,7 @@ const PageRAB: React.FC<PageRABProps> = ({ onKembali, onSelanjutnya }) => {
                       value={item.volume}
                       onChange={(e) => updateBahanItem(item.id, 'volume', parseInt(e.target.value) || 0)}
                       min="1"
+                      disabled={!usulanId}
                     />
                   </td>
                   <td>
@@ -181,6 +206,7 @@ const PageRAB: React.FC<PageRABProps> = ({ onKembali, onSelanjutnya }) => {
                       value={item.hargaSatuan}
                       onChange={(e) => updateBahanItem(item.id, 'hargaSatuan', parseInt(e.target.value) || 0)}
                       placeholder="0"
+                      disabled={!usulanId}
                     />
                   </td>
                   <td>Rp. {item.total.toLocaleString('id-ID')},00</td>
@@ -188,7 +214,7 @@ const PageRAB: React.FC<PageRABProps> = ({ onKembali, onSelanjutnya }) => {
                     <button
                       className={styles.deleteButton}
                       onClick={() => deleteBahanItem(item.id)}
-                      disabled={bahanItems.length === 1}
+                      disabled={bahanItems.length === 1 || !usulanId}
                     >
                       🗑️
                     </button>
@@ -200,11 +226,11 @@ const PageRAB: React.FC<PageRABProps> = ({ onKembali, onSelanjutnya }) => {
         </div>
       </div>
 
-      {/* Pengumpulan Data Section */}
+      {/* Pengumpulan Data Section - Similar pattern */}
       <div className={styles.formSection}>
         <div className={styles.sectionHeader}>
           <h3 className={styles.subTitle}>Pengumpulan Data</h3>
-          <button className={styles.addButton} onClick={addPengumpulanDataItem}>
+          <button className={styles.addButton} onClick={addPengumpulanDataItem} disabled={!usulanId}>
             + Tambah
           </button>
         </div>
@@ -232,6 +258,7 @@ const PageRAB: React.FC<PageRABProps> = ({ onKembali, onSelanjutnya }) => {
                       className={styles.selectSmall}
                       value={item.komponen}
                       onChange={(e) => updatePengumpulanDataItem(item.id, 'komponen', e.target.value)}
+                      disabled={!usulanId}
                     >
                       <option value="Pilih Komponen">Pilih Komponen</option>
                       <option value="Survey">Survey</option>
@@ -246,6 +273,7 @@ const PageRAB: React.FC<PageRABProps> = ({ onKembali, onSelanjutnya }) => {
                       value={item.item}
                       onChange={(e) => updatePengumpulanDataItem(item.id, 'item', e.target.value)}
                       placeholder="Item"
+                      disabled={!usulanId}
                     />
                   </td>
                   <td>
@@ -255,6 +283,7 @@ const PageRAB: React.FC<PageRABProps> = ({ onKembali, onSelanjutnya }) => {
                       value={item.satuan}
                       onChange={(e) => updatePengumpulanDataItem(item.id, 'satuan', e.target.value)}
                       placeholder="Satuan"
+                      disabled={!usulanId}
                     />
                   </td>
                   <td>
@@ -264,6 +293,7 @@ const PageRAB: React.FC<PageRABProps> = ({ onKembali, onSelanjutnya }) => {
                       value={item.volume}
                       onChange={(e) => updatePengumpulanDataItem(item.id, 'volume', parseInt(e.target.value) || 0)}
                       min="1"
+                      disabled={!usulanId}
                     />
                   </td>
                   <td>
@@ -273,6 +303,7 @@ const PageRAB: React.FC<PageRABProps> = ({ onKembali, onSelanjutnya }) => {
                       value={item.hargaSatuan}
                       onChange={(e) => updatePengumpulanDataItem(item.id, 'hargaSatuan', parseInt(e.target.value) || 0)}
                       placeholder="0"
+                      disabled={!usulanId}
                     />
                   </td>
                   <td>Rp. {item.total.toLocaleString('id-ID')},00</td>
@@ -280,7 +311,7 @@ const PageRAB: React.FC<PageRABProps> = ({ onKembali, onSelanjutnya }) => {
                     <button
                       className={styles.deleteButton}
                       onClick={() => deletePengumpulanDataItem(item.id)}
-                      disabled={pengumpulanDataItems.length === 1}
+                      disabled={pengumpulanDataItems.length === 1 || !usulanId}
                     >
                       🗑️
                     </button>
@@ -297,7 +328,7 @@ const PageRAB: React.FC<PageRABProps> = ({ onKembali, onSelanjutnya }) => {
         <button className={styles.secondaryButton} onClick={onKembali}>
           &lt; Kembali
         </button>
-        <button className={styles.primaryButton} onClick={onSelanjutnya}>
+        <button className={styles.primaryButton} onClick={onSelanjutnya} disabled={!usulanId}>
           Selanjutnya &gt;
         </button>
       </div>

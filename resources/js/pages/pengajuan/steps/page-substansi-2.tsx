@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useForm, usePage } from '@inertiajs/react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { useForm, usePage, router } from '@inertiajs/react';
 import styles from '../../../../css/pengajuan.module.css';
 import { LuaranForm } from '../components/LuaranForm';
 import { LuaranList } from '../components/LuaranList';
@@ -31,7 +31,7 @@ interface Luaran {
 interface PageSubstansiProps {
   onKembali?: () => void;
   onSelanjutnya?: () => void;
-  usulanId?: number; // Tambahkan prop usulanId
+  usulanId?: number;
 }
 
 // ====================
@@ -41,24 +41,33 @@ interface PageSubstansiProps {
 const PageSubstansi: React.FC<PageSubstansiProps> = ({
   onKembali,
   onSelanjutnya,
-  usulanId: propUsulanId // Terima dari props
+  usulanId: propUsulanId
 }) => {
   const { props } = usePage<{
-    makroRisetList: MakroRiset[];
+    makroRisetList?: MakroRiset[];
     substansi?: SubstansiData;
-    usulanId?: number; // Bisa juga dari usePage
+    usulanId?: number;
   }>();
 
-  const makroRisetList = props.makroRisetList ?? [];
-  const substansi = props.substansi ?? null;
-
-  // Ambil usulanId dari props atau dari usePage
+  // ✅ SINGLE SOURCE OF TRUTH untuk usulanId
   const usulanId = propUsulanId ?? props.usulanId;
+
+  // ✅ FIX: Wrap dalam useMemo untuk prevent re-render issues
+  const makroRisetList = useMemo(() => props.makroRisetList ?? [], [props.makroRisetList]);
+  const substansi = useMemo(() => props.substansi ?? null, [props.substansi]);
 
   // State untuk Luaran Management
   const [showLuaranForm, setShowLuaranForm] = useState(false);
   const [editingLuaran, setEditingLuaran] = useState<Luaran | undefined>(undefined);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+  // ✅ Load master data jika belum ada
+  useEffect(() => {
+    if (usulanId && makroRisetList.length === 0) {
+      console.log('📥 Loading master data for usulanId:', usulanId);
+      router.reload({ only: ['makroRisetList', 'substansi'] });
+    }
+  }, [usulanId, makroRisetList.length]);
 
   // Inertia form handler untuk Substansi
   const { data, setData, post, progress } = useForm<{
@@ -96,7 +105,7 @@ const PageSubstansi: React.FC<PageSubstansiProps> = ({
   const handleLuaranSubmitSuccess = () => {
     setShowLuaranForm(false);
     setEditingLuaran(undefined);
-    setRefreshTrigger(prev => prev + 1); // Trigger refresh list
+    setRefreshTrigger(prev => prev + 1);
   };
 
   const handleCancelLuaran = () => {
@@ -104,10 +113,11 @@ const PageSubstansi: React.FC<PageSubstansiProps> = ({
     setEditingLuaran(undefined);
   };
 
-  // Debug: Log usulanId untuk memastikan nilainya
+  // Debug logs
   useEffect(() => {
-    console.log('PageSubstansi - usulanId:', usulanId);
-  }, [usulanId]);
+    console.log('🔍 PageSubstansi - usulanId:', usulanId);
+    console.log('🔍 PageSubstansi - makroRisetList count:', makroRisetList.length);
+  }, [usulanId, makroRisetList.length]);
 
   return (
     <>
@@ -117,7 +127,7 @@ const PageSubstansi: React.FC<PageSubstansiProps> = ({
       <div className={styles.formSection}>
         <h2 className={styles.sectionTitle}>Substansi Usulan</h2>
 
-        {/* Debug Info - Hapus setelah testing */}
+        {/* ✅ Warning Box jika usulanId tidak ada */}
         {!usulanId && (
           <div style={{
             padding: '12px',
@@ -141,6 +151,7 @@ const PageSubstansi: React.FC<PageSubstansiProps> = ({
               className={styles.select}
               value={data.makro_riset_id}
               onChange={(e) => setData('makro_riset_id', Number(e.target.value))}
+              disabled={!usulanId}
             >
               <option value="">Pilih Kelompok Makro Riset</option>
               {makroRisetList.map((item) => (
@@ -149,6 +160,11 @@ const PageSubstansi: React.FC<PageSubstansiProps> = ({
                 </option>
               ))}
             </select>
+            {makroRisetList.length === 0 && (
+              <p className={styles.helperText} style={{ color: '#f59e0b', fontSize: '12px', marginTop: '4px' }}>
+                Data master sedang dimuat...
+              </p>
+            )}
           </div>
 
           {/* File Upload */}
@@ -163,6 +179,7 @@ const PageSubstansi: React.FC<PageSubstansiProps> = ({
                 id="substansiFile"
                 className={styles.fileInput}
                 onChange={(e) => setData('file_substansi', e.target.files?.[0] ?? null)}
+                disabled={!usulanId}
               />
 
               <label htmlFor="substansiFile" className={styles.fileLabel}>
@@ -217,15 +234,13 @@ const PageSubstansi: React.FC<PageSubstansiProps> = ({
         )}
 
         {/* List Luaran */}
-        {usulanId && (
+        {usulanId ? (
           <LuaranList
             usulanId={usulanId}
             onEdit={handleEditLuaran}
             refreshTrigger={refreshTrigger}
           />
-        )}
-
-        {!usulanId && (
+        ) : (
           <div style={{
             padding: '40px',
             textAlign: 'center',

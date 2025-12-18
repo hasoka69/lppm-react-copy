@@ -60,7 +60,6 @@ const PageIdentitas: React.FC<PageIdentitasProps> = ({
     lama_kegiatan: usulan?.lama_kegiatan ?? '',
   });
 
-  / Update handleSaveDraft
   const handleSaveDraft = (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -68,6 +67,9 @@ const PageIdentitas: React.FC<PageIdentitasProps> = ({
       // Update existing draft
       put(`/pengajuan/${currentUsulanId}`, {
         preserveScroll: true,
+        onSuccess: () => {
+          console.log('✅ Draft updated successfully');
+        }
       });
     } else {
       // Create new draft
@@ -77,33 +79,37 @@ const PageIdentitas: React.FC<PageIdentitasProps> = ({
           const id = (page.props.flash as Record<string, unknown>)?.usulanId as number | undefined;
           if (id) {
             setCurrentUsulanId(id);
-            onDraftCreated?.(id); // PANGGIL CALLBACK INI
+            onDraftCreated?.(id); // ✅ PANGGIL CALLBACK
+            console.log('✅ New draft created with ID:', id);
           }
         },
       });
     }
   };
 
-  // Update handleNext
   const handleNext = (e: React.FormEvent) => {
     e.preventDefault();
 
     if (currentUsulanId) {
+      // Update existing draft then go next
       put(`/pengajuan/${currentUsulanId}`, {
         preserveScroll: true,
         onSuccess: () => {
-          onDraftCreated?.(currentUsulanId); // PANGGIL CALLBACK INI
+          console.log('✅ Draft updated, moving to next step');
+          onDraftCreated?.(currentUsulanId); // ✅ PANGGIL CALLBACK
           onSelanjutnya?.();
         },
       });
     } else {
+      // Create new draft then go next
       post('/pengajuan/draft', {
         preserveScroll: true,
         onSuccess: (page) => {
           const id = (page.props.flash as Record<string, unknown>)?.usulanId as number | undefined;
           if (id) {
             setCurrentUsulanId(id);
-            onDraftCreated?.(id); // PANGGIL CALLBACK INI
+            onDraftCreated?.(id); // ✅ PANGGIL CALLBACK
+            console.log('✅ New draft created, moving to next step');
           }
           onSelanjutnya?.();
         },
@@ -143,27 +149,6 @@ const PageIdentitas: React.FC<PageIdentitasProps> = ({
       console.error('Failed to create draft:', error);
       alert('Error: ' + errorMessage);
       return null;
-    }
-  };
-
-  // Selanjutnya (lanjut ke step berikutnya)
-  const handleNext = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (currentUsulanId) {
-      put(`/pengajuan/${currentUsulanId}`, {
-        preserveScroll: true,
-        onSuccess: () => onSelanjutnya?.(),
-      });
-    } else {
-      post('/pengajuan/draft', {
-        preserveScroll: true,
-        onSuccess: (page) => {
-          const id = (page.props.flash as Record<string, unknown>)?.usulanId as number | undefined;
-          if (id) setCurrentUsulanId(id);
-          onSelanjutnya?.();
-        },
-      });
     }
   };
 
