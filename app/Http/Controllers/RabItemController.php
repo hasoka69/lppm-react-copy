@@ -1,4 +1,5 @@
 <?php
+// app/Http/Controllers/RabItemController.php
 
 namespace App\Http\Controllers;
 
@@ -12,6 +13,7 @@ class RabItemController extends Controller
 {
     /**
      * Tampilkan daftar RAB item
+     * GET /pengajuan/{usulanId}/rab
      */
     public function showRab($usulanId)
     {
@@ -28,6 +30,7 @@ class RabItemController extends Controller
 
     /**
      * Tambah RAB item
+     * POST /pengajuan/{usulan}/rab
      */
     public function storeRab(Request $request, UsulanPenelitian $usulan)
     {
@@ -78,6 +81,7 @@ class RabItemController extends Controller
 
     /**
      * Update RAB item
+     * PUT /pengajuan/rab/{rabItem}
      */
     public function updateRab(Request $request, RabItem $rabItem)
     {
@@ -126,6 +130,7 @@ class RabItemController extends Controller
 
     /**
      * Hapus RAB item
+     * DELETE /pengajuan/rab/{rabItem}
      */
     public function destroyRab(RabItem $rabItem)
     {

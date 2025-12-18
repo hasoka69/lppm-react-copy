@@ -1,222 +1,169 @@
-import axios, { AxiosInstance } from 'axios';
+// resources/js/services/pengajuanAPI.ts
 
-// Create axios instance dengan default config
-const api: AxiosInstance = axios.create({
-    baseURL: '/pengajuan',
-    headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-    },
-});
+import axios, { AxiosError } from 'axios';
 
-// Add request interceptor untuk tambah CSRF token
-api.interceptors.request.use((config) => {
-    const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-    if (token) {
-        config.headers['X-CSRF-TOKEN'] = token;
-    }
-    return config;
-});
+// ========================================
+// TYPE DEFINITIONS
+// ========================================
 
-// ====================================================================
-// LUARAN PENELITIAN ENDPOINTS
-// ====================================================================
+interface LuaranData {
+    tahun: number;
+    kategori: string;
+    deskripsi: string;
+    status?: string;
+    keterangan?: string;
+}
+
+interface RabData {
+    tipe: 'bahan' | 'pengumpulan_data';
+    kategori: string;
+    item: string;
+    satuan: string;
+    volume: number;
+    harga_satuan: number;
+    keterangan?: string;
+}
+
+interface ApiResponse<T> {
+    success: boolean;
+    message?: string;
+    data?: T;
+    total_anggaran?: number;
+}
+
+interface ValidationError {
+    response?: {
+        data?: {
+            errors?: Record<string, string[]>;
+            message?: string;
+        };
+    };
+}
+
+// ========================================
+// LUARAN API
+// ========================================
 
 export const LuaranAPI = {
     /**
-     * GET - Ambil daftar luaran untuk usulan tertentu
-     * @param usulanId - ID usulan penelitian
-     * @returns Array of luaran items
+     * GET: Fetch semua luaran untuk usulan
      */
-    getList: async (usulanId: number) => {
-        try {
-            const response = await api.get(`/${usulanId}/luaran`);
-            return response.data;
-        } catch (error) {
-            throw error;
-        }
+    async getList(usulanId: number) {
+        const response = await axios.get<ApiResponse<any[]>>(
+            `/pengajuan/${usulanId}/luaran`
+        );
+        return response.data;
     },
 
     /**
-     * POST - Tambah luaran baru
-     * @param usulanId - ID usulan penelitian
-     * @param data - Form data luaran
-     * @returns Created luaran object
+     * POST: Tambah luaran baru
      */
-    create: async (usulanId: number, data: {
-        tahun: number;
-        kategori: string;
-        deskripsi: string;
-        status?: string;
-        keterangan?: string;
-    }) => {
-        try {
-            const response = await api.post(`/${usulanId}/luaran`, data);
-            return response.data;
-        } catch (error) {
-            throw error;
-        }
+    async create(usulanId: number, data: LuaranData) {
+        const response = await axios.post<ApiResponse<any>>(
+            `/pengajuan/${usulanId}/luaran`,
+            data
+        );
+        return response.data;
     },
 
     /**
-     * PUT - Update luaran existing
-     * @param luaranId - ID luaran
-     * @param data - Updated data
-     * @returns Updated luaran object
+     * PUT: Update luaran existing
      */
-    update: async (luaranId: number, data: {
-        tahun: number;
-        kategori: string;
-        deskripsi: string;
-        status?: string;
-        keterangan?: string;
-    }) => {
-        try {
-            const response = await api.put(`/luaran/${luaranId}`, data);
-            return response.data;
-        } catch (error) {
-            throw error;
-        }
+    async update(luaranId: number, data: Partial<LuaranData>) {
+        const response = await axios.put<ApiResponse<any>>(
+            `/pengajuan/luaran/${luaranId}`,
+            data
+        );
+        return response.data;
     },
 
     /**
-     * DELETE - Hapus luaran
-     * @param luaranId - ID luaran
-     * @returns Success message
+     * DELETE: Hapus luaran
      */
-    delete: async (luaranId: number) => {
-        try {
-            const response = await api.delete(`/luaran/${luaranId}`);
-            return response.data;
-        } catch (error) {
-            throw error;
-        }
+    async delete(luaranId: number) {
+        const response = await axios.delete<ApiResponse<any>>(
+            `/pengajuan/luaran/${luaranId}`
+        );
+        return response.data;
     },
 };
 
-// ====================================================================
-// RAB ITEMS ENDPOINTS
-// ====================================================================
+// ========================================
+// RAB API
+// ========================================
 
 export const RabAPI = {
     /**
-     * GET - Ambil daftar RAB items dengan total anggaran
-     * @param usulanId - ID usulan penelitian
-     * @returns Object dengan items array dan total_anggaran
+     * GET: Fetch semua RAB items untuk usulan
      */
-    getList: async (usulanId: number) => {
-        try {
-            const response = await api.get(`/${usulanId}/rab`);
-            return response.data;
-        } catch (error) {
-            throw error;
-        }
+    async getList(usulanId: number) {
+        const response = await axios.get<ApiResponse<any[]>>(
+            `/pengajuan/${usulanId}/rab`
+        );
+        return response.data;
     },
 
     /**
-     * POST - Tambah RAB item baru
-     * @param usulanId - ID usulan penelitian
-     * @param data - Form data RAB item
-     * @returns Created RAB item object dengan total (auto-calculated)
+     * POST: Tambah RAB item baru
      */
-    create: async (usulanId: number, data: {
-        tipe: 'bahan' | 'pengumpulan_data';
-        kategori: string;
-        item: string;
-        satuan: string;
-        volume: number;
-        harga_satuan: number;
-        keterangan?: string;
-    }) => {
-        try {
-            const response = await api.post(`/${usulanId}/rab`, data);
-            return response.data;
-        } catch (error) {
-            throw error;
-        }
+    async create(usulanId: number, data: RabData) {
+        const response = await axios.post<ApiResponse<any>>(
+            `/pengajuan/${usulanId}/rab`,
+            data
+        );
+        return response.data;
     },
 
     /**
-     * PUT - Update RAB item existing
-     * @param rabItemId - ID RAB item
-     * @param data - Updated data
-     * @returns Updated RAB item object dengan total (auto-calculated)
+     * PUT: Update RAB item existing
      */
-    update: async (rabItemId: number, data: {
-        tipe: 'bahan' | 'pengumpulan_data';
-        kategori: string;
-        item: string;
-        satuan: string;
-        volume: number;
-        harga_satuan: number;
-        keterangan?: string;
-    }) => {
-        try {
-            const response = await api.put(`/rab/${rabItemId}`, data);
-            return response.data;
-        } catch (error) {
-            throw error;
-        }
+    async update(rabItemId: number, data: Partial<RabData>) {
+        const response = await axios.put<ApiResponse<any>>(
+            `/pengajuan/rab/${rabItemId}`,
+            data
+        );
+        return response.data;
     },
 
     /**
-     * DELETE - Hapus RAB item
-     * @param rabItemId - ID RAB item
-     * @returns Success message
+     * DELETE: Hapus RAB item
      */
-    delete: async (rabItemId: number) => {
-        try {
-            const response = await api.delete(`/rab/${rabItemId}`);
-            return response.data;
-        } catch (error) {
-            throw error;
-        }
+    async delete(rabItemId: number) {
+        const response = await axios.delete<ApiResponse<any>>(
+            `/pengajuan/rab/${rabItemId}`
+        );
+        return response.data;
     },
 };
 
-// ====================================================================
-// ERROR HANDLING UTILITIES
-// ====================================================================
+// ========================================
+// ERROR HANDLING HELPERS
+// ========================================
 
-export const isValidationError = (error: any): boolean => {
-    return error?.response?.status === 422;
-};
+/**
+ * Check if error is validation error
+ */
+export function isValidationError(error: unknown): error is AxiosError<ValidationError> {
+    return (
+        axios.isAxiosError(error) &&
+        error.response?.status === 422 &&
+        !!error.response?.data?.errors
+    );
+}
 
-export const getValidationErrors = (error: any): Record<string, string[]> => {
-    if (error?.response?.data?.errors) {
-        return error.response.data.errors;
+/**
+ * Get validation errors from response
+ */
+export function getValidationErrors(error: AxiosError<ValidationError>): Record<string, string[]> {
+    return error.response?.data?.errors || {};
+}
+
+/**
+ * Get error message from response
+ */
+export function getErrorMessage(error: unknown): string {
+    if (axios.isAxiosError(error)) {
+        return error.response?.data?.message || error.message || 'Terjadi kesalahan';
     }
-    return {};
-};
-
-export const getErrorMessage = (error: any): string => {
-    if (error?.response?.data?.message) {
-        return error.response.data.message;
-    }
-    if (error?.message) {
-        return error.message;
-    }
-    return 'Terjadi kesalahan. Silakan coba lagi.';
-};
-
-export const isAuthorizationError = (error: any): boolean => {
-    return error?.response?.status === 403;
-};
-
-export const isNotFoundError = (error: any): boolean => {
-    return error?.response?.status === 404;
-};
-
-// ====================================================================
-// EXPORT DEFAULT
-// ====================================================================
-
-export default {
-    LuaranAPI,
-    RabAPI,
-    isValidationError,
-    getValidationErrors,
-    getErrorMessage,
-    isAuthorizationError,
-    isNotFoundError,
-};
+    return 'Terjadi kesalahan tidak terduga';
+}

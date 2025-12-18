@@ -1,3 +1,5 @@
+// resources/js/pages/pengajuan/components/RabList.tsx
+
 import React, { useState, useEffect } from 'react';
 import { RabAPI, getErrorMessage } from '@/services/pengajuanAPI';
 

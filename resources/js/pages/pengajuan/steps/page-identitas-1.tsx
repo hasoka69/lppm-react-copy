@@ -27,7 +27,8 @@ interface PageIdentitasProps {
   onSelanjutnya?: () => void;
   onTutupForm?: () => void;
   usulanId?: number;
-  usulan?: Partial<UsulanData>; // data draft jika ada (optional fields)
+  usulan?: Partial<UsulanData>;
+  onDraftCreated?: (usulanId: number) => void; // TAMBAHKAN INI
 }
 
 const PageIdentitas: React.FC<PageIdentitasProps> = ({
@@ -35,6 +36,7 @@ const PageIdentitas: React.FC<PageIdentitasProps> = ({
   onTutupForm,
   usulanId,
   usulan,
+  onDraftCreated, // TAMBAHKAN INI
 }) => {
   // State untuk menyimpan ID usulan setelah draft pertama
   const [currentUsulanId, setCurrentUsulanId] = useState<number | null>(usulanId ?? null);
@@ -58,7 +60,7 @@ const PageIdentitas: React.FC<PageIdentitasProps> = ({
     lama_kegiatan: usulan?.lama_kegiatan ?? '',
   });
 
-  // Simpan draft
+  / Update handleSaveDraft
   const handleSaveDraft = (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -73,7 +75,37 @@ const PageIdentitas: React.FC<PageIdentitasProps> = ({
         preserveScroll: true,
         onSuccess: (page) => {
           const id = (page.props.flash as Record<string, unknown>)?.usulanId as number | undefined;
-          if (id) setCurrentUsulanId(id);
+          if (id) {
+            setCurrentUsulanId(id);
+            onDraftCreated?.(id); // PANGGIL CALLBACK INI
+          }
+        },
+      });
+    }
+  };
+
+  // Update handleNext
+  const handleNext = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (currentUsulanId) {
+      put(`/pengajuan/${currentUsulanId}`, {
+        preserveScroll: true,
+        onSuccess: () => {
+          onDraftCreated?.(currentUsulanId); // PANGGIL CALLBACK INI
+          onSelanjutnya?.();
+        },
+      });
+    } else {
+      post('/pengajuan/draft', {
+        preserveScroll: true,
+        onSuccess: (page) => {
+          const id = (page.props.flash as Record<string, unknown>)?.usulanId as number | undefined;
+          if (id) {
+            setCurrentUsulanId(id);
+            onDraftCreated?.(id); // PANGGIL CALLBACK INI
+          }
+          onSelanjutnya?.();
         },
       });
     }

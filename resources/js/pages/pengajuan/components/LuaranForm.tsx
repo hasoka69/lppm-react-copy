@@ -1,3 +1,5 @@
+// resources/js/pages/pengajuan/components/LuaranForm.tsx
+
 import React, { useState } from 'react';
 import { LuaranAPI, isValidationError, getValidationErrors, getErrorMessage } from '@/services/pengajuanAPI';
 

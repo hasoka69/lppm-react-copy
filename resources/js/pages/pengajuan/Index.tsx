@@ -22,13 +22,12 @@ export interface Usulan {
     status: string;
 }
 
-// Tipe lengkap untuk PageIdentitas (sementara)
+// Tipe lengkap untuk PageIdentitas
 export interface UsulanData extends Usulan {
     tkt_saat_ini: string;
     target_akhir_tkt: string;
     kelompok_skema: string;
     ruang_lingkup: string;
-    // ... tambahkan field lain sesuai kebutuhan
 }
 
 // Steps
@@ -43,6 +42,9 @@ const PengajuanIndex = () => {
     const [activeTab, setActiveTab] = useState<'daftar' | 'pengajuan' | 'riwayat' | 'panduan'>('daftar');
     const [currentStep, setCurrentStep] = useState<CurrentStep>(1);
     const [editingUsulan, setEditingUsulan] = useState<Partial<UsulanData> | null>(null);
+
+    // PENTING: State untuk menyimpan usulanId yang aktif
+    const [currentUsulanId, setCurrentUsulanId] = useState<number | null>(null);
 
     // Draft dummy jika belum ada
     const defaultDraft: UsulanData = {
@@ -65,6 +67,7 @@ const PengajuanIndex = () => {
     // Event handlers
     const handleTambahUsulan = () => {
         setEditingUsulan(null);
+        setCurrentUsulanId(null); // Reset ID
         setActiveView('pengajuan');
         setActiveTab('pengajuan');
         setCurrentStep(1);
@@ -72,6 +75,7 @@ const PengajuanIndex = () => {
 
     const handleEditUsulan = (usulan: Usulan) => {
         setEditingUsulan({ ...defaultDraft, ...usulan });
+        setCurrentUsulanId(usulan.id); // Set ID dari usulan yang diedit
         setActiveView('pengajuan');
         setActiveTab('pengajuan');
         setCurrentStep(1);
@@ -81,13 +85,21 @@ const PengajuanIndex = () => {
         setActiveView('daftar');
         setActiveTab('daftar');
         setCurrentStep(1);
+        setCurrentUsulanId(null); // Reset ID
     };
 
     const handleSelanjutnya = () => {
         if (currentStep < 4) setCurrentStep((prev) => (prev + 1) as CurrentStep);
     };
+
     const handleKembali = () => {
         if (currentStep > 1) setCurrentStep((prev) => (prev - 1) as CurrentStep);
+    };
+
+    // Handler untuk update usulanId setelah draft dibuat
+    const handleDraftCreated = (usulanId: number) => {
+        console.log('Draft created with ID:', usulanId);
+        setCurrentUsulanId(usulanId);
     };
 
     // Render steps
@@ -97,16 +109,36 @@ const PengajuanIndex = () => {
                 return (
                     <PageIdentitas
                         usulan={usulanToEdit}
+                        usulanId={currentUsulanId ?? undefined}
                         onSelanjutnya={handleSelanjutnya}
                         onTutupForm={handleKembaliKeDaftar}
+                        onDraftCreated={handleDraftCreated} // Pass callback
                     />
                 );
             case 2:
-                return <PageSubstansi onKembali={handleKembali} onSelanjutnya={handleSelanjutnya} />;
+                return (
+                    <PageSubstansi
+                        onKembali={handleKembali}
+                        onSelanjutnya={handleSelanjutnya}
+                        usulanId={currentUsulanId ?? undefined} // Pass usulanId
+                    />
+                );
             case 3:
-                return <PageRAB onKembali={handleKembali} onSelanjutnya={handleSelanjutnya} />;
+                return (
+                    <PageRAB
+                        onKembali={handleKembali}
+                        onSelanjutnya={handleSelanjutnya}
+                        usulanId={currentUsulanId ?? undefined} // Pass usulanId
+                    />
+                );
             case 4:
-                return <PageTinjauan onKembali={handleKembali} onKonfirmasi={handleKembaliKeDaftar} />;
+                return (
+                    <PageTinjauan
+                        onKembali={handleKembali}
+                        onKonfirmasi={handleKembaliKeDaftar}
+                        usulanId={currentUsulanId ?? undefined} // Pass usulanId
+                    />
+                );
             default:
                 return null;
         }
@@ -144,6 +176,7 @@ const PengajuanIndex = () => {
             default: return 'Usulan Penelitian';
         }
     };
+
     const getStepInfoText = (step: CurrentStep) => {
         switch (step) {
             case 1: return 'Isi form identitas usulan.';

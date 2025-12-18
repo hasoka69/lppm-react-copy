@@ -1,3 +1,5 @@
+// resources/js/pages/pengajuan/components/LuaranList.tsx
+
 import React, { useState, useEffect } from 'react';
 import { LuaranAPI, getErrorMessage } from '@/services/pengajuanAPI';
 

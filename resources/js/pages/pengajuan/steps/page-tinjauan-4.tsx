@@ -3,7 +3,7 @@ import styles from '../../../../css/pengajuan.module.css';
 
 interface PageTinjauanProps {
   onKembali?: () => void;
-  onKonfirmasi?: () => void;   // ← ganti dari onSubmit
+  onKonfirmasi?: () => void;
   onTutupForm?: () => void;
 }
 
@@ -18,9 +18,8 @@ const PageTinjauan: React.FC<PageTinjauanProps> = ({
   };
 
   const handleSubmit = () => {
-    onKonfirmasi?.();  // ← pakai onKonfirmasi
+    onKonfirmasi?.();
   };
-
 
   return (
     <>

@@ -15,6 +15,8 @@ use App\Http\Controllers\UsulanPenelitianController;
 use App\Http\Controllers\AnggotaApprovalController;
 use App\Http\Controllers\AnggotaNonDosenController;
 use App\Http\Controllers\AnggotaPenelitianController;
+use App\Http\Controllers\LuaranPenelitianController;
+use App\Http\Controllers\RabItemController;
 use App\Models\Berita;
 
 // Group untuk authenticated users
@@ -74,8 +76,49 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('anggota-non-dosen.approve');
         Route::post('/{usulan}/anggota-non-dosen/{anggota}/reject', [AnggotaApprovalController::class, 'rejectNonDosen'])
             ->name('anggota-non-dosen.reject');
+    
+    // ============================================
+        // LUARAN PENELITIAN ROUTES (Step 2)
+        // ============================================
+        
+        // GET: Fetch semua luaran untuk usulan tertentu
+        Route::get('/{usulan}/luaran', [LuaranPenelitianController::class, 'showLuaran'])
+            ->name('luaran.show');
+        
+        // POST: Tambah luaran baru
+        Route::post('/{usulan}/luaran', [LuaranPenelitianController::class, 'storeLuaran'])
+            ->name('luaran.store');
+        
+        // PUT: Update luaran existing
+        Route::put('/luaran/{luaran}', [LuaranPenelitianController::class, 'updateLuaran'])
+            ->name('luaran.update');
+        
+        // DELETE: Hapus luaran
+        Route::delete('/luaran/{luaran}', [LuaranPenelitianController::class, 'destroyLuaran'])
+            ->name('luaran.destroy');
+
+        // ============================================
+        // RAB ITEM ROUTES (Step 3)
+        // ============================================
+        
+        // GET: Fetch semua RAB items untuk usulan tertentu
+        Route::get('/{usulan}/rab', [RabItemController::class, 'showRab'])
+            ->name('rab.show');
+        
+        // POST: Tambah RAB item baru
+        Route::post('/{usulan}/rab', [RabItemController::class, 'storeRab'])
+            ->name('rab.store');
+        
+        // PUT: Update RAB item existing
+        Route::put('/rab/{rabItem}', [RabItemController::class, 'updateRab'])
+            ->name('rab.update');
+        
+        // DELETE: Hapus RAB item
+        Route::delete('/rab/{rabItem}', [RabItemController::class, 'destroyRab'])
+            ->name('rab.destroy');
     });
 });
+
 
 
 

@@ -1,4 +1,5 @@
 <?php
+// app/Http/Controllers/LuaranPenelitianController.php
 
 namespace App\Http\Controllers;
 
@@ -11,9 +12,11 @@ class LuaranPenelitianController extends Controller
 {
     /**
      * Tampilkan daftar luaran penelitian
+     * GET /pengajuan/{usulanId}/luaran
      */
     public function showLuaran($usulanId)
     {
+        // Validasi: User hanya bisa akses usulan miliknya
         $usulan = UsulanPenelitian::where('user_id', Auth::id())->findOrFail($usulanId);
 
         $luaranList = $usulan->luaranList()->get();
@@ -26,14 +29,17 @@ class LuaranPenelitianController extends Controller
 
     /**
      * Tambah luaran penelitian
+     * POST /pengajuan/{usulan}/luaran
      */
     public function storeLuaran(Request $request, UsulanPenelitian $usulan)
     {
         /** @var \App\Models\UsulanPenelitian $usulan */
+        // Validasi ownership
         if ($usulan->user_id !== Auth::id()) {
             abort(403);
         }
 
+        // Validasi input
         $validated = $request->validate([
             'tahun' => 'required|integer|min:1|max:5',
             'kategori' => 'required|string|max:100',
@@ -63,15 +69,18 @@ class LuaranPenelitianController extends Controller
 
     /**
      * Update luaran penelitian
+     * PUT /pengajuan/luaran/{luaran}
      */
     public function updateLuaran(Request $request, LuaranPenelitian $luaran)
     {
         $usulan = $luaran->usulan;
 
+        // Validasi ownership
         if ($usulan->user_id !== Auth::id()) {
             abort(403);
         }
 
+        // Validasi input
         $validated = $request->validate([
             'tahun' => 'sometimes|required|integer|min:1|max:5',
             'kategori' => 'sometimes|required|string|max:100',
@@ -98,11 +107,13 @@ class LuaranPenelitianController extends Controller
 
     /**
      * Hapus luaran penelitian
+     * DELETE /pengajuan/luaran/{luaran}
      */
     public function destroyLuaran(LuaranPenelitian $luaran)
     {
         $usulan = $luaran->usulan;
 
+        // Validasi ownership
         if ($usulan->user_id !== Auth::id()) {
             abort(403);
         }

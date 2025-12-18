@@ -7,31 +7,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-/**
- * @property int $id
- * @property int $user_id
- * @property string $judul
- * @property string|null $kelompok_skema
- * @property string|null $file_substansi
- * @property string $status
- * @property array|null $rab_bahan
- * @property array|null $rab_pengumpulan_data
- * @property float|null $total_anggaran
- * @property int|null $tkt_saat_ini
- * @property int|null $target_akhir_tkt
- * @property string|null $ruang_lingkup
- * @property string|null $kategori_sbk
- * @property string|null $bidang_fokus
- * @property string|null $tema_penelitian
- * @property string|null $topik_penelitian
- * @property string|null $rumpun_ilmu_1
- * @property string|null $rumpun_ilmu_2
- * @property string|null $rumpun_ilmu_3
- * @property string|null $prioritas_riset
- * @property int|null $tahun_pertama
- * @property int|null $lama_kegiatan
- * @property string|null $kelompok_makro_riset
- */
 class UsulanPenelitian extends Model
 {
     use HasFactory, SoftDeletes;
@@ -57,43 +32,84 @@ class UsulanPenelitian extends Model
         'lama_kegiatan',
         'kelompok_makro_riset',
         'file_substansi',
-        'rab_bahan',
-        'rab_pengumpulan_data',
-        'total_anggaran',
+        'total_anggaran', // ← TAMBAHAN UNTUK TOTAL RAB
         'status',
     ];
 
-    // Cast untuk tipe data khusus
     protected $casts = [
-        'rab_bahan' => 'array', // JSON jadi array otomatis
-        'rab_pengumpulan_data' => 'array',
         'total_anggaran' => 'decimal:2',
     ];
 
-    // Relasi ke User (Ketua)
+    // ========================================
+    // RELATIONSHIPS
+    // ========================================
+
+    /**
+     * Relasi ke User (Ketua Penelitian)
+     */
     public function ketua()
     {
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    // Relasi ke Anggota Dosen
+    /**
+     * Relasi ke Anggota Dosen
+     */
     public function anggotaDosen()
     {
         return $this->hasMany(AnggotaPenelitian::class, 'usulan_id');
     }
 
-    // Relasi ke Anggota Non-Dosen
+    /**
+     * Relasi ke Anggota Non-Dosen
+     */
     public function anggotaNonDosen()
     {
         return $this->hasMany(AnggotaNonDosen::class, 'usulan_id');
     }
 
-    // Helper method untuk cek status
+    /**
+     * Relasi ke Luaran Penelitian (Step 2)
+     * ← TAMBAHAN BARU
+     */
+    public function luaranList()
+    {
+        return $this->hasMany(LuaranPenelitian::class, 'usulan_id');
+    }
+
+    /**
+     * Relasi ke RAB Items (Step 3)
+     * ← TAMBAHAN BARU
+     */
+    public function rabItems()
+    {
+        return $this->hasMany(RabItem::class, 'usulan_id');
+    }
+
+    // ========================================
+    // HELPER METHODS
+    // ========================================
+
+    /**
+     * Hitung Total Anggaran dari semua RAB Items
+     * ← TAMBAHAN BARU
+     */
+    public function getTotalAnggaran()
+    {
+        return $this->rabItems()->sum('total');
+    }
+
+    /**
+     * Cek status draft
+     */
     public function isDraft()
     {
         return $this->status === 'draft';
     }
 
+    /**
+     * Cek status submitted
+     */
     public function isSubmitted()
     {
         return $this->status === 'submitted';
