@@ -21,10 +21,17 @@ interface PageProps extends InertiaPageProps {
 interface PageUsulanProps {
   onTambahUsulan?: () => void;
   onEditUsulan?: (usulan: Usulan) => void;
-  usulanList?: Usulan[]; // Optional - reads from usePage if not provided
+  onDeleteUsulan?: (id: number) => void; // ✅ Added
+  onViewUsulan?: (usulan: Usulan) => void; // ✅ Added
+  usulanList?: Usulan[];
 }
 
-const PageUsulan: React.FC<PageUsulanProps> = ({ onTambahUsulan, onEditUsulan }) => {
+const PageUsulan: React.FC<PageUsulanProps> = ({
+  onTambahUsulan,
+  onEditUsulan,
+  onDeleteUsulan,
+  onViewUsulan
+}) => {
   const { props } = usePage<PageProps>();
   const usulanList = props.usulanList || [];
 
@@ -48,10 +55,10 @@ const PageUsulan: React.FC<PageUsulanProps> = ({ onTambahUsulan, onEditUsulan })
                 <th>No</th>
                 <th>Skema</th>
                 <th>Judul</th>
-                <th>Tahun Pelaksanaan</th>
+                <th>Tahun</th>
                 <th>Makro Riset</th>
                 <th>Peran</th>
-                <th>Status Usulan</th>
+                <th>Status</th>
                 <th>Aksi</th>
               </tr>
             </thead>
@@ -68,7 +75,7 @@ const PageUsulan: React.FC<PageUsulanProps> = ({ onTambahUsulan, onEditUsulan })
                   <tr key={u.id}>
                     <td>{u.no}.</td>
                     <td>{u.skema}</td>
-                    <td className={styles.judulCell}>{u.judul}</td>
+                    <td className={styles.judulCell}>{u.judul || '(Tanpa Judul)'}</td>
                     <td>{u.tahun_pelaksanaan}</td>
                     <td>{u.makro_riset}</td>
                     <td>{u.peran}</td>
@@ -80,20 +87,45 @@ const PageUsulan: React.FC<PageUsulanProps> = ({ onTambahUsulan, onEditUsulan })
                             : styles.statusSubmitted
                         }
                       >
-                        {u.status}
+                        {u.status === 'draft' ? 'Draft' : 'Diajukan'}
                       </span>
                     </td>
                     <td>
                       <div className={styles.actionButtons}>
+                        {/* Edit Button - Only for Draft */}
+                        {u.status === 'draft' && (
+                          <button
+                            className={styles.actionButton}
+                            title="Edit"
+                            onClick={() => onEditUsulan?.(u)}
+                          >
+                            ✏️
+                          </button>
+                        )}
+
+                        {/* Delete Button - Only for Draft */}
+                        {u.status === 'draft' && (
+                          <button
+                            className={styles.actionButton}
+                            title="Hapus"
+                            onClick={() => {
+                              if (confirm('Apakah Anda yakin ingin menghapus usulan ini?')) {
+                                onDeleteUsulan?.(u.id);
+                              }
+                            }}
+                          >
+                            🗑️
+                          </button>
+                        )}
+
+                        {/* View Button - For Submitted (or Draft) */}
                         <button
                           className={styles.actionButton}
-                          title="Edit"
-                          onClick={() => onEditUsulan?.(u)}
+                          title="Lihat Detail"
+                          onClick={() => onViewUsulan?.(u)}
                         >
-                          ✏️
+                          👁️
                         </button>
-                        <button className={styles.actionButton} title="Hapus">🗑️</button>
-                        <button className={styles.actionButton} title="Lihat">👁️</button>
                       </div>
                     </td>
                   </tr>

@@ -2,47 +2,32 @@
 
 namespace Database\Seeders;
 
-use App\Models\MakroRiset;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class MakroRisetSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
-    public function run(): void
+    public function run()
     {
-        $makroRisets = [
-            [
-                'nama' => 'Kesehatan',
-                'deskripsi' => 'Penelitian di bidang kesehatan, penyakit, dan kesejahteraan masyarakat',
-                'aktif' => true,
-            ],
-            [
-                'nama' => 'Pertanian',
-                'deskripsi' => 'Penelitian di bidang pertanian, perkebunan, dan agribisnis',
-                'aktif' => true,
-            ],
-            [
-                'nama' => 'Teknologi',
-                'deskripsi' => 'Penelitian di bidang teknologi informasi, engineering, dan inovasi',
-                'aktif' => true,
-            ],
-            [
-                'nama' => 'Sosial dan Budaya',
-                'deskripsi' => 'Penelitian di bidang sosial, budaya, dan humaniora',
-                'aktif' => true,
-            ],
-            [
-                'nama' => 'Lingkungan dan Energi',
-                'deskripsi' => 'Penelitian di bidang lingkungan, keberlanjutan, dan energi terbarukan',
-                'aktif' => true,
-            ],
+        $data = [
+            ['nama' => 'Pangan', 'aktif' => true],
+            ['nama' => 'Energi', 'aktif' => true],
+            ['nama' => 'Kesehatan', 'aktif' => true],
+            ['nama' => 'Transportasi', 'aktif' => true],
+            ['nama' => 'Rekayasa Keteknikan', 'aktif' => true],
+            ['nama' => 'Pertahanan dan Keamanan', 'aktif' => true],
+            ['nama' => 'Kemaritiman', 'aktif' => true],
+            ['nama' => 'Sosial Humaniora', 'aktif' => true],
+            ['nama' => 'Seni dan Budaya', 'aktif' => true],
+            ['nama' => 'Pendidikan', 'aktif' => true],
         ];
 
-        foreach ($makroRisets as $makroRiset) {
-            MakroRiset::create($makroRiset);
+        // Insert only if table is empty to avoid duplicates on multiple runs
+        if (DB::table('makro_riset')->count() == 0) {
+            DB::table('makro_riset')->insert($data);
+            $this->command->info('Makro Riset data seeded successfully.');
+        } else {
+            $this->command->info('Makro Riset table already has data. Skipping.');
         }
     }
 }

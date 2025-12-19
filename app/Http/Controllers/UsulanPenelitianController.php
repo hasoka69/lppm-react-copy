@@ -70,25 +70,25 @@ class UsulanPenelitianController extends Controller
     /**
      * Simpan draft baru
      */
-public function storeDraft(Request $request)
-{
-    $validated = $request->validate([
-        'judul' => 'nullable|string|max:500',
-        'tkt_saat_ini' => 'nullable|integer|min:1|max:9',
-        'target_akhir_tkt' => 'nullable|integer|min:1|max:9',
-        'kelompok_skema' => 'nullable|string',
-        'ruang_lingkup' => 'nullable|string',
-        'kategori_sbk' => 'nullable|string',
-        'bidang_fokus' => 'nullable|string',
-        'tema_penelitian' => 'nullable|string',
-        'topik_penelitian' => 'nullable|string',
-        'rumpun_ilmu_1' => 'nullable|string',
-        'rumpun_ilmu_2' => 'nullable|string',
-        'rumpun_ilmu_3' => 'nullable|string',
-        'prioritas_riset' => 'nullable|string',
-        'tahun_pertama' => 'nullable|integer',
-        'lama_kegiatan' => 'nullable|integer',
-    ]);
+    public function storeDraft(Request $request)
+    {
+        $validated = $request->validate([
+            'judul' => 'nullable|string|max:500',
+            'tkt_saat_ini' => 'nullable|integer|min:1|max:9',
+            'target_akhir_tkt' => 'nullable|integer|min:1|max:9',
+            'kelompok_skema' => 'nullable|string',
+            'ruang_lingkup' => 'nullable|string',
+            'kategori_sbk' => 'nullable|string',
+            'bidang_fokus' => 'nullable|string',
+            'tema_penelitian' => 'nullable|string',
+            'topik_penelitian' => 'nullable|string',
+            'rumpun_ilmu_1' => 'nullable|string',
+            'rumpun_ilmu_2' => 'nullable|string',
+            'rumpun_ilmu_3' => 'nullable|string',
+            'prioritas_riset' => 'nullable|string',
+            'tahun_pertama' => 'nullable|integer',
+            'lama_kegiatan' => 'nullable|integer',
+        ]);
 
         try {
             DB::beginTransaction();
@@ -146,6 +146,10 @@ public function storeDraft(Request $request)
             'prioritas_riset' => 'nullable|string',
             'tahun_pertama' => 'nullable|integer',
             'lama_kegiatan' => 'nullable|integer',
+            // RAB Validation
+            'rab_bahan' => 'nullable|array',
+            'rab_pengumpulan_data' => 'nullable|array',
+            'total_anggaran' => 'nullable|numeric',
         ]);
 
         try {
@@ -262,6 +266,7 @@ public function storeDraft(Request $request)
             'rumpunIlmuLevel2List' => DB::table('rumpun_ilmu_level2')->where('aktif', true)->get(),
             'rumpunIlmuLevel3List' => DB::table('rumpun_ilmu_level3')->where('aktif', true)->get(),
             'prioritasRisetList' => DB::table('prioritas_riset')->where('aktif', true)->get(),
+            'makroRisetList' => DB::table('makro_riset')->where('aktif', true)->get(), // [NEW] Add Makro Riset here
         ];
     }
 
@@ -272,7 +277,7 @@ public function storeDraft(Request $request)
     {
         try {
             Log::info('getAnggotaDosen called', ['usulan_id' => $usulan->id, 'user_id' => Auth::id()]);
-            
+
             // Check authorization
             if ($usulan->user_id !== Auth::id()) {
                 Log::warning('Unauthorized access', ['usulan_user' => $usulan->user_id, 'auth_user' => Auth::id()]);
@@ -304,35 +309,33 @@ public function storeDraft(Request $request)
 
     // TAMBAHKAN method ini di UsulanPenelitianController.php
 
-/**
- * Helper: Get master data for form
- */
-private function getMasterDataWithMakroRiset()
-{
-    return [
-        'makroRisetList' => DB::table('makro_riset')->where('aktif', true)->get(),
-        'kelompokSkemaList' => DB::table('kelompok_skema')->where('aktif', true)->get(),
-        'ruangLingkupList' => DB::table('ruang_lingkup')->where('aktif', true)->get(),
-        // ... data master lainnya
-    ];
-}
+    /**
+     * Helper: Get master data for form
+     */
+    private function getMasterDataWithMakroRiset()
+    {
+        return array_merge($this->getMasterData(), [
+            'makroRisetList' => DB::table('makro_riset')->where('aktif', true)->get(),
+        ]);
+    }
 
-/**
- * Show form for specific step
- */
-public function showStep($usulanId, $step)
-{
-    $usulan = UsulanPenelitian::where('user_id', Auth::id())->findOrFail($usulanId);
-    
-    $masterData = $this->getMasterDataWithMakroRiset();
-    
-    return Inertia::render("pengajuan/Index", [
-        'usulanId' => $usulan->id,
-        'usulan' => $usulan,
-        'currentStep' => $step,
-        ...$masterData,
-    ]);
-}
+    /**
+     * Show form for specific step
+     */
+    public function showStep($usulanId, $step)
+    {
+        $step = (int) $step;
+        $usulan = UsulanPenelitian::with(['anggotaDosen', 'anggotaNonDosen', 'luaranList'])->where('user_id', Auth::id())->findOrFail($usulanId);
+
+        $masterData = $this->getMasterDataWithMakroRiset();
+
+        return Inertia::render("pengajuan/Index", [
+            'usulanId' => $usulan->id,
+            'usulan' => $usulan,
+            'currentStep' => $step,
+            ...$masterData,
+        ]);
+    }
     /**
      * GET: Fetch anggota non-dosen untuk usulan tertentu
      */
@@ -340,7 +343,7 @@ public function showStep($usulanId, $step)
     {
         try {
             Log::info('getAnggotaNonDosen called', ['usulan_id' => $usulan->id]);
-            
+
             // Check authorization
             if ($usulan->user_id !== Auth::id()) {
                 Log::warning('Unauthorized access to non-dosen', ['usulan_user' => $usulan->user_id, 'auth_user' => Auth::id()]);

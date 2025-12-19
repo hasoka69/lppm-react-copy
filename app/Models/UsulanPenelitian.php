@@ -32,12 +32,16 @@ class UsulanPenelitian extends Model
         'lama_kegiatan',
         'kelompok_makro_riset',
         'file_substansi',
-        'total_anggaran', // ← TAMBAHAN UNTUK TOTAL RAB
+        'rab_bahan',           // [NEW]
+        'rab_pengumpulan_data', // [NEW]
+        'total_anggaran',
         'status',
     ];
 
     protected $casts = [
         'total_anggaran' => 'decimal:2',
+        'rab_bahan' => 'array',            // [NEW] cast to array
+        'rab_pengumpulan_data' => 'array', // [NEW] cast to array
     ];
 
     // ========================================

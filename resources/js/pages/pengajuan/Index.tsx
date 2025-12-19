@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { usePage } from '@inertiajs/react';
+import { usePage, router } from '@inertiajs/react';
 import Header from "@/components/Header";
 import Footer from "@/components/footer";
 import PageIdentitas from './steps/page-identitas-1';
@@ -34,27 +34,42 @@ type ActiveView = 'daftar' | 'pengajuan';
 const PengajuanIndex = () => {
     const { props } = usePage();
     const usulanList: Usulan[] = (props.usulanList as Usulan[]) || [];
-    const latestDraft = (props.latestDraft as Partial<UsulanData>) || null; // ✅ TAMBAHAN
+    const latestDraft = (props.latestDraft as Partial<UsulanData>) || null;
+    const serverCurrentStep = props.currentStep ? Number(props.currentStep) : null;
+    const serverUsulan = (props.usulan as Partial<UsulanData>) || null;
 
-    const [activeView, setActiveView] = useState<ActiveView>('daftar');
+    // ✅ Determine initial view: if step > 1 or usulan exists (edit mode), show 'pengajuan'
+    const initialView: ActiveView = (serverCurrentStep && serverCurrentStep > 1) || props.editMode ? 'pengajuan' : 'daftar';
+
+    const [activeView, setActiveView] = useState<ActiveView>(initialView);
     const [activeTab, setActiveTab] = useState<'daftar' | 'pengajuan' | 'riwayat' | 'panduan'>('daftar');
-    const [currentStep, setCurrentStep] = useState<CurrentStep>(1);
-    const [editingUsulan, setEditingUsulan] = useState<Partial<UsulanData> | null>(null);
-    const [currentUsulanId, setCurrentUsulanId] = useState<number | null>(null);
+    const [currentStep, setCurrentStep] = useState<CurrentStep>((serverCurrentStep as CurrentStep) || 1);
+    const [editingUsulan, setEditingUsulan] = useState<Partial<UsulanData> | null>(serverUsulan || latestDraft);
+    const [currentUsulanId, setCurrentUsulanId] = useState<number | null>(serverUsulan?.id || (latestDraft?.id ?? null));
 
-    // ✅ TAMBAHAN: Auto-resume draft terakhir saat pertama kali load
+    // ✅ Sync state when props change (navigation)
     useEffect(() => {
-        if (latestDraft && latestDraft.id) {
+        if (serverCurrentStep) {
+            setActiveView('pengajuan');
+            setCurrentStep(serverCurrentStep as CurrentStep);
+        }
+        if (serverUsulan) {
+            setEditingUsulan(serverUsulan);
+            setCurrentUsulanId(serverUsulan.id!);
+        }
+    }, [serverCurrentStep, serverUsulan]);
+
+    // ✅ Auto-resume draft only if NOT already editing (serverUsulan)
+    useEffect(() => {
+        if (!serverUsulan && latestDraft && latestDraft.id && !currentUsulanId) {
             console.log('🔄 Auto-resuming draft:', latestDraft.id);
             setCurrentUsulanId(latestDraft.id);
             setEditingUsulan(latestDraft);
-
-            // ✅ OPTIONAL: Tampilkan notifikasi
-            alert(`Draft terakhir (ID: ${latestDraft.id}) berhasil dimuat`);
         }
-    }, [latestDraft]); // Run only once on mount
+    }, [latestDraft, serverUsulan, currentUsulanId]);
 
     const defaultDraft: UsulanData = {
+        // ... (keep existing defaultDraft)
         id: 0,
         no: 0,
         skema: '',
@@ -72,17 +87,14 @@ const PengajuanIndex = () => {
     const usulanToEdit: Partial<UsulanData> = editingUsulan || defaultDraft;
 
     const handleTambahUsulan = () => {
-        // ✅ KONFIRMASI: Jika ada draft, tanya user
         if (currentUsulanId && latestDraft) {
             const confirm = window.confirm(
                 'Anda memiliki draft yang belum selesai. Ingin melanjutkan draft tersebut atau membuat baru?'
             );
 
             if (confirm) {
-                // Lanjutkan draft existing
                 setEditingUsulan(latestDraft);
             } else {
-                // Buat draft baru
                 setEditingUsulan(null);
                 setCurrentUsulanId(null);
             }
@@ -108,16 +120,30 @@ const PengajuanIndex = () => {
         setActiveView('daftar');
         setActiveTab('daftar');
         setCurrentStep(1);
-        // ✅ JANGAN reset usulanId agar draft tetap tersimpan
-        // setCurrentUsulanId(null); // ❌ HAPUS INI
     };
 
     const handleSelanjutnya = () => {
-        if (currentStep < 4) setCurrentStep((prev) => (prev + 1) as CurrentStep);
+        const nextStep = currentStep + 1;
+        if (nextStep <= 4) {
+            if (currentUsulanId) {
+                // ✅ Use router.visit to fetch next step data from server
+                router.visit(`/pengajuan/${currentUsulanId}/step/${nextStep}`);
+            } else {
+                setCurrentStep((prev) => (prev + 1) as CurrentStep);
+            }
+        }
     };
 
     const handleKembali = () => {
-        if (currentStep > 1) setCurrentStep((prev) => (prev - 1) as CurrentStep);
+        const prevStep = currentStep - 1;
+        if (prevStep >= 1) {
+            if (currentUsulanId) {
+                // ✅ Use router.visit to fetch prev step data from server (optional but safer)
+                router.visit(`/pengajuan/${currentUsulanId}/step/${prevStep}`);
+            } else {
+                setCurrentStep((prev) => (prev - 1) as CurrentStep);
+            }
+        }
     };
 
     const handleDraftCreated = (usulanId: number) => {
@@ -219,6 +245,18 @@ const PengajuanIndex = () => {
                     <PageUsulan
                         onTambahUsulan={handleTambahUsulan}
                         onEditUsulan={handleEditUsulan}
+                        onDeleteUsulan={(id) => {
+                            router.delete(`/pengajuan/${id}`, {
+                                onSuccess: () => alert('Usulan berhasil dihapus'),
+                                onError: () => alert('Gagal menghapus usulan')
+                            });
+                        }}
+                        onViewUsulan={(usulan) => {
+                            // View as Read-Only (using Page 4 Tinjauan)
+                            setCurrentUsulanId(usulan.id);
+                            setActiveView('pengajuan');
+                            setCurrentStep(4); // Go straight to review page
+                        }}
                         usulanList={usulanList}
                     />
                 </>

@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { usePage, router } from '@inertiajs/react'; // ✅ Import usePage & router
 import styles from '../../../../css/pengajuan.module.css';
 
 interface RABItem {
@@ -14,10 +15,14 @@ interface RABItem {
 interface PageRABProps {
   onKembali?: () => void;
   onSelanjutnya?: () => void;
-  usulanId?: number; // ✅ TAMBAHKAN INI
+  usulanId?: number;
 }
 
-const PageRAB: React.FC<PageRABProps> = ({ onKembali, onSelanjutnya, usulanId }) => { // ✅ TAMBAHKAN usulanId
+const PageRAB: React.FC<PageRABProps> = ({ onKembali, onSelanjutnya, usulanId: propUsulanId }) => {
+  const { props } = usePage<{ usulan?: any }>();
+  const usulan = props.usulan;
+  const usulanId = propUsulanId ?? usulan?.id;
+
   const [bahanItems, setBahanItems] = useState<RABItem[]>([
     { id: 1, komponen: 'Pilih Komponen', item: '✔', satuan: '✔', volume: 1, hargaSatuan: 0, total: 0 }
   ]);
@@ -26,11 +31,17 @@ const PageRAB: React.FC<PageRABProps> = ({ onKembali, onSelanjutnya, usulanId })
     { id: 1, komponen: 'Pilih Komponen', item: '✔', satuan: '✔', volume: 1, hargaSatuan: 0, total: 0 }
   ]);
 
-  // ✅ Debug log
-  console.log('🔍 PageRAB - usulanId:', usulanId);
-
-  // Rest of the component code...
-  // (Semua code lainnya tetap sama)
+  // ✅ Initialize from existing data
+  useEffect(() => {
+    if (usulan) {
+      if (usulan.rab_bahan && Array.isArray(usulan.rab_bahan) && usulan.rab_bahan.length > 0) {
+        setBahanItems(usulan.rab_bahan);
+      }
+      if (usulan.rab_pengumpulan_data && Array.isArray(usulan.rab_pengumpulan_data) && usulan.rab_pengumpulan_data.length > 0) {
+        setPengumpulanDataItems(usulan.rab_pengumpulan_data);
+      }
+    }
+  }, [usulan]);
 
   const addBahanItem = () => {
     const newItem: RABItem = {
@@ -63,7 +74,7 @@ const PageRAB: React.FC<PageRABProps> = ({ onKembali, onSelanjutnya, usulanId })
       if (item.id === id) {
         const updatedItem = { ...item, [field]: value };
         if (field === 'volume' || field === 'hargaSatuan') {
-          updatedItem.total = updatedItem.volume * updatedItem.hargaSatuan;
+          updatedItem.total = Number(updatedItem.volume) * Number(updatedItem.hargaSatuan);
         }
         return updatedItem;
       }
@@ -76,7 +87,7 @@ const PageRAB: React.FC<PageRABProps> = ({ onKembali, onSelanjutnya, usulanId })
       if (item.id === id) {
         const updatedItem = { ...item, [field]: value };
         if (field === 'volume' || field === 'hargaSatuan') {
-          updatedItem.total = updatedItem.volume * updatedItem.hargaSatuan;
+          updatedItem.total = Number(updatedItem.volume) * Number(updatedItem.hargaSatuan);
         }
         return updatedItem;
       }
@@ -99,6 +110,25 @@ const PageRAB: React.FC<PageRABProps> = ({ onKembali, onSelanjutnya, usulanId })
   const totalBahan = bahanItems.reduce((sum, item) => sum + item.total, 0);
   const totalPengumpulanData = pengumpulanDataItems.reduce((sum, item) => sum + item.total, 0);
   const totalRAB = totalBahan + totalPengumpulanData;
+
+  const handleSimpan = () => {
+    if (!usulanId) return;
+
+    router.put(`/pengajuan/${usulanId}`, {
+      rab_bahan: bahanItems as any,
+      rab_pengumpulan_data: pengumpulanDataItems as any,
+      total_anggaran: totalRAB,
+    }, {
+      preserveScroll: true,
+      onSuccess: () => {
+        if (onSelanjutnya) onSelanjutnya();
+      },
+      onError: (errors) => {
+        console.error('Error saving RAB', errors);
+        alert('Gagal menyimpan RAB. Periksa inputan anda.');
+      }
+    });
+  };
 
   return (
     <>
@@ -328,7 +358,7 @@ const PageRAB: React.FC<PageRABProps> = ({ onKembali, onSelanjutnya, usulanId })
         <button className={styles.secondaryButton} onClick={onKembali}>
           &lt; Kembali
         </button>
-        <button className={styles.primaryButton} onClick={onSelanjutnya} disabled={!usulanId}>
+        <button className={styles.primaryButton} onClick={handleSimpan} disabled={!usulanId}>
           Selanjutnya &gt;
         </button>
       </div>

@@ -1,23 +1,32 @@
 import React from 'react';
+import { usePage, router } from '@inertiajs/react';
 import styles from '../../../../css/pengajuan.module.css';
 
 interface PageTinjauanProps {
   onKembali?: () => void;
   onKonfirmasi?: () => void;
   onTutupForm?: () => void;
-  usulanId?: number; // ✅ TAMBAHKAN INI
-
+  usulanId?: number;
 }
 
 const PageTinjauan: React.FC<PageTinjauanProps> = ({
   onKembali,
   onKonfirmasi,
   onTutupForm,
-  usulanId // ✅ TAMBAHKAN INI
+  usulanId: propUsulanId
 }) => {
+  const { props } = usePage<{ usulan?: any }>();
+  const usulan = props.usulan;
+  const usulanId = propUsulanId ?? usulan?.id;
 
-  // ✅ Debug log
-  console.log('🔍 PageTinjauan - usulanId:', usulanId);
+  // Helper untuk format rupiah
+  const formatRupiah = (number: number) => {
+    return new Intl.NumberFormat('id-ID', {
+      style: 'currency',
+      currency: 'IDR',
+      minimumFractionDigits: 0
+    }).format(number);
+  };
 
   const handlePrintPDF = () => {
     window.print();
@@ -28,88 +37,80 @@ const PageTinjauan: React.FC<PageTinjauanProps> = ({
       alert('Usulan ID tidak ditemukan. Tidak dapat submit.');
       return;
     }
-    onKonfirmasi?.();
+
+    if (confirm('Apakah Anda yakin ingin mengirim usulan ini? Data tidak dapat diubah setelah dikirim.')) {
+      router.post(`/pengajuan/${usulanId}/submit`, {}, {
+        onSuccess: () => {
+          alert('Usulan berhasil dikirim!');
+          onKonfirmasi?.();
+        },
+        onError: (errors) => {
+          console.error(errors);
+          alert('Gagal mengirim usulan. Silakan cek kembali kelengkapan data.');
+        }
+      });
+    }
   };
+
+  if (!usulan) return <div>Loading...</div>;
+
+  // Calculate Total RAB from JSON
+  const rabBahan = usulan.rab_bahan || [];
+  const rabData = usulan.rab_pengumpulan_data || [];
+  const totalBahan = rabBahan.reduce((acc: number, item: any) => acc + (Number(item.total) || 0), 0);
+  const totalData = rabData.reduce((acc: number, item: any) => acc + (Number(item.total) || 0), 0);
+  const totalAnggaran = totalBahan + totalData;
 
   return (
     <>
-
-      {/* ✅ Warning jika usulanId tidak ada */}
       {!usulanId && (
-        <div style={{
-          padding: '12px',
-          backgroundColor: '#fee',
-          border: '1px solid #fcc',
-          borderRadius: '4px',
-          marginBottom: '16px',
-          color: '#c00'
-        }}>
-          ⚠️ <strong>Warning:</strong> Usulan ID tidak ditemukan. Tidak dapat submit usulan.
+        <div className={styles.alertWarning}>
+          ⚠️ <strong>Warning:</strong> Usulan ID tidak ditemukan.
         </div>
       )}
 
-      {/* Informasi Status */}
-      <div className={styles.alertWarning}>
-        <div className={styles.alertIcon}>⚠️</div>
-        <div className={styles.alertText}>
-          Anda belum bisa melakukan submit usulan, status keanggotaan belum semuanya <strong>Menyetujui</strong>
-        </div>
-      </div>
-
-      {/* Judul dan Informasi Utama */}
       <div className={styles.formSection}>
         <h2 className={styles.sectionTitle}>Judul</h2>
-
         <div className={styles.reviewGrid}>
           <div className={styles.reviewItem}>
             <span className={styles.reviewLabel}>Judul Penelitian</span>
-            <span className={styles.reviewValue}>
-              Sistem pendukung keputusan pemilihan bibit tanaman di kawasan perkotaan berbasis machine learning dengan algoritma random forest
-            </span>
+            <span className={styles.reviewValue}>{usulan.judul || '-'}</span>
           </div>
           <div className={styles.reviewItem}>
             <span className={styles.reviewLabel}>Lama Kegiatan</span>
-            <span className={styles.reviewValue}>1 Tahun</span>
+            <span className={styles.reviewValue}>{usulan.lama_kegiatan ? `${usulan.lama_kegiatan} Tahun` : '-'}</span>
           </div>
           <div className={styles.reviewItem}>
             <span className={styles.reviewLabel}>Kelompok Skema</span>
-            <span className={styles.reviewValue}>Riset Dasar</span>
-          </div>
-          <div className={styles.reviewItem}>
-            <span className={styles.reviewLabel}>Tema Penelitian</span>
-            <span className={styles.reviewValue}>Pengembangan sistem/platform berbasis open source</span>
+            <span className={styles.reviewValue}>{usulan.kelompok_skema || '-'}</span>
           </div>
           <div className={styles.reviewItem}>
             <span className={styles.reviewLabel}>Ruang Lingkup</span>
-            <span className={styles.reviewValue}>Penelitian Dosen Pemula</span>
+            <span className={styles.reviewValue}>{usulan.ruang_lingkup || '-'}</span>
+          </div>
+          <div className={styles.reviewItem}>
+            <span className={styles.reviewLabel}>Tema Penelitian</span>
+            <span className={styles.reviewValue}>{usulan.tema_penelitian || '-'}</span>
           </div>
           <div className={styles.reviewItem}>
             <span className={styles.reviewLabel}>Topik Penelitian</span>
-            <span className={styles.reviewValue}>Sistem informasi berbasis kearifan lokal</span>
+            <span className={styles.reviewValue}>{usulan.topik_penelitian || '-'}</span>
           </div>
           <div className={styles.reviewItem}>
             <span className={styles.reviewLabel}>Bidang Fokus</span>
-            <span className={styles.reviewValue}>Produk Rekayasa Keteknikan</span>
-          </div>
-          <div className={styles.reviewItem}>
-            <span className={styles.reviewLabel}>Rumpun Ilmu Level 3</span>
-            <span className={styles.reviewValue}>Ilmu Komputer/Sistem Informasi</span>
+            <span className={styles.reviewValue}>{usulan.bidang_fokus || '-'}</span>
           </div>
           <div className={styles.reviewItem}>
             <span className={styles.reviewLabel}>Tahun Usulan</span>
-            <span className={styles.reviewValue}>2026</span>
-          </div>
-          <div className={styles.reviewItem}>
-            <span className={styles.reviewLabel}>Target TKT</span>
-            <span className={styles.reviewValue}>3</span>
+            <span className={styles.reviewValue}>{new Date().getFullYear()}</span>
           </div>
           <div className={styles.reviewItem}>
             <span className={styles.reviewLabel}>Tahun Pelaksanaan</span>
-            <span className={styles.reviewValue}>2026</span>
+            <span className={styles.reviewValue}>{usulan.tahun_pertama || '-'}</span>
           </div>
           <div className={styles.reviewItem}>
-            <span className={styles.reviewLabel}>Profile SINTA Ketua</span>
-            <span className={styles.reviewValue}>0217939173</span>
+            <span className={styles.reviewLabel}>Target TKT</span>
+            <span className={styles.reviewValue}>{usulan.target_akhir_tkt || '-'}</span>
           </div>
         </div>
       </div>
@@ -117,54 +118,80 @@ const PageTinjauan: React.FC<PageTinjauanProps> = ({
       {/* Identitas Anggota Dosen */}
       <div className={styles.formSection}>
         <h2 className={styles.sectionTitle}>Identitas Anggota Dosen</h2>
-
         <div className={styles.tableContainer}>
           <table className={styles.table}>
             <thead>
               <tr>
                 <th>No</th>
-                <th>NUPIK/NIDN</th>
+                <th>NIDN</th>
                 <th>Nama</th>
-                <th>Institusi</th>
-                <th>Prodi</th>
+                <th>Peran</th>
                 <th>Tugas</th>
                 <th>Status</th>
               </tr>
             </thead>
             <tbody>
+              {usulan.anggota_dosen && usulan.anggota_dosen.length > 0 ? (
+                usulan.anggota_dosen.map((anggota: any, index: number) => (
+                  <tr key={anggota.id}>
+                    <td>{index + 1}</td>
+                    <td>{anggota.nidn}</td>
+                    <td>{anggota.nama}</td>
+                    <td>{anggota.peran}</td>
+                    <td>{anggota.tugas || '-'}</td>
+                    <td>
+                      <span className={anggota.status_approval === 'approved' ? styles.statusApproved : styles.statusPending}>
+                        {anggota.status_approval === 'approved' ? 'Menyetujui' : 'Menunggu'}
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={6} className={styles.emptyState}>Belum ada anggota dosen</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Identitas Anggota Non Dosen */}
+      <div className={styles.formSection}>
+        <h2 className={styles.sectionTitle}>Identitas Anggota Non Dosen (Mahasiswa)</h2>
+        <div className={styles.tableContainer}>
+          <table className={styles.table}>
+            <thead>
               <tr>
-                <td>1.</td>
-                <td>08218309701820</td>
-                <td>YANKADLN</td>
-                <td>Universitas oxkwb</td>
-                <td>Sistem Informasi</td>
-                <td>Ketua</td>
-                <td>
-                  <span className={styles.statusApproved}>Menyetujui</span>
-                </td>
+                <th>No</th>
+                <th>NIM</th>
+                <th>Nama</th>
+                <th>Peran</th>
+                <th>Tugas</th>
+                <th>Status</th>
               </tr>
-              <tr>
-                <td>2.</td>
-                <td>08218309701820</td>
-                <td>YANKADLN</td>
-                <td>Universitas oxkwb</td>
-                <td>Sistem Informasi</td>
-                <td>Ketua</td>
-                <td>
-                  <span className={styles.statusPending}>Menunggu</span>
-                </td>
-              </tr>
-              <tr>
-                <td>3.</td>
-                <td>08218309701820</td>
-                <td>YANKADLN</td>
-                <td>Universitas oxkwb</td>
-                <td>Sistem Informasi</td>
-                <td>Ketua</td>
-                <td>
-                  <span className={styles.statusPending}>Menunggu</span>
-                </td>
-              </tr>
+            </thead>
+            <tbody>
+              {usulan.anggota_non_dosen && usulan.anggota_non_dosen.length > 0 ? (
+                usulan.anggota_non_dosen.map((anggota: any, index: number) => (
+                  <tr key={anggota.id}>
+                    <td>{index + 1}</td>
+                    <td>{anggota.no_identitas}</td>
+                    <td>{anggota.nama}</td>
+                    <td>{anggota.jenis_anggota}</td>
+                    <td>{anggota.tugas || '-'}</td>
+                    <td>
+                      <span className={anggota.status_approval === 'approved' ? styles.statusApproved : styles.statusPending}>
+                        {anggota.status_approval === 'approved' ? 'Menyetujui' : 'Menunggu'}
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={6} className={styles.emptyState}>Belum ada anggota mahasiswa</td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
@@ -175,37 +202,44 @@ const PageTinjauan: React.FC<PageTinjauanProps> = ({
         <h2 className={styles.sectionTitle}>Substansi dan Luaran</h2>
 
         <div className={styles.reviewSection}>
-          <h3 className={styles.subTitle}>Nama Makro Riset</h3>
-          <p className={styles.reviewText}>Kelompok Riset Teknologi Tinggi</p>
+          <h3 className={styles.subTitle}>Makro Riset</h3>
+          <p className={styles.reviewText}>{usulan.kelompok_makro_riset || '-'} (ID: {usulan.makro_riset_id || '-'})</p>
         </div>
 
         <div className={styles.reviewSection}>
-          <div className={styles.sectionHeader}>
-            <h3 className={styles.subTitle}>Substansi</h3>
-            <button className={styles.downloadButton}>
-              Download
-            </button>
-          </div>
+          <h3 className={styles.subTitle}>File Substansi</h3>
+          {usulan.file_substansi ? (
+            <a href={`/storage/${usulan.file_substansi}`} target="_blank" className={styles.link}>Lihat File Substansi</a>
+          ) : (
+            <span className={styles.reviewValue}>Belum diupload</span>
+          )}
+        </div>
 
+        <div className={styles.reviewSection}>
           <div className={styles.tableContainer}>
+            <h3 className={styles.subTitle}>Luaran</h3>
             <table className={styles.table}>
               <thead>
                 <tr>
-                  <th>Urutan Tahun</th>
-                  <th>Kelompok Luaran</th>
-                  <th>Jenis Luaran</th>
-                  <th>Target</th>
-                  <th>Keterangan</th>
+                  <th>Tahun</th>
+                  <th>Kategori</th>
+                  <th>Deskripsi</th>
+                  <th>Status</th>
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td>Tahun Ke-1</td>
-                  <td>Artikel di jurnal</td>
-                  <td>Artikel di jurnal bereputasi</td>
-                  <td>Accepted/Published</td>
-                  <td>ajurmal.asaindo.co.id</td>
-                </tr>
+                {usulan.luaran_list && usulan.luaran_list.length > 0 ? (
+                  usulan.luaran_list.map((luaran: any, idx: number) => (
+                    <tr key={idx}>
+                      <td>Tahun {luaran.tahun}</td>
+                      <td>{luaran.kategori}</td>
+                      <td>{luaran.deskripsi}</td>
+                      <td>{luaran.status}</td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr><td colSpan={4} className={styles.emptyState}>Belum ada luaran</td></tr>
+                )}
               </tbody>
             </table>
           </div>
@@ -217,8 +251,7 @@ const PageTinjauan: React.FC<PageTinjauanProps> = ({
         <h2 className={styles.sectionTitle}>Rancangan Anggaran Biaya (RAB)</h2>
 
         <div className={styles.rabInfo}>
-          <p><strong>Total Anggaran yang diajukan:</strong> Rp 200.000,00</p>
-          <p><strong>Tahun ke 1</strong></p>
+          <p><strong>Total Anggaran:</strong> {formatRupiah(totalAnggaran)}</p>
         </div>
 
         <div className={styles.tableContainer}>
@@ -235,46 +268,31 @@ const PageTinjauan: React.FC<PageTinjauanProps> = ({
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td>Bahan</td>
-                <td>ATK</td>
-                <td>Tinta Printer</td>
-                <td>Paket</td>
-                <td>200.000</td>
-                <td>1</td>
-                <td>200.000</td>
-              </tr>
+              {rabBahan.map((item: any) => (
+                <tr key={`bahan-${item.id}`}>
+                  <td>Bahan</td>
+                  <td>{item.komponen}</td>
+                  <td>{item.item}</td>
+                  <td>{item.satuan}</td>
+                  <td>{formatRupiah(item.hargaSatuan)}</td>
+                  <td>{item.volume}</td>
+                  <td>{formatRupiah(item.total)}</td>
+                </tr>
+              ))}
+              {rabData.map((item: any) => (
+                <tr key={`data-${item.id}`}>
+                  <td>Pengumpulan Data</td>
+                  <td>{item.komponen}</td>
+                  <td>{item.item}</td>
+                  <td>{item.satuan}</td>
+                  <td>{formatRupiah(item.hargaSatuan)}</td>
+                  <td>{item.volume}</td>
+                  <td>{formatRupiah(item.total)}</td>
+                </tr>
+              ))}
               <tr className={styles.totalRow}>
-                <td colSpan={6}><strong>Total Anggaran Tahun Ke 1</strong></td>
-                <td><strong>Rp. 200.000,00</strong></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Mitra */}
-      <div className={styles.formSection}>
-        <h2 className={styles.sectionTitle}>Mitra</h2>
-
-        <div className={styles.tableContainer}>
-          <table className={styles.table}>
-            <thead>
-              <tr>
-                <th>Nama Mitra</th>
-                <th>Institusi</th>
-                <th>Alamat Institusi</th>
-                <th>Negara</th>
-                <th>Surel</th>
-                <th>Surat Kesanggupan</th>
-                <th>Dana</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td colSpan={7} className={styles.emptyState}>
-                  Mitra Kosong
-                </td>
+                <td colSpan={6}><strong>Total Anggaran</strong></td>
+                <td><strong>{formatRupiah(totalAnggaran)}</strong></td>
               </tr>
             </tbody>
           </table>
@@ -296,7 +314,7 @@ const PageTinjauan: React.FC<PageTinjauanProps> = ({
             Print PDF
           </button>
           <button className={styles.primaryButton} onClick={handleSubmit}>
-            Submit &gt;
+            Submit Usulan &gt;
           </button>
         </div>
       </div>

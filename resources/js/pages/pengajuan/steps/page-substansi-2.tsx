@@ -61,13 +61,13 @@ const PageSubstansi: React.FC<PageSubstansiProps> = ({
   const [editingLuaran, setEditingLuaran] = useState<Luaran | undefined>(undefined);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
-  // ✅ Load master data jika belum ada
-  useEffect(() => {
-    if (usulanId && makroRisetList.length === 0) {
-      console.log('📥 Loading master data for usulanId:', usulanId);
-      router.reload({ only: ['makroRisetList', 'substansi'] });
-    }
-  }, [usulanId, makroRisetList.length]);
+  // ✅ Load master data logic removed (handled by parent navigation)
+  // useEffect(() => {
+  //   if (usulanId && makroRisetList.length === 0) {
+  //     console.log('📥 Loading master data for usulanId:', usulanId);
+  //     router.reload({ only: ['makroRisetList', 'substansi'] });
+  //   }
+  // }, [usulanId, makroRisetList.length]);
 
   // Inertia form handler untuk Substansi
   const { data, setData, post, progress } = useForm<{
@@ -116,8 +116,9 @@ const PageSubstansi: React.FC<PageSubstansiProps> = ({
   // Debug logs
   useEffect(() => {
     console.log('🔍 PageSubstansi - usulanId:', usulanId);
-    console.log('🔍 PageSubstansi - makroRisetList count:', makroRisetList.length);
-  }, [usulanId, makroRisetList.length]);
+    console.log('🔍 PageSubstansi - Props:', props);
+    console.log('🔍 PageSubstansi - makroRisetList:', makroRisetList);
+  }, [usulanId, makroRisetList, props]);
 
   return (
     <>
