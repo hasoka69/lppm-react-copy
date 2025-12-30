@@ -30,10 +30,12 @@ const PageUsulan: React.FC<PageUsulanProps> = ({
   onTambahUsulan,
   onEditUsulan,
   onDeleteUsulan,
-  onViewUsulan
+  onViewUsulan,
+  usulanList: propUsulanList
 }) => {
   const { props } = usePage<PageProps>();
-  const usulanList = props.usulanList || [];
+  // Use passed prop first, fallback to page props
+  const usulanList = propUsulanList || props.usulanList || [];
 
   return (
     <div className={styles.container}>

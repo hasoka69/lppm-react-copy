@@ -70,7 +70,7 @@ const PageSubstansi: React.FC<PageSubstansiProps> = ({
   // }, [usulanId, makroRisetList.length]);
 
   // Inertia form handler untuk Substansi
-  const { data, setData, post, progress } = useForm<{
+  const { data, setData, post, put, progress } = useForm<{
     makro_riset_id: number | '';
     file_substansi: File | null;
   }>({
@@ -78,13 +78,21 @@ const PageSubstansi: React.FC<PageSubstansiProps> = ({
     file_substansi: null,
   });
 
-  // Submit handler untuk Substansi
+  // Submit handler untuk Substansi (Simpan Draft)
   const handleSimpan = () => {
     if (!usulanId) {
       alert('Usulan ID tidak ditemukan. Silakan simpan draft terlebih dahulu.');
       return;
     }
-    post(`/pengajuan/${usulanId}/substansi/save`);
+    // ✅ Menggunakan route update standard, bukan route custom yang tidak ada
+    // Kita kirimkan data substansi (makro_riset_id) via PUT ke /pengajuan/{id}
+    put(`/pengajuan/${usulanId}`, {
+      preserveScroll: true,
+      onSuccess: () => {
+        // Optional: Show feedback
+        console.log('Substansi saved successfully');
+      }
+    });
   };
 
   // Handler untuk Luaran

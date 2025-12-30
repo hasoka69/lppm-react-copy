@@ -146,6 +146,8 @@ class UsulanPenelitianController extends Controller
             'prioritas_riset' => 'nullable|string',
             'tahun_pertama' => 'nullable|integer',
             'lama_kegiatan' => 'nullable|integer',
+            // [NEW] Handle Makro Riset
+            'makro_riset_id' => 'nullable|exists:makro_riset,id',
             // RAB Validation
             'rab_bahan' => 'nullable|array',
             'rab_pengumpulan_data' => 'nullable|array',
@@ -153,6 +155,18 @@ class UsulanPenelitianController extends Controller
         ]);
 
         try {
+            // [NEW] Map makro_riset_id to kelompok_makro_riset name if provided
+            if (isset($validated['makro_riset_id'])) {
+                $makroData = DB::table('makro_riset')->where('id', $validated['makro_riset_id'])->first();
+                if ($makroData) {
+                    $validated['kelompok_makro_riset'] = $makroData->nama; // Simpan nama untuk display
+                }
+                // Kita juga bisa simpan makro_riset_id dicolumn baru jika ada, 
+                // tapi model saat ini pake 'kelompok_makro_riset' (string).
+                // Idealnya tambah kolom 'makro_riset_id' di tabel usulan_penelitian,
+                // tapi untuk sekarang kita ikut existing schema string.
+            }
+
             $usulan->update($validated);
 
             return back()->with('success', 'Data berhasil diperbarui!');

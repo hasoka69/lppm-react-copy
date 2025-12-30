@@ -21,35 +21,35 @@ use App\Models\Berita;
 
 // Group untuk authenticated users
 Route::middleware(['auth', 'verified'])->group(function () {
-    
+
     // Routes Pengajuan Usulan
     Route::prefix('pengajuan')->name('pengajuan.')->group(function () {
-        
+
         // Index - Tampilkan daftar usulan
         Route::get('/', [UsulanPenelitianController::class, 'index'])
             ->name('index');
-        
+
         // Store Draft - Simpan usulan baru sebagai draft
         // ✅ FIXED
         Route::post('/draft', [UsulanPenelitianController::class, 'storeDraft'])
-        ->name('draft');
+            ->name('draft');
 
-            // Edit Usulan
+        // Edit Usulan
         Route::get('/{usulan}/edit', [UsulanPenelitianController::class, 'edit'])
-        ->name('edit');
-        
+            ->name('edit');
+
         // Update - Update usulan per step
         Route::put('/{usulan}', [UsulanPenelitianController::class, 'update'])
             ->name('update');
-        
+
         // Upload Substansi
         Route::post('/{usulan}/substansi', [UsulanPenelitianController::class, 'uploadSubstansi'])
             ->name('substansi');
-        
+
         // Submit - Submit usulan final
         Route::post('/{usulan}/submit', [UsulanPenelitianController::class, 'submit'])
             ->name('submit');
-        
+
         // Delete - Hapus usulan
         Route::delete('/{usulan}', [UsulanPenelitianController::class, 'destroy'])
             ->name('destroy');
@@ -57,16 +57,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Anggota Fetch Routes (GET) POST
         Route::get('/{usulan}/anggota-dosen', [UsulanPenelitianController::class, 'getAnggotaDosen'])
             ->name('anggota-dosen.get');
-            Route::post(
+        Route::post(
             '/{usulan}/anggota-penelitian',
             [AnggotaPenelitianController::class, 'store']
-        )->name('anggota-dosen.store'); 
+        )->name('anggota-dosen.store');
         Route::get('/{usulan}/anggota-non-dosen', [UsulanPenelitianController::class, 'getAnggotaNonDosen'])
             ->name('anggota-non-dosen.get');
         Route::post(
             '/{usulan}/anggota-non-dosen',
             [AnggotaNonDosenController::class, 'store']
-        )->name('anggota-non-dosen.store'); 
+        )->name('anggota-non-dosen.store');
 
         // Anggota Approval Routes
         Route::post('/{usulan}/anggota-dosen/{anggota}/approve', [AnggotaApprovalController::class, 'approveDosen'])
@@ -78,26 +78,26 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/{usulan}/anggota-non-dosen/{anggota}/reject', [AnggotaApprovalController::class, 'rejectNonDosen'])
             ->name('anggota-non-dosen.reject');
 
-            // ✅ TAMBAHKAN: Get master data for steps
+        // ✅ TAMBAHKAN: Get master data for steps
         Route::get('/{usulan}/step/{step}', [UsulanPenelitianController::class, 'showStep'])
             ->name('step.show');
-    
-    // ============================================
+
+        // ============================================
         // LUARAN PENELITIAN ROUTES (Step 2)
         // ============================================
-        
+
         // GET: Fetch semua luaran untuk usulan tertentu
         Route::get('/{usulan}/luaran', [LuaranPenelitianController::class, 'showLuaran'])
             ->name('luaran.show');
-        
+
         // POST: Tambah luaran baru
         Route::post('/{usulan}/luaran', [LuaranPenelitianController::class, 'storeLuaran'])
             ->name('luaran.store');
-        
+
         // PUT: Update luaran existing
         Route::put('/luaran/{luaran}', [LuaranPenelitianController::class, 'updateLuaran'])
             ->name('luaran.update');
-        
+
         // DELETE: Hapus luaran
         Route::delete('/luaran/{luaran}', [LuaranPenelitianController::class, 'destroyLuaran'])
             ->name('luaran.destroy');
@@ -105,19 +105,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // ============================================
         // RAB ITEM ROUTES (Step 3)
         // ============================================
-        
+
         // GET: Fetch semua RAB items untuk usulan tertentu
         Route::get('/{usulan}/rab', [RabItemController::class, 'showRab'])
             ->name('rab.show');
-        
+
         // POST: Tambah RAB item baru
         Route::post('/{usulan}/rab', [RabItemController::class, 'storeRab'])
             ->name('rab.store');
-        
+
         // PUT: Update RAB item existing
         Route::put('/rab/{rabItem}', [RabItemController::class, 'updateRab'])
             ->name('rab.update');
-        
+
         // DELETE: Hapus RAB item
         Route::delete('/rab/{rabItem}', [RabItemController::class, 'destroyRab'])
             ->name('rab.destroy');
@@ -149,7 +149,7 @@ Route::get('/berita', function () {
 // ==========================================================
 
 Route::middleware('auth')->group(function () {
-    
+
     // Dashboard Admin 
     Route::get('/admin/dashboard', function () {
         return Inertia::render('admin/Dashboard');
@@ -183,15 +183,15 @@ Route::middleware('auth')->group(function () {
 
 // Middleware 'menu.permission' digunakan untuk melindungi rute yang ada di menu
 Route::middleware(['auth', 'menu.permission'])->group(function () {
-    
+
     // === AKSES & PENGGUNA (Hanya Admin) ===
     Route::resource('roles', RoleController::class)->middleware('can:roles-view');
     Route::resource('permissions', PermissionController::class)->middleware('can:permission-view');
-    
+
     // Users harus dilindungi oleh users-view, dan impersonate oleh users-impersonate
     Route::resource('users', UserController::class)->middleware('can:users-view');
     Route::put('/users/{user}/reset-password', [UserController::class, 'resetPassword'])->name('users.reset-password')->middleware('can:users-edit');
-    
+
     // RUTE IMpersonate (Ganti User) - Penting agar Admin bisa mengakses semua peran
     Route::post('/users/{user}/impersonate', [UserController::class, 'impersonate'])->name('users.impersonate')->middleware('can:users-impersonate');
     Route::post('/users/stop-impersonate', [UserController::class, 'stopImpersonate'])->name('users.stop-impersonate');
@@ -204,33 +204,25 @@ Route::middleware(['auth', 'menu.permission'])->group(function () {
     Route::get('/settingsapp', [SettingAppController::class, 'edit'])->name('setting.edit')->middleware('can:app-settings-view');
     Route::post('/settingsapp', [SettingAppController::class, 'update'])->name('setting.update')->middleware('can:app-settings-edit');
 
-    
+
     // === UTILITIES & LOGS ===
     Route::get('/audit-logs', [AuditLogController::class, 'index'])->name('audit-logs.index')->middleware('can:log-view');
-    
+
     // Backup
     Route::get('/backup', [BackupController::class, 'index'])->name('backup.index')->middleware('can:backup-view');
     Route::post('/backup/run', [BackupController::class, 'run'])->name('backup.run')->middleware('can:backup-run');
     Route::get('/backup/download/{file}', [BackupController::class, 'download'])->name('backup.download')->middleware('can:backup-download');
     Route::delete('/backup/delete/{file}', [BackupController::class, 'delete'])->name('backup.delete')->middleware('can:backup-delete');
-    
+
     // File Manager
     Route::get('/files', [UserFileController::class, 'index'])->name('files.index')->middleware('can:filemanager-view');
     Route::post('/files', [UserFileController::class, 'store'])->name('files.store')->middleware('can:filemanager-create');
     Route::delete('/files/{id}', [UserFileController::class, 'destroy'])->name('files.destroy')->middleware('can:filemanager-delete');
     Route::resource('media', MediaFolderController::class)->middleware('can:media-view'); // Asumsi media-view/media-create/etc.
 
-    
-    // === PENGAJUAN ===
-    // Pengajuan Usulan (Misalnya: dilihat oleh Dosen, Kaprodi, LPPM)
-    Route::get('/pengajuan/page-usulan', function () {
-        return Inertia::render('pengajuan/steps/page-usulan');
-    })->name('pengajuan.usulan')->middleware('can:pengajuan-usulan-view');
 
-    // Pengajuan Form (Misalnya: Hanya Dosen yang boleh mengakses form)
-    Route::get('/pengajuan/Index', function () {
-        return Inertia::render('pengajuan/Index');
-    })->name('pengajuan.index')->middleware('can:pengajuan-form-view');
+    // === PENGAJUAN ===
+    // (Routes ini sudah ditangani di grup 'pengajuan' diatas dengan Controller)
 
     // API Routes for Master Data Search
     Route::get('/api/dosen/search', [\App\Http\Controllers\Api\DosenController::class, 'search']);
