@@ -42,7 +42,7 @@ export default function DashboardDosen() {
                     subtitle="Kelola penelitian dan pengabdian masyarakat Anda dengan mudah melalui portal LPPM Asaindo"
                 >
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <ActionCard label="Submit proposal penelitian baru" href="/dosen/penelitian/create" />
+                        <ActionCard label="Submit proposal penelitian baru" href="/pengajuan/Index" />
                         <ActionCard label="Submit proposal pengabdian masyarakat" href="/dosen/pengabdian/create" />
                         <ActionCard label="Submit Luaran Penelitian dan PKM" href="/dosen/luaran/create" />
                     </div>

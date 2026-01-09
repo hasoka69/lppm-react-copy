@@ -25,71 +25,74 @@ const kelolaItems = [
   }
 ];
 
-const statsData = [
-  {
-    title: 'Total Penelitian Masuk',
-    value: '247',
-    percentage: '↑2%',
-    description: 'dari bulan lalu',
-  },
-  {
-    title: 'Total Pengabdian Masuk',
-    value: '189',
-    percentage: '↑5%',
-    description: 'dari bulan lalu',
-  },
-  {
-    title: 'Total Dosen Terdaftar',
-    value: '524',
-    percentage: '↑5%',
-    description: 'dari bulan lalu',
-  },
-  {
-    title: 'Total Luaran',
-    value: '1,342',
-    percentage: '↑8%',
-    description: 'dari bulan lalu',
-  }
-];
+// ... (Define interface if needed, or just use any for now)
 
-const activitiesData = [
-  {
-    title: 'Usulan Penelitian Baru Diajukan',
-    description: 'Dr. Ahmad Fauzi mengajukan penelitian tentang AI dalam Pendidikan',
-    time: '5 menit yang lalu'
-  },
-  {
-    title: 'Pengabdian Menunggu Review',
-    description: 'Prof. Siti Nurhaliza – Program Pemberdayaan Masyarakat Desa',
-    time: '1 jam yang lalu'
-  },
-  {
-    title: 'HKI Baru Diterbitkan',
-    description: 'Dr. Budi Santoso mendaftarkan HKI untuk sistem monitoring kesehatan',
-    time: '2 jam yang lalu'
-  },
-  {
-    title: 'Dosen Baru Terdaftar',
-    description: 'Dr. Maria Wijaya bergabung dari Fakultas Teknik Informatika',
-    time: '3 jam yang lalu'
-  }
-];
+export default function DashboardAdmin({ stats }: { stats: any }) {
 
-const adminToolsData = {
-  usulan: [
-    { label: 'Penelitian', value: 247 },
-    { label: 'Pengabdian', value: 189 },
-    { label: 'Perbaikan', value: 32 },
-    { label: 'Review', value: 85 },
-    { label: 'Penetapan Pemenang', value: 15 }
-  ],
-  luaran: [
-    { label: 'Buku', value: 342 },
-    { label: 'HKI', value: 116 }
-  ]
-};
+  const statsData = [
+    {
+      title: 'Total Penelitian Masuk',
+      value: '247', // Still hardcoded for now unless I count them too
+      percentage: '↑2%',
+      description: 'dari bulan lalu',
+    },
+    {
+      title: 'Total Pengabdian Masuk',
+      value: '189', // Still hardcoded
+      percentage: '↑5%',
+      description: 'dari bulan lalu',
+    },
+    {
+      title: 'Total Dosen Terdaftar',
+      value: stats?.dosenCount || 0, // Dynamic
+      percentage: '↑5%',
+      description: 'dari bulan lalu',
+    },
+    {
+      title: 'Total Luaran',
+      value: '1,342', // Still hardcoded
+      percentage: '↑8%',
+      description: 'dari bulan lalu',
+    }
+  ];
 
-export default function DashboardAdmin() {
+  const activitiesData = [
+    {
+      title: 'Usulan Penelitian Baru Diajukan',
+      description: 'Dr. Ahmad Fauzi mengajukan penelitian tentang AI dalam Pendidikan',
+      time: '5 menit yang lalu'
+    },
+    {
+      title: 'Pengabdian Menunggu Review',
+      description: 'Prof. Siti Nurhaliza – Program Pemberdayaan Masyarakat Desa',
+      time: '1 jam yang lalu'
+    },
+    {
+      title: 'HKI Baru Diterbitkan',
+      description: 'Dr. Budi Santoso mendaftarkan HKI untuk sistem monitoring kesehatan',
+      time: '2 jam yang lalu'
+    },
+    {
+      title: 'Dosen Baru Terdaftar',
+      description: 'Dr. Maria Wijaya bergabung dari Fakultas Teknik Informatika',
+      time: '3 jam yang lalu'
+    }
+  ];
+
+  const adminToolsData = {
+    usulan: [
+      { label: 'Penelitian', value: 247 },
+      { label: 'Pengabdian', value: 189 },
+      { label: 'Perbaikan', value: 32 },
+      { label: 'Review', value: 85 },
+      { label: 'Penetapan Pemenang', value: 15 }
+    ],
+    luaran: [
+      { label: 'Buku', value: 342 },
+      { label: 'HKI', value: 116 }
+    ]
+  };
+
   return (
     <AppLayout breadcrumbs={breadcrumbs} hideSidebar={true}>
       <Head title="Dashboard Admin" />

@@ -253,9 +253,10 @@ const PengajuanIndex = () => {
                         }}
                         onViewUsulan={(usulan) => {
                             // View as Read-Only (using Page 4 Tinjauan)
-                            setCurrentUsulanId(usulan.id);
-                            setActiveView('pengajuan');
-                            setCurrentStep(4); // Go straight to review page
+                            // Fetch data needed for Page 4
+                            if (usulan.id) {
+                                router.visit(`/pengajuan/${usulan.id}/step/4`);
+                            }
                         }}
                         usulanList={usulanList}
                     />

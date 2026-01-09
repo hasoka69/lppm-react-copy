@@ -2,6 +2,16 @@ import React from 'react';
 import { usePage } from '@inertiajs/react';
 import { PageProps as InertiaPageProps } from '@inertiajs/core';
 import styles from '../../../../css/pengajuan.module.css';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Button } from "@/components/ui/button"
+import { MoreHorizontal, Edit, Trash, Eye } from "lucide-react"
 
 export interface Usulan {
   no: number;
@@ -93,42 +103,38 @@ const PageUsulan: React.FC<PageUsulanProps> = ({
                       </span>
                     </td>
                     <td>
-                      <div className={styles.actionButtons}>
-                        {/* Edit Button - Only for Draft */}
-                        {u.status === 'draft' && (
-                          <button
-                            className={styles.actionButton}
-                            title="Edit"
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" className="h-8 w-8 p-0">
+                            <span className="sr-only">Open menu</span>
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuLabel>Aksi</DropdownMenuLabel>
+                          <DropdownMenuItem
+                            onClick={() => onViewUsulan?.(u)}
+                          >
+                            <Eye className="mr-2 h-4 w-4" /> Detail
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
                             onClick={() => onEditUsulan?.(u)}
                           >
-                            ✏️
-                          </button>
-                        )}
-
-                        {/* Delete Button - Only for Draft */}
-                        {u.status === 'draft' && (
-                          <button
-                            className={styles.actionButton}
-                            title="Hapus"
+                            <Edit className="mr-2 h-4 w-4" /> Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
                             onClick={() => {
                               if (confirm('Apakah Anda yakin ingin menghapus usulan ini?')) {
                                 onDeleteUsulan?.(u.id);
                               }
                             }}
+                            className="text-red-600 focus:text-red-600"
                           >
-                            🗑️
-                          </button>
-                        )}
-
-                        {/* View Button - For Submitted (or Draft) */}
-                        <button
-                          className={styles.actionButton}
-                          title="Lihat Detail"
-                          onClick={() => onViewUsulan?.(u)}
-                        >
-                          👁️
-                        </button>
-                      </div>
+                            <Trash className="mr-2 h-4 w-4" /> Hapus
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </td>
                   </tr>
                 ))

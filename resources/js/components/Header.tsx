@@ -273,7 +273,7 @@ export default function Header() {
                     </div>
 
                     {userDropdown && (
-                        <div className="absolute right-0 w-48 bg-white shadow-lg rounded-lg py-2 mt-3 z-40 border border-gray-100">
+                        <div className="absolute right-0 w-48 bg-white shadow-lg rounded-lg py-2 mt-3 z-50 border border-gray-100">
                             <Link href="/profile" className="block px-4 py-2 hover:bg-gray-100 text-sm">
                                 Profile
                             </Link>

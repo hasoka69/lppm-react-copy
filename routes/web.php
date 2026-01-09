@@ -29,6 +29,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/', [UsulanPenelitianController::class, 'index'])
             ->name('index');
 
+        // Fix for incorrect link /pengajuan/Index from menu or manual entry
+        Route::get('/Index', function () {
+            return redirect()->route('pengajuan.index');
+        });
+
         // Store Draft - Simpan usulan baru sebagai draft
         // ✅ FIXED
         Route::post('/draft', [UsulanPenelitianController::class, 'storeDraft'])
@@ -151,9 +156,8 @@ Route::get('/berita', function () {
 Route::middleware('auth')->group(function () {
 
     // Dashboard Admin 
-    Route::get('/admin/dashboard', function () {
-        return Inertia::render('admin/Dashboard');
-    })->middleware('can:dashboard-admin-view')->name('admin.dashboard');
+    Route::get('/admin/dashboard', [\App\Http\Controllers\DashboardController::class, 'admin'])
+        ->middleware('can:dashboard-admin-view')->name('admin.dashboard');
 
     // Dashboard Admin LPPM
     Route::get('/lppm/dashboard', function () {
