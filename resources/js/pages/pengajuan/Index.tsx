@@ -109,11 +109,7 @@ const PengajuanIndex = () => {
     };
 
     const handleEditUsulan = (usulan: Usulan) => {
-        setEditingUsulan({ ...defaultDraft, ...usulan });
-        setCurrentUsulanId(usulan.id);
-        setActiveView('pengajuan');
-        setActiveTab('pengajuan');
-        setCurrentStep(1);
+        router.visit(`/pengajuan/${usulan.id}/step/1`);
     };
 
     const handleKembaliKeDaftar = () => {

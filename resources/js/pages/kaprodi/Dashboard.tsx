@@ -11,7 +11,7 @@ const XCircleIcon = <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" 
 const CheckCircleIcon = <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>;
 
 // --- TYPES ---
-// Mendefinisikan tipe data untuk struktur program studi
+
 interface ProgramData {
     name: string;
     faculty: string;
@@ -19,7 +19,6 @@ interface ProgramData {
     proposals_2024: number;
 }
 
-// Mendefinisikan tipe data untuk struktur proposal
 interface ProposalData {
     id: number;
     title: string;
@@ -32,37 +31,37 @@ interface ProposalData {
     status: string;
 }
 
-export default function DashboardKaprodi() {
-
-    // Data Dummy (Simulasi dari Backend)
-    const data = {
-        summary: {
-            waiting_review: 12,
-            rejected_prodi: 3,
-            forwarded_to_reviewer: 28
-        },
-        program: {
-            name: 'Teknik Informatika',
-            faculty: 'Fakultas Teknik',
-            lecturers_count: 24,
-            proposals_2024: 43
-        },
-        proposals: [
-            { id: 1, title: 'Implementasi Machine Learning untuk Prediksi Cuaca', type: 'Penelitian', proposer: { name: 'Dr. Budi Santoso', prodi: 'Informatika' }, date: '15 Nov 2024', status: 'Menunggu Review' },
-            { id: 2, title: 'Pengembangan Aplikasi Mobile untuk UMKM', type: 'Pengabdian', proposer: { name: 'Dr. Sari Dewi', prodi: 'Sistem Informasi' }, date: '14 Nov 2024', status: 'Menunggu Review' }
-        ],
-        activities: [
-            { id: 1, title: 'Dosen Budi Santoso mengajukan proposal baru', subtitle: '2 jam yang lalu', badge: 'Baru' },
-            { id: 2, title: 'Anda mengirim review untuk Penelitian IoT', subtitle: '1 hari yang lalu', badge: 'Disetujui' },
-            { id: 3, title: 'Proposal Pengabdian Desa Digital butuh revisi', subtitle: '2 hari yang lalu', badge: 'Menunggu' }
-        ]
+interface DashboardProps {
+    program: ProgramData;
+    summary: {
+        waiting_review: number;
+        rejected_prodi: number;
+        forwarded_to_reviewer: number;
     };
+    proposals: ProposalData[];
+    activities: any[];
+    error?: string;
+}
+
+export default function DashboardKaprodi({ program, summary, proposals, activities, error }: DashboardProps) {
+
+    if (error) {
+        return (
+            <div className="min-h-screen bg-gray-50 font-sans flex items-center justify-center">
+                <div className="bg-red-50 text-red-700 p-6 rounded-lg text-center">
+                    <h2 className="text-xl font-bold mb-2">Error</h2>
+                    <p>{error}</p>
+                    <Link href="/" className="mt-4 inline-block underline">Kembali ke Beranda</Link>
+                </div>
+            </div>
+        );
+    }
 
     // Config untuk StatCards
     const stats = [
-        { title: "Usulan Menunggu Review", value: data.summary.waiting_review, icon: ClockIcon, color: 'blue' as const },
-        { title: "Usulan Ditolak Prodi", value: data.summary.rejected_prodi, icon: XCircleIcon, color: 'red' as const },
-        { title: "Diteruskan ke Reviewer", value: data.summary.forwarded_to_reviewer, icon: CheckCircleIcon, color: 'green' as const },
+        { title: "Usulan Menunggu Review", value: summary.waiting_review, icon: ClockIcon, color: 'blue' as const },
+        { title: "Usulan Ditolak Prodi", value: summary.rejected_prodi, icon: XCircleIcon, color: 'red' as const },
+        { title: "Diteruskan ke Reviewer", value: summary.forwarded_to_reviewer, icon: CheckCircleIcon, color: 'green' as const },
     ];
 
     return (
@@ -92,14 +91,14 @@ export default function DashboardKaprodi() {
 
                     {/* KOLOM KANAN: Info Prodi (3 cols) */}
                     <div className="lg:col-span-3">
-                        <ProdiInfoCard program={data.program} />
+                        <ProdiInfoCard program={program} />
                     </div>
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                     {/* TABEL USULAN */}
                     <div className="lg:col-span-8">
-                        <KaprodiUsulanTable proposals={data.proposals} />
+                        <KaprodiUsulanTable proposals={proposals} />
                     </div>
 
                     {/* AKTIVITAS */}
@@ -107,14 +106,18 @@ export default function DashboardKaprodi() {
                         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                             <h3 className="font-bold text-gray-800 text-lg mb-4">Aktivitas Terbaru</h3>
                             <div className="space-y-2">
-                                {data.activities.map(act => (
-                                    <ActivityItem
-                                        key={act.id}
-                                        title={act.title}
-                                        time={act.subtitle}
-                                        badge={act.badge}
-                                    />
-                                ))}
+                                <div className="space-y-2">
+                                    {activities && activities.length > 0 ? activities.map(act => (
+                                        <ActivityItem
+                                            key={act.id}
+                                            title={act.title}
+                                            time={act.subtitle}
+                                            badge={act.badge}
+                                        />
+                                    )) : (
+                                        <p className="text-gray-500 text-sm">Belum ada aktivitas.</p>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     </div>

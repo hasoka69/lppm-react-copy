@@ -14,6 +14,7 @@ class Dosen extends Model
     protected $fillable = [
         'nidn',
         'nama',
+        'prodi', // Added prodi
         'email',
         'no_hp',
     ];

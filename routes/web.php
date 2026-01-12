@@ -169,10 +169,13 @@ Route::middleware('auth')->group(function () {
         return Inertia::render('reviewer/Dashboard');
     })->middleware('can:dashboard-reviewer-view')->name('reviewer.dashboard');
 
-    // Dashboard Kaprodi
-    Route::get('/kaprodi/dashboard', function () {
-        return Inertia::render('kaprodi/Dashboard');
-    })->middleware('can:dashboard-kaprodi-view')->name('kaprodi.dashboard');
+    // Dashboard Kaprodi & Routes
+    Route::middleware('can:dashboard-kaprodi-view')->prefix('kaprodi')->name('kaprodi.')->group(function () {
+        Route::get('/dashboard', [\App\Http\Controllers\KaprodiController::class, 'dashboard'])->name('dashboard');
+        Route::get('/usulan', [\App\Http\Controllers\KaprodiController::class, 'index'])->name('usulan.index');
+        Route::get('/review/{id}', [\App\Http\Controllers\KaprodiController::class, 'show'])->name('usulan.show');
+        Route::post('/review/{id}', [\App\Http\Controllers\KaprodiController::class, 'storeReview'])->name('usulan.review');
+    });
 
     // Dashboard Dosen
     Route::get('/dosen/dashboard', function () {

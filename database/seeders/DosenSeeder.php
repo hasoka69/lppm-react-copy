@@ -42,9 +42,28 @@ class DosenSeeder extends Seeder
             Dosen::create([
                 'nidn' => '110' . str_pad($index + 1, 3, '0', STR_PAD_LEFT), // 110001-110020
                 'nama' => $name,
+                'prodi' => $departments[array_rand($departments)], // Assign random prodi
                 'email' => strtolower(str_replace(' ', '.', $name)) . '@univ.ac.id',
                 'no_hp' => '08' . rand(1, 9) . rand(10000000, 99999999),
             ]);
         }
+
+        // Create Dosen profile for Kaprodi User
+        Dosen::create([
+            'nidn' => '110999',
+            'nama' => 'Kaprodi Teknik',
+            'prodi' => 'Teknik Informatika',
+            'email' => 'kaprodi@admin.com', // Matches DatabaseSeeder user
+            'no_hp' => '081234567890',
+        ]);
+
+        // Create Dosen profile for generic Dosen User
+        Dosen::create([
+            'nidn' => '110888',
+            'nama' => 'Dosen Pengusul',
+            'prodi' => 'Teknik Informatika', // Same prodi as Kaprodi for testing
+            'email' => 'dosen@admin.com', // Matches DatabaseSeeder user
+            'no_hp' => '081234567891',
+        ]);
     }
 }
