@@ -173,8 +173,16 @@ class KaprodiController extends Controller
         }
 
         if ($request->decision === 'approve') {
-            $usulan->status = 'approved_prodi'; // Or 'reviewed'
-            // Logic to forward to reviewer could go here
+            // Find a reviewer to assign (simple: get first user with 'Reviewer' role)
+            $reviewer = User::role('Reviewer')->first();
+
+            if (!$reviewer) {
+                return back()->with('error', 'Tidak ada reviewer yang tersedia. Hubungi admin.');
+            }
+
+            $usulan->status = 'approved_prodi';
+            $usulan->current_reviewer_id = $reviewer->id;
+            $usulan->kaprodi_reviewer_id = Auth::id();
         } else {
             $usulan->status = 'rejected_prodi';
         }

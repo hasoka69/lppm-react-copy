@@ -164,10 +164,17 @@ Route::middleware('auth')->group(function () {
         return Inertia::render('lppm/Dashboard');
     })->middleware('can:dashboard-lppm-view')->name('lppm.dashboard');
 
-    // Dashboard Reviewer
-    Route::get('/reviewer/dashboard', function () {
-        return Inertia::render('reviewer/Dashboard');
-    })->middleware('can:dashboard-reviewer-view')->name('reviewer.dashboard');
+    // Dashboard Reviewer & Routes
+    Route::middleware('can:dashboard-reviewer-view')->prefix('reviewer')->name('reviewer.')->group(function () {
+        Route::get('/dashboard', function () {
+            return Inertia::render('reviewer/Dashboard');
+        })->name('dashboard');
+
+        Route::get('/usulan', [\App\Http\Controllers\ReviewerController::class, 'index'])->name('usulan.index');
+        Route::get('/penilaian', [\App\Http\Controllers\ReviewerController::class, 'history'])->name('penilaian.index');
+        Route::get('/review/{id}', [\App\Http\Controllers\ReviewerController::class, 'show'])->name('usulan.show');
+        Route::post('/review/{id}', [\App\Http\Controllers\ReviewerController::class, 'storeReview'])->name('usulan.post_review');
+    });
 
     // Dashboard Kaprodi & Routes
     Route::middleware('can:dashboard-kaprodi-view')->prefix('kaprodi')->name('kaprodi.')->group(function () {

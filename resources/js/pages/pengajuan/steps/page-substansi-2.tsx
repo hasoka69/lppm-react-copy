@@ -287,7 +287,20 @@ const PageSubstansi: React.FC<PageSubstansiProps> = ({
 
           <button
             className={styles.primaryButton}
-            onClick={onSelanjutnya}
+            onClick={() => {
+              if (!usulanId) {
+                alert('Usulan ID tidak ditemukan.');
+                return;
+              }
+              // Save makro_riset_id first before moving to next step
+              put(`/pengajuan/${usulanId}`, {
+                preserveScroll: true,
+                onSuccess: () => {
+                  console.log('Substansi saved, moving to next step');
+                  onSelanjutnya?.();
+                }
+              });
+            }}
             disabled={!usulanId}
             style={{ marginLeft: 'auto' }}
           >

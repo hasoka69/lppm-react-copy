@@ -29,8 +29,8 @@ type NavItem = {
 };
 
 const ROLE_MENU: Record<string, NavItem[]> = {
-    admin: [
-        { href: "/admin/dashboard", label: "Dashboard" },
+    "admin lppm": [
+        { href: "/lppm/dashboard", label: "Dashboard" }, // Updated to LPPM dashboard
         { href: "/admin/penelitian", label: "Penelitian" },
         { href: "/admin/pengabdian", label: "Pengabdian" },
         { href: "/admin/luaran", label: "Luaran" },
@@ -84,6 +84,8 @@ const getDisplayRole = (roleKey: string): string => {
             return 'Kaprodi Informatika';
         case 'admin':
             return 'Administrator LPPM';
+        case 'admin lppm':
+            return 'Admin LPPM';
         default:
             return capitalize(roleKey); // 'dosen' -> 'Dosen', 'reviewer' -> 'Reviewer'
     }
@@ -97,8 +99,13 @@ const getDisplayRole = (roleKey: string): string => {
  */
 const getRoleFromUrl = (url: string): string | null => {
     // Hanya mencoba mencocokkan segmen yang merupakan role yang valid
-    const match = url.match(/^\/(admin|dosen|reviewer|kaprodi)\//i);
-    return match ? match[1].toLowerCase() : null;
+    const match = url.match(/^\/(admin|dosen|reviewer|kaprodi|lppm)\//i);
+    if (match) {
+        const role = match[1].toLowerCase();
+        // Map 'lppm' URL segment to 'admin lppm' role key
+        return role === 'lppm' ? 'admin lppm' : role;
+    }
+    return null;
 };
 
 export default function Header() {

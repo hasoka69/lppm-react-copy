@@ -22,6 +22,8 @@ export interface Usulan {
   makro_riset: string;
   peran: string;
   status: string;
+  catatan?: string | null;
+  reviewer_action?: string | null;
 }
 
 interface PageProps extends InertiaPageProps {
@@ -71,6 +73,7 @@ const PageUsulan: React.FC<PageUsulanProps> = ({
                 <th>Makro Riset</th>
                 <th>Peran</th>
                 <th>Status</th>
+                <th>Catatan</th>
                 <th>Aksi</th>
               </tr>
             </thead>
@@ -78,7 +81,7 @@ const PageUsulan: React.FC<PageUsulanProps> = ({
             <tbody>
               {usulanList.length === 0 ? (
                 <tr>
-                  <td colSpan={8} style={{ textAlign: "center", padding: "20px" }}>
+                  <td colSpan={9} style={{ textAlign: "center", padding: "20px" }}>
                     Belum ada usulan.
                   </td>
                 </tr>
@@ -92,15 +95,31 @@ const PageUsulan: React.FC<PageUsulanProps> = ({
                     <td>{u.makro_riset}</td>
                     <td>{u.peran}</td>
                     <td>
-                      <span
-                        className={
-                          u.status === "draft"
-                            ? styles.statusDraft
-                            : styles.statusSubmitted
-                        }
-                      >
-                        {u.status === 'draft' ? 'Draft' : 'Diajukan'}
-                      </span>
+                      {(() => {
+                        const statusMap: Record<string, { label: string; className: string }> = {
+                          'draft': { label: 'Draft', className: styles.statusDraft },
+                          'submitted': { label: 'Diajukan', className: styles.statusSubmitted },
+                          'approved_prodi': { label: 'Disetujui Prodi', className: 'px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800' },
+                          'rejected_prodi': { label: 'Ditolak Prodi', className: 'px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800' },
+                          'reviewer_review': { label: 'Review Reviewer', className: 'px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800' },
+                          'needs_revision': { label: 'Perlu Revisi', className: 'px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800' },
+                          'didanai': { label: 'Didanai', className: 'px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800' },
+                          'ditolak': { label: 'Ditolak', className: 'px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800' },
+                        };
+                        const statusInfo = statusMap[u.status] || { label: u.status, className: styles.statusSubmitted };
+                        return <span className={statusInfo.className}>{statusInfo.label}</span>;
+                      })()}
+                    </td>
+                    <td>
+                      {u.catatan ? (
+                        <div className="max-w-xs">
+                          <p className="text-sm text-gray-700 truncate" title={u.catatan}>
+                            {u.catatan}
+                          </p>
+                        </div>
+                      ) : (
+                        <span className="text-gray-400 text-sm">-</span>
+                      )}
                     </td>
                     <td>
                       <DropdownMenu>
@@ -119,6 +138,8 @@ const PageUsulan: React.FC<PageUsulanProps> = ({
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={() => onEditUsulan?.(u)}
+                            disabled={u.status === 'rejected_prodi' || u.status === 'ditolak' || u.status === 'didanai'}
+                            className={u.status === 'rejected_prodi' || u.status === 'ditolak' || u.status === 'didanai' ? 'opacity-50 cursor-not-allowed' : ''}
                           >
                             <Edit className="mr-2 h-4 w-4" /> Edit
                           </DropdownMenuItem>

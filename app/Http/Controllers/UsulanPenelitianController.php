@@ -19,7 +19,12 @@ class UsulanPenelitianController extends Controller
     {
         $user = Auth::user();
 
-        $usulanList = UsulanPenelitian::where('user_id', $user->id)
+        $usulanList = UsulanPenelitian::with([
+            'reviewHistories' => function ($query) {
+                $query->latest('reviewed_at')->limit(1);
+            }
+        ])
+            ->where('user_id', $user->id)
             ->latest()
             ->get()
             ->map(fn($u, $i) => [
@@ -31,6 +36,8 @@ class UsulanPenelitianController extends Controller
                 'makro_riset' => $u->kelompok_makro_riset ?? 'N/A',
                 'peran' => 'Ketua',
                 'status' => $u->status,
+                'catatan' => $u->reviewHistories->first()?->comments ?? null,
+                'reviewer_action' => $u->reviewHistories->first()?->action ?? null,
             ]);
 
         // ✅ TAMBAHAN: Ambil draft terakhir yang sedang dikerjakan

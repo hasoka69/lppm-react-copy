@@ -57,6 +57,14 @@ class UsulanPenelitian extends Model
     }
 
     /**
+     * Alias for ketua() - for consistency across controllers
+     */
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    /**
      * Relasi ke Anggota Dosen
      */
     public function anggotaDosen()
@@ -88,6 +96,14 @@ class UsulanPenelitian extends Model
     public function rabItems()
     {
         return $this->hasMany(RabItem::class, 'usulan_id');
+    }
+
+    /**
+     * Relasi ke Review Histories
+     */
+    public function reviewHistories()
+    {
+        return $this->hasMany(ReviewHistory::class, 'usulan_id');
     }
 
     // ========================================

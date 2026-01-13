@@ -17,10 +17,10 @@ class ReviewHistory extends Model
         'reviewed_at',
     ];
 
-    protected $dates = [
-        'created_at',
-        'updated_at',
-        'reviewed_at',
+    protected $casts = [
+        'reviewed_at' => 'datetime',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
     /**
