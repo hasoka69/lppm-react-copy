@@ -57,7 +57,7 @@ class KaprodiController extends Controller
             ->whereHas('ketua.dosen', function ($q) use ($prodi) {
                 $q->where('prodi', $prodi);
             })
-            ->where('status', '!=', 'draft')
+            ->where('status', 'submitted')
             ->latest()
             ->take(5)
             ->get()
@@ -106,7 +106,7 @@ class KaprodiController extends Controller
             ->whereHas('ketua.dosen', function ($q) use ($prodi) {
                 $q->where('prodi', $prodi);
             })
-            ->where('status', '!=', 'draft') // Only show submitted
+            ->where('status', 'submitted') // Only show submitted (incoming)
             ->latest()
             ->get()
             ->map(function ($usulan, $index) {
@@ -123,6 +123,45 @@ class KaprodiController extends Controller
             });
 
         return Inertia::render('kaprodi/usulan/Index', [
+            'usulanList' => $usulanList,
+            'prodiName' => $prodi
+        ]);
+    }
+
+    /**
+     * List reviewed proposals (History)
+     */
+    public function history()
+    {
+        $dosenProfile = $this->getKaprodiProfile();
+        $prodi = $dosenProfile ? $dosenProfile->prodi : null;
+
+        if (!$prodi) {
+            return redirect()->route('kaprodi.dashboard')->with('error', 'Profil anda tidak memiliki Prodi.');
+        }
+
+        $usulanList = UsulanPenelitian::with(['ketua.dosen'])
+            ->whereHas('ketua.dosen', function ($q) use ($prodi) {
+                $q->where('prodi', $prodi);
+            })
+            ->where('status', '!=', 'draft')
+            ->where('status', '!=', 'submitted')
+            ->latest()
+            ->get()
+            ->map(function ($usulan, $index) {
+                return [
+                    'no' => $index + 1,
+                    'id' => $usulan->id,
+                    'judul' => $usulan->judul,
+                    'pengusul' => $usulan->ketua->name,
+                    'skema' => $usulan->kelompok_skema,
+                    'tahun' => $usulan->tahun_pertama,
+                    'status' => $usulan->status,
+                    'tanggal' => $usulan->created_at->format('d/m/Y'),
+                ];
+            });
+
+        return Inertia::render('kaprodi/usulan/History', [
             'usulanList' => $usulanList,
             'prodiName' => $prodi
         ]);

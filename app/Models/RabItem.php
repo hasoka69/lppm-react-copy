@@ -11,6 +11,7 @@ class RabItem extends Model
 
     protected $fillable = [
         'usulan_id',
+        'usulan_type', // [NEW]
         'tipe',
         'kategori',
         'item',
@@ -28,11 +29,11 @@ class RabItem extends Model
     ];
 
     /**
-     * Relasi ke Usulan Penelitian
+     * Relasi ke Usulan (Polymorphic: Penelitian atau Pengabdian)
      */
-    public function usulan(): BelongsTo
+    public function usulan()
     {
-        return $this->belongsTo(UsulanPenelitian::class, 'usulan_id');
+        return $this->morphTo();
     }
 
     /**

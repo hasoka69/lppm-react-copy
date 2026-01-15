@@ -18,114 +18,90 @@ use App\Http\Controllers\AnggotaPenelitianController;
 use App\Http\Controllers\LuaranPenelitianController;
 use App\Http\Controllers\RabItemController;
 use App\Models\Berita;
+use App\Http\Controllers\UsulanPengabdianController;
+use App\Http\Controllers\RabItemPengabdianController;
 
 // Group untuk authenticated users
 Route::middleware(['auth', 'verified'])->group(function () {
 
-    // Routes Pengajuan Usulan
-    Route::prefix('pengajuan')->name('pengajuan.')->group(function () {
+    // Routes Dosen Penelitian (Ex-Pengajuan)
+    Route::prefix('dosen/penelitian')->name('dosen.penelitian.')->group(function () {
 
-        // Index - Tampilkan daftar usulan
-        Route::get('/', [UsulanPenelitianController::class, 'index'])
-            ->name('index');
+        // Index
+        Route::get('/', [UsulanPenelitianController::class, 'index'])->name('index');
 
-        // Fix for incorrect link /pengajuan/Index from menu or manual entry
+        // Fix for manual entry
         Route::get('/Index', function () {
-            return redirect()->route('pengajuan.index');
+            return redirect()->route('dosen.penelitian.index');
         });
 
-        // Store Draft - Simpan usulan baru sebagai draft
-        // ✅ FIXED
-        Route::post('/draft', [UsulanPenelitianController::class, 'storeDraft'])
-            ->name('draft');
+        Route::post('/draft', [UsulanPenelitianController::class, 'storeDraft'])->name('draft');
+        Route::get('/{usulan}/edit', [UsulanPenelitianController::class, 'edit'])->name('edit');
+        Route::put('/{usulan}', [UsulanPenelitianController::class, 'update'])->name('update');
+        Route::post('/{usulan}/substansi', [UsulanPenelitianController::class, 'uploadSubstansi'])->name('substansi');
+        Route::post('/{usulan}/submit', [UsulanPenelitianController::class, 'submit'])->name('submit');
+        Route::delete('/{usulan}', [UsulanPenelitianController::class, 'destroy'])->name('destroy');
 
-        // Edit Usulan
-        Route::get('/{usulan}/edit', [UsulanPenelitianController::class, 'edit'])
-            ->name('edit');
+        // Anggota
+        Route::get('/{usulan}/anggota-dosen', [UsulanPenelitianController::class, 'getAnggotaDosen'])->name('anggota-dosen.get');
+        Route::post('/{usulan}/anggota-penelitian', [AnggotaPenelitianController::class, 'store'])->name('anggota-dosen.store');
+        Route::get('/{usulan}/anggota-non-dosen', [UsulanPenelitianController::class, 'getAnggotaNonDosen'])->name('anggota-non-dosen.get');
+        Route::post('/{usulan}/anggota-non-dosen', [AnggotaNonDosenController::class, 'store'])->name('anggota-non-dosen.store');
 
-        // Update - Update usulan per step
-        Route::put('/{usulan}', [UsulanPenelitianController::class, 'update'])
-            ->name('update');
+        // Approval Anggota (Existing)
+        Route::post('/{usulan}/anggota-dosen/{anggota}/approve', [AnggotaApprovalController::class, 'approveDosen'])->name('anggota-dosen.approve');
+        Route::post('/{usulan}/anggota-dosen/{anggota}/reject', [AnggotaApprovalController::class, 'rejectDosen'])->name('anggota-dosen.reject');
+        Route::post('/{usulan}/anggota-non-dosen/{anggota}/approve', [AnggotaApprovalController::class, 'approveNonDosen'])->name('anggota-non-dosen.approve');
+        Route::post('/{usulan}/anggota-non-dosen/{anggota}/reject', [AnggotaApprovalController::class, 'rejectNonDosen'])->name('anggota-non-dosen.reject');
 
-        // Upload Substansi
-        Route::post('/{usulan}/substansi', [UsulanPenelitianController::class, 'uploadSubstansi'])
-            ->name('substansi');
+        // Step Show
+        Route::get('/{usulan}/step/{step}', [UsulanPenelitianController::class, 'showStep'])->name('step.show');
 
-        // Submit - Submit usulan final
-        Route::post('/{usulan}/submit', [UsulanPenelitianController::class, 'submit'])
-            ->name('submit');
+        // Luaran (Step 2)
+        Route::get('/{usulan}/luaran', [LuaranPenelitianController::class, 'showLuaran'])->name('luaran.show');
+        Route::post('/{usulan}/luaran', [LuaranPenelitianController::class, 'storeLuaran'])->name('luaran.store');
+        Route::put('/luaran/{luaran}', [LuaranPenelitianController::class, 'updateLuaran'])->name('luaran.update');
+        Route::delete('/luaran/{luaran}', [LuaranPenelitianController::class, 'destroyLuaran'])->name('luaran.destroy');
 
-        // Delete - Hapus usulan
-        Route::delete('/{usulan}', [UsulanPenelitianController::class, 'destroy'])
-            ->name('destroy');
+        // RAB (Step 3) - Using RabItemController (Original)
+        Route::get('/{usulan}/rab', [RabItemController::class, 'showRab'])->name('rab.show');
+        Route::post('/{usulan}/rab', [RabItemController::class, 'storeRab'])->name('rab.store');
+        Route::put('/rab/{rabItem}', [RabItemController::class, 'updateRab'])->name('rab.update');
+        Route::delete('/rab/{rabItem}', [RabItemController::class, 'destroyRab'])->name('rab.destroy');
+    });
 
-        // Anggota Fetch Routes (GET) POST
-        Route::get('/{usulan}/anggota-dosen', [UsulanPenelitianController::class, 'getAnggotaDosen'])
-            ->name('anggota-dosen.get');
-        Route::post(
-            '/{usulan}/anggota-penelitian',
-            [AnggotaPenelitianController::class, 'store']
-        )->name('anggota-dosen.store');
-        Route::get('/{usulan}/anggota-non-dosen', [UsulanPenelitianController::class, 'getAnggotaNonDosen'])
-            ->name('anggota-non-dosen.get');
-        Route::post(
-            '/{usulan}/anggota-non-dosen',
-            [AnggotaNonDosenController::class, 'store']
-        )->name('anggota-non-dosen.store');
+    // Routes Dosen Pengabdian [NEW]
+    Route::prefix('dosen/pengabdian')->name('dosen.pengabdian.')->group(function () {
 
-        // Anggota Approval Routes
-        Route::post('/{usulan}/anggota-dosen/{anggota}/approve', [AnggotaApprovalController::class, 'approveDosen'])
-            ->name('anggota-dosen.approve');
-        Route::post('/{usulan}/anggota-dosen/{anggota}/reject', [AnggotaApprovalController::class, 'rejectDosen'])
-            ->name('anggota-dosen.reject');
-        Route::post('/{usulan}/anggota-non-dosen/{anggota}/approve', [AnggotaApprovalController::class, 'approveNonDosen'])
-            ->name('anggota-non-dosen.approve');
-        Route::post('/{usulan}/anggota-non-dosen/{anggota}/reject', [AnggotaApprovalController::class, 'rejectNonDosen'])
-            ->name('anggota-non-dosen.reject');
+        // Index
+        Route::get('/', [UsulanPengabdianController::class, 'index'])->name('index');
+        Route::get('/Index', function () {
+            return redirect()->route('dosen.pengabdian.index');
+        });
 
-        // ✅ TAMBAHKAN: Get master data for steps
-        Route::get('/{usulan}/step/{step}', [UsulanPenelitianController::class, 'showStep'])
-            ->name('step.show');
+        Route::post('/draft', [UsulanPengabdianController::class, 'storeDraft'])->name('draft');
+        Route::get('/{usulan}/edit', [UsulanPengabdianController::class, 'edit'])->name('edit'); // Need impl in Controller
+        Route::put('/{usulan}', [UsulanPengabdianController::class, 'update'])->name('update');
+        Route::post('/{usulan}/substansi', [UsulanPengabdianController::class, 'uploadSubstansi'])->name('substansi');
+        Route::post('/{usulan}/submit', [UsulanPengabdianController::class, 'submit'])->name('submit');
+        Route::delete('/{usulan}', [UsulanPengabdianController::class, 'destroy'])->name('destroy');
 
-        // ============================================
-        // LUARAN PENELITIAN ROUTES (Step 2)
-        // ============================================
+        // Anggota READ (Implemented in UsulanPengabdianController)
+        Route::get('/{usulan}/anggota-dosen', [UsulanPengabdianController::class, 'getAnggotaDosen'])->name('anggota-dosen.get');
+        Route::get('/{usulan}/anggota-non-dosen', [UsulanPengabdianController::class, 'getAnggotaNonDosen'])->name('anggota-non-dosen.get');
 
-        // GET: Fetch semua luaran untuk usulan tertentu
-        Route::get('/{usulan}/luaran', [LuaranPenelitianController::class, 'showLuaran'])
-            ->name('luaran.show');
+        // Anggota WRITE (TODO: Need specific controller or reuse if polymorphic)
+        // For now commented out or reuse if adapted
+        // Route::post('/{usulan}/anggota-penelitian', [AnggotaPengabdianController::class, 'store'])->name('anggota-dosen.store'); 
 
-        // POST: Tambah luaran baru
-        Route::post('/{usulan}/luaran', [LuaranPenelitianController::class, 'storeLuaran'])
-            ->name('luaran.store');
+        // Step Show
+        Route::get('/{usulan}/step/{step}', [UsulanPengabdianController::class, 'showStep'])->name('step.show');
 
-        // PUT: Update luaran existing
-        Route::put('/luaran/{luaran}', [LuaranPenelitianController::class, 'updateLuaran'])
-            ->name('luaran.update');
-
-        // DELETE: Hapus luaran
-        Route::delete('/luaran/{luaran}', [LuaranPenelitianController::class, 'destroyLuaran'])
-            ->name('luaran.destroy');
-
-        // ============================================
-        // RAB ITEM ROUTES (Step 3)
-        // ============================================
-
-        // GET: Fetch semua RAB items untuk usulan tertentu
-        Route::get('/{usulan}/rab', [RabItemController::class, 'showRab'])
-            ->name('rab.show');
-
-        // POST: Tambah RAB item baru
-        Route::post('/{usulan}/rab', [RabItemController::class, 'storeRab'])
-            ->name('rab.store');
-
-        // PUT: Update RAB item existing
-        Route::put('/rab/{rabItem}', [RabItemController::class, 'updateRab'])
-            ->name('rab.update');
-
-        // DELETE: Hapus RAB item
-        Route::delete('/rab/{rabItem}', [RabItemController::class, 'destroyRab'])
-            ->name('rab.destroy');
+        // RAB (Step 3) - Using RabItemPengabdianController
+        Route::get('/{usulan}/rab', [RabItemPengabdianController::class, 'showRab'])->name('rab.show');
+        Route::post('/{usulan}/rab', [RabItemPengabdianController::class, 'storeRab'])->name('rab.store');
+        Route::put('/rab/{rabItem}', [RabItemPengabdianController::class, 'updateRab'])->name('rab.update');
+        Route::delete('/rab/{rabItem}', [RabItemPengabdianController::class, 'destroyRab'])->name('rab.destroy');
     });
 });
 
@@ -180,6 +156,7 @@ Route::middleware('auth')->group(function () {
     Route::middleware('can:dashboard-kaprodi-view')->prefix('kaprodi')->name('kaprodi.')->group(function () {
         Route::get('/dashboard', [\App\Http\Controllers\KaprodiController::class, 'dashboard'])->name('dashboard');
         Route::get('/usulan', [\App\Http\Controllers\KaprodiController::class, 'index'])->name('usulan.index');
+        Route::get('/riwayat-review', [\App\Http\Controllers\KaprodiController::class, 'history'])->name('riwayat');
         Route::get('/review/{id}', [\App\Http\Controllers\KaprodiController::class, 'show'])->name('usulan.show');
         Route::post('/review/{id}', [\App\Http\Controllers\KaprodiController::class, 'storeReview'])->name('usulan.review');
     });

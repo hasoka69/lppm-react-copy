@@ -12,7 +12,7 @@ return new class extends Migration {
     public function up(): void
     {
         // Using raw SQL to modify ENUM column as Doctrine doesn't support it well for ENUMs
-        DB::statement("ALTER TABLE usulan_penelitian MODIFY COLUMN status ENUM('draft', 'submitted', 'under_review', 'approved', 'rejected', 'approved_prodi', 'rejected_prodi') DEFAULT 'draft'");
+        DB::statement("ALTER TABLE usulan_penelitian MODIFY COLUMN status ENUM('draft', 'submitted', 'under_review', 'approved', 'rejected', 'approved_prodi', 'rejected_prodi', 'reviewer_review', 'needs_revision', 'didanai', 'ditolak') DEFAULT 'draft'");
     }
 
     /**

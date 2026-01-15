@@ -346,7 +346,7 @@ class UsulanPenelitianController extends Controller
     public function showStep($usulanId, $step)
     {
         $step = (int) $step;
-        $usulan = UsulanPenelitian::with(['anggotaDosen', 'anggotaNonDosen', 'luaranList'])->where('user_id', Auth::id())->findOrFail($usulanId);
+        $usulan = UsulanPenelitian::with(['anggotaDosen', 'anggotaNonDosen', 'luaranList', 'rabItems'])->where('user_id', Auth::id())->findOrFail($usulanId);
 
         $masterData = $this->getMasterDataWithMakroRiset();
 
