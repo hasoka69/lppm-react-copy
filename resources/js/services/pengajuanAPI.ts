@@ -15,7 +15,7 @@ interface LuaranData {
 }
 
 interface RabData {
-    tipe: 'bahan' | 'pengumpulan_data';
+    tipe: string; // Dynamic for each type
     kategori: string;
     item: string;
     satuan: string;
@@ -32,12 +32,8 @@ interface ApiResponse<T> {
 }
 
 interface ValidationError {
-    response?: {
-        data?: {
-            errors?: Record<string, string[]>;
-            message?: string;
-        };
-    };
+    message?: string;
+    errors?: Record<string, string[]>;
 }
 
 // ========================================
@@ -48,9 +44,9 @@ export const LuaranAPI = {
     /**
      * GET: Fetch semua luaran untuk usulan
      */
-    async getList(usulanId: number) {
+    async getList(usulanId: number, prefix: string = '/dosen/penelitian') {
         const response = await axios.get<ApiResponse<any[]>>(
-            `/pengajuan/${usulanId}/luaran`
+            `${prefix}/${usulanId}/luaran`
         );
         return response.data;
     },
@@ -58,9 +54,9 @@ export const LuaranAPI = {
     /**
      * POST: Tambah luaran baru
      */
-    async create(usulanId: number, data: LuaranData) {
+    async create(usulanId: number, data: LuaranData, prefix: string = '/dosen/penelitian') {
         const response = await axios.post<ApiResponse<any>>(
-            `/pengajuan/${usulanId}/luaran`,
+            `${prefix}/${usulanId}/luaran`,
             data
         );
         return response.data;
@@ -69,9 +65,9 @@ export const LuaranAPI = {
     /**
      * PUT: Update luaran existing
      */
-    async update(luaranId: number, data: Partial<LuaranData>) {
+    async update(luaranId: number, data: Partial<LuaranData>, prefix: string = '/dosen/penelitian') {
         const response = await axios.put<ApiResponse<any>>(
-            `/pengajuan/luaran/${luaranId}`,
+            `${prefix}/luaran/${luaranId}`,
             data
         );
         return response.data;
@@ -80,9 +76,9 @@ export const LuaranAPI = {
     /**
      * DELETE: Hapus luaran
      */
-    async delete(luaranId: number) {
+    async delete(luaranId: number, prefix: string = '/dosen/penelitian') {
         const response = await axios.delete<ApiResponse<any>>(
-            `/pengajuan/luaran/${luaranId}`
+            `${prefix}/luaran/${luaranId}`
         );
         return response.data;
     },
@@ -96,9 +92,9 @@ export const RabAPI = {
     /**
      * GET: Fetch semua RAB items untuk usulan
      */
-    async getList(usulanId: number) {
+    async getList(usulanId: number, prefix: string = '/dosen/penelitian') {
         const response = await axios.get<ApiResponse<any[]>>(
-            `/pengajuan/${usulanId}/rab`
+            `${prefix}/${usulanId}/rab`
         );
         return response.data;
     },
@@ -106,9 +102,9 @@ export const RabAPI = {
     /**
      * POST: Tambah RAB item baru
      */
-    async create(usulanId: number, data: RabData) {
+    async create(usulanId: number, data: RabData, prefix: string = '/dosen/penelitian') {
         const response = await axios.post<ApiResponse<any>>(
-            `/pengajuan/${usulanId}/rab`,
+            `${prefix}/${usulanId}/rab`,
             data
         );
         return response.data;
@@ -117,9 +113,9 @@ export const RabAPI = {
     /**
      * PUT: Update RAB item existing
      */
-    async update(rabItemId: number, data: Partial<RabData>) {
+    async update(rabItemId: number, data: Partial<RabData>, prefix: string = '/dosen/penelitian') {
         const response = await axios.put<ApiResponse<any>>(
-            `/pengajuan/rab/${rabItemId}`,
+            `${prefix}/rab/${rabItemId}`,
             data
         );
         return response.data;
@@ -128,9 +124,9 @@ export const RabAPI = {
     /**
      * DELETE: Hapus RAB item
      */
-    async delete(rabItemId: number) {
+    async delete(rabItemId: number, prefix: string = '/dosen/penelitian') {
         const response = await axios.delete<ApiResponse<any>>(
-            `/pengajuan/rab/${rabItemId}`
+            `${prefix}/rab/${rabItemId}`
         );
         return response.data;
     },

@@ -54,6 +54,7 @@ class RabItemController extends Controller
 
             $rabItem = RabItem::create([
                 'usulan_id' => $usulan->id,
+                'usulan_type' => UsulanPenelitian::class,
                 ...$validated,
             ]);
 

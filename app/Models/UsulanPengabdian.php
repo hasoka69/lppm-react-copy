@@ -15,17 +15,25 @@ class UsulanPengabdian extends Model
     protected $fillable = [
         'user_id',
         'judul',
-        'tkt_saat_ini',
-        'target_akhir_tkt',
+        'jenis_bidang_fokus', // [NEW]
+        'bidang_fokus',
+        'rumpun_ilmu_level1_id', // [NEW]
+        'rumpun_ilmu_level1_label',
+        'rumpun_ilmu_level2_id',
+        'rumpun_ilmu_level2_label',
+        'rumpun_ilmu_level3_id',
+        'rumpun_ilmu_level3_label',
         'kelompok_skema',
         'ruang_lingkup',
-        'bidang_fokus',
+        'tahun_pengusulan', // [NEW]
         'tahun_pertama',
         'lama_kegiatan',
+        'tkt_saat_ini',
+        'target_akhir_tkt',
         'file_substansi',
-        // RAB Summary (total stored here, detail in rab_item)
         'total_anggaran',
         'status',
+        'revision_count'
     ];
 
     protected $casts = [
@@ -37,11 +45,29 @@ class UsulanPengabdian extends Model
     // ========================================
 
     /**
+     * Relasi ke Mitra Pengabdian
+     */
+    public function mitra()
+    {
+        return $this->hasMany(MitraPengabdian::class, 'usulan_id');
+    }
+
+    /**
      * Relasi ke User (Ketua Pengabdian)
      */
     public function ketua()
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function anggotaDosen()
+    {
+        return $this->hasMany(AnggotaPengabdian::class, 'usulan_id');
+    }
+
+    public function anggotaNonDosen()
+    {
+        return $this->hasMany(AnggotaNonDosenPengabdian::class, 'usulan_id');
     }
 
     // Alias conform to Penelitian controller patterns if reused
@@ -50,21 +76,7 @@ class UsulanPengabdian extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    /**
-     * Relasi ke Anggota Dosen Pengabdian
-     */
-    public function anggotaDosen()
-    {
-        return $this->hasMany(AnggotaPengabdian::class, 'usulan_id');
-    }
 
-    /**
-     * Relasi ke Anggota Non-Dosen Pengabdian
-     */
-    public function anggotaNonDosen()
-    {
-        return $this->hasMany(AnggotaNonDosenPengabdian::class, 'usulan_id');
-    }
 
     /**
      * Relasi Polymorphic ke RAB Items
@@ -91,5 +103,20 @@ class UsulanPengabdian extends Model
     public function isSubmitted()
     {
         return $this->status === 'submitted';
+    }
+    /**
+     * Relationship to Luaran items
+     */
+    public function luaranItems()
+    {
+        return $this->hasMany(LuaranPengabdian::class, 'usulan_id');
+    }
+
+    /**
+     * Relationship to Review History
+     */
+    public function reviewHistories()
+    {
+        return $this->morphMany(ReviewHistory::class, 'usulan');
     }
 }

@@ -101,9 +101,12 @@ class UsulanPenelitian extends Model
     /**
      * Relasi ke Review Histories
      */
+    /**
+     * Relasi ke Review Histories (Polymorphic)
+     */
     public function reviewHistories()
     {
-        return $this->hasMany(ReviewHistory::class, 'usulan_id');
+        return $this->morphMany(ReviewHistory::class, 'usulan');
     }
 
     // ========================================

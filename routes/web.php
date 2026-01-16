@@ -20,6 +20,8 @@ use App\Http\Controllers\RabItemController;
 use App\Models\Berita;
 use App\Http\Controllers\UsulanPengabdianController;
 use App\Http\Controllers\RabItemPengabdianController;
+use App\Http\Controllers\AnggotaPengabdianController;
+use App\Http\Controllers\AnggotaNonDosenPengabdianController;
 
 // Group untuk authenticated users
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -45,8 +47,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Anggota
         Route::get('/{usulan}/anggota-dosen', [UsulanPenelitianController::class, 'getAnggotaDosen'])->name('anggota-dosen.get');
         Route::post('/{usulan}/anggota-penelitian', [AnggotaPenelitianController::class, 'store'])->name('anggota-dosen.store');
+        Route::put('/anggota-penelitian/{id}', [AnggotaPenelitianController::class, 'update'])->name('anggota-dosen.update');
+        Route::delete('/anggota-penelitian/{id}', [AnggotaPenelitianController::class, 'destroy'])->name('anggota-dosen.destroy');
+
         Route::get('/{usulan}/anggota-non-dosen', [UsulanPenelitianController::class, 'getAnggotaNonDosen'])->name('anggota-non-dosen.get');
         Route::post('/{usulan}/anggota-non-dosen', [AnggotaNonDosenController::class, 'store'])->name('anggota-non-dosen.store');
+        Route::put('/anggota-non-dosen/{id}', [AnggotaNonDosenController::class, 'update'])->name('anggota-non-dosen.update');
+        Route::delete('/anggota-non-dosen/{id}', [AnggotaNonDosenController::class, 'destroy'])->name('anggota-non-dosen.destroy');
 
         // Approval Anggota (Existing)
         Route::post('/{usulan}/anggota-dosen/{anggota}/approve', [AnggotaApprovalController::class, 'approveDosen'])->name('anggota-dosen.approve');
@@ -79,6 +86,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
             return redirect()->route('dosen.pengabdian.index');
         });
 
+        // Mitra Pengabdian (Page 4) - Moved up to avoid wildcard collision
+        Route::post('/mitra', [\App\Http\Controllers\MitraPengabdianController::class, 'store'])->name('mitra.store');
+        Route::delete('/mitra/{id}', [\App\Http\Controllers\MitraPengabdianController::class, 'destroy'])->name('mitra.destroy');
+
         Route::post('/draft', [UsulanPengabdianController::class, 'storeDraft'])->name('draft');
         Route::get('/{usulan}/edit', [UsulanPengabdianController::class, 'edit'])->name('edit'); // Need impl in Controller
         Route::put('/{usulan}', [UsulanPengabdianController::class, 'update'])->name('update');
@@ -90,9 +101,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/{usulan}/anggota-dosen', [UsulanPengabdianController::class, 'getAnggotaDosen'])->name('anggota-dosen.get');
         Route::get('/{usulan}/anggota-non-dosen', [UsulanPengabdianController::class, 'getAnggotaNonDosen'])->name('anggota-non-dosen.get');
 
-        // Anggota WRITE (TODO: Need specific controller or reuse if polymorphic)
-        // For now commented out or reuse if adapted
-        // Route::post('/{usulan}/anggota-penelitian', [AnggotaPengabdianController::class, 'store'])->name('anggota-dosen.store'); 
+        // Anggota WRITE (Implemented via specialized controllers)
+        Route::post('/{usulan}/anggota-pengabdian', [AnggotaPengabdianController::class, 'store'])->name('anggota-dosen.store');
+        Route::put('/anggota-pengabdian/{id}', [AnggotaPengabdianController::class, 'update'])->name('anggota-dosen.update');
+        Route::delete('/anggota-pengabdian/{id}', [AnggotaPengabdianController::class, 'destroy'])->name('anggota-dosen.destroy');
+
+        Route::post('/{usulan}/anggota-non-dosen', [AnggotaNonDosenPengabdianController::class, 'store'])->name('anggota-non-dosen.store');
+        Route::put('/anggota-non-dosen/{id}', [AnggotaNonDosenPengabdianController::class, 'update'])->name('anggota-non-dosen.update');
+        Route::delete('/anggota-non-dosen/{id}', [AnggotaNonDosenPengabdianController::class, 'destroy'])->name('anggota-non-dosen.destroy');
 
         // Step Show
         Route::get('/{usulan}/step/{step}', [UsulanPengabdianController::class, 'showStep'])->name('step.show');
@@ -102,6 +118,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/{usulan}/rab', [RabItemPengabdianController::class, 'storeRab'])->name('rab.store');
         Route::put('/rab/{rabItem}', [RabItemPengabdianController::class, 'updateRab'])->name('rab.update');
         Route::delete('/rab/{rabItem}', [RabItemPengabdianController::class, 'destroyRab'])->name('rab.destroy');
+
+
+
+        // Luaran [NEW]
+        Route::get('/{usulan}/luaran', [\App\Http\Controllers\LuaranPengabdianController::class, 'showLuaran'])->name('luaran.show');
+        Route::post('/{usulan}/luaran', [\App\Http\Controllers\LuaranPengabdianController::class, 'storeLuaran'])->name('luaran.store');
+        Route::put('/luaran/{luaran}', [\App\Http\Controllers\LuaranPengabdianController::class, 'updateLuaran'])->name('luaran.update');
+        Route::delete('/luaran/{luaran}', [\App\Http\Controllers\LuaranPengabdianController::class, 'destroyLuaran'])->name('luaran.destroy');
     });
 });
 
@@ -143,22 +167,39 @@ Route::middleware('auth')->group(function () {
     // Dashboard Reviewer & Routes
     Route::middleware('can:dashboard-reviewer-view')->prefix('reviewer')->name('reviewer.')->group(function () {
         Route::get('/dashboard', function () {
+            // Dashboard now fetches stats via Controller or direct render
+            // For now, keep it simple or redirect to usulan index for stats
             return Inertia::render('reviewer/Dashboard');
         })->name('dashboard');
 
+        // Penelitian
         Route::get('/usulan', [\App\Http\Controllers\ReviewerController::class, 'index'])->name('usulan.index');
-        Route::get('/penilaian', [\App\Http\Controllers\ReviewerController::class, 'history'])->name('penilaian.index');
         Route::get('/review/{id}', [\App\Http\Controllers\ReviewerController::class, 'show'])->name('usulan.show');
         Route::post('/review/{id}', [\App\Http\Controllers\ReviewerController::class, 'storeReview'])->name('usulan.post_review');
+
+        // Pengabdian [NEW]
+        Route::get('/usulan-pengabdian', [\App\Http\Controllers\ReviewerController::class, 'indexPengabdian'])->name('usulan_pengabdian.index');
+        Route::get('/review-pengabdian/{id}', [\App\Http\Controllers\ReviewerController::class, 'showPengabdian'])->name('usulan_pengabdian.show');
+        Route::post('/review-pengabdian/{id}', [\App\Http\Controllers\ReviewerController::class, 'storeReviewPengabdian'])->name('usulan_pengabdian.review');
+
+        Route::get('/penilaian', [\App\Http\Controllers\ReviewerController::class, 'history'])->name('penilaian.index');
     });
 
     // Dashboard Kaprodi & Routes
     Route::middleware('can:dashboard-kaprodi-view')->prefix('kaprodi')->name('kaprodi.')->group(function () {
         Route::get('/dashboard', [\App\Http\Controllers\KaprodiController::class, 'dashboard'])->name('dashboard');
+
+        // Penelitian
         Route::get('/usulan', [\App\Http\Controllers\KaprodiController::class, 'index'])->name('usulan.index');
-        Route::get('/riwayat-review', [\App\Http\Controllers\KaprodiController::class, 'history'])->name('riwayat');
         Route::get('/review/{id}', [\App\Http\Controllers\KaprodiController::class, 'show'])->name('usulan.show');
         Route::post('/review/{id}', [\App\Http\Controllers\KaprodiController::class, 'storeReview'])->name('usulan.review');
+
+        // Pengabdian
+        Route::get('/usulan-pengabdian', [\App\Http\Controllers\KaprodiController::class, 'indexPengabdian'])->name('usulan_pengabdian.index'); // Optional if merged in index
+        Route::get('/review-pengabdian/{id}', [\App\Http\Controllers\KaprodiController::class, 'showPengabdian'])->name('usulan_pengabdian.show');
+        Route::post('/review-pengabdian/{id}', [\App\Http\Controllers\KaprodiController::class, 'storeReviewPengabdian'])->name('usulan_pengabdian.review');
+
+        Route::get('/riwayat-review', [\App\Http\Controllers\KaprodiController::class, 'history'])->name('riwayat');
     });
 
     // Dashboard Dosen
@@ -168,9 +209,21 @@ Route::middleware('auth')->group(function () {
 });
 
 
-// ==========================================================
-// RUTE BERAT DENGAN OTENTIKASI DAN IZIN SPESIFIK
-// ==========================================================
+
+
+// Global API Routes (inside Auth but outside Menu Permission)
+Route::middleware(['auth'])->group(function () {
+    // API Routes for Master Data Search
+    Route::get('/api/dosen/search', [\App\Http\Controllers\Api\DosenController::class, 'search']);
+    Route::get('/api/mahasiswa/search', [\App\Http\Controllers\Api\MahasiswaController::class, 'search']);
+    Route::post('/api/dosen/search', [\App\Http\Controllers\Api\DosenController::class, 'search']);
+    Route::post('/api/mahasiswa/search', [\App\Http\Controllers\Api\MahasiswaController::class, 'search']);
+
+    // [NEW] Master Data APIs (Rumpun Ilmu & Wilayah)
+    Route::get('/api/master/rumpun-ilmu', [\App\Http\Controllers\MasterDataController::class, 'getRumpunIlmu']);
+    Route::get('/api/master/provinsi', [\App\Http\Controllers\MasterDataController::class, 'getProvinsi']);
+    Route::get('/api/master/kota', [\App\Http\Controllers\MasterDataController::class, 'getKota']);
+});
 
 // Middleware 'menu.permission' digunakan untuk melindungi rute yang ada di menu
 Route::middleware(['auth', 'menu.permission'])->group(function () {
@@ -215,11 +268,9 @@ Route::middleware(['auth', 'menu.permission'])->group(function () {
     // === PENGAJUAN ===
     // (Routes ini sudah ditangani di grup 'pengajuan' diatas dengan Controller)
 
-    // API Routes for Master Data Search
-    Route::get('/api/dosen/search', [\App\Http\Controllers\Api\DosenController::class, 'search']);
-    Route::get('/api/mahasiswa/search', [\App\Http\Controllers\Api\MahasiswaController::class, 'search']);
-    Route::post('/api/dosen/search', [\App\Http\Controllers\Api\DosenController::class, 'search']);
-    Route::post('/api/mahasiswa/search', [\App\Http\Controllers\Api\MahasiswaController::class, 'search']);
+
+
+
 
 });
 

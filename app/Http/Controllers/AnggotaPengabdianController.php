@@ -3,32 +3,19 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\AnggotaPenelitian;
-use App\Models\Dosen;
+use App\Models\AnggotaPengabdian;
+use App\Models\UsulanPengabdian;
+use Illuminate\Support\Facades\Auth;
 
-class AnggotaPenelitianController extends Controller
+class AnggotaPengabdianController extends Controller
 {
-    public function index($usulanId)
-    {
-        $data = AnggotaPenelitian::where('usulan_id', $usulanId)
-            ->with('dosen')
-            ->get()
-            ->map(function ($item) {
-                return [
-                    'id' => $item->id,
-                    'nidn' => $item->nidn,
-                    'nama' => $item->nama,
-                    'status_approval' => $item->status_approval,
-                ];
-            });
-
-        return response()->json([
-            'data' => $data
-        ]);
-    }
-
     public function store(Request $request, $usulanId)
     {
+        $usulan = UsulanPengabdian::findOrFail($usulanId);
+        if ($usulan->user_id !== Auth::id()) {
+            abort(403);
+        }
+
         $request->validate([
             'nidn' => 'required',
             'nama' => 'required',
@@ -37,36 +24,37 @@ class AnggotaPenelitianController extends Controller
             'tugas' => 'nullable|string',
         ]);
 
-        // Check if anggota with same NIDN already exists
-        $exists = AnggotaPenelitian::where('usulan_id', $usulanId)
+        $exists = AnggotaPengabdian::where('usulan_id', $usulanId)
             ->where('nidn', $request->nidn)
             ->exists();
 
         if ($exists) {
             return response()->json([
-                'message' => 'Dosen sudah terdaftar pada penelitian ini'
+                'message' => 'Dosen sudah terdaftar pada pengabdian ini'
             ], 422);
         }
 
-        $anggota = AnggotaPenelitian::create([
+        $anggota = AnggotaPengabdian::create([
             'usulan_id' => $usulanId,
             'nidn' => $request->nidn,
             'nama' => $request->nama,
             'peran' => $request->peran,
-            'prodi' => $request->prodi,
             'tugas' => $request->tugas,
-            'status_approval' => 'pending',
+            'status_persetujuan' => 'menunggu',
         ]);
 
         return response()->json([
-            'message' => 'Anggota dosen berhasil ditambahkan',
+            'message' => 'Anggota dosen pengabdian berhasil ditambahkan',
             'data' => $anggota
         ], 201);
     }
 
     public function update(Request $request, $id)
     {
-        $anggota = AnggotaPenelitian::findOrFail($id);
+        $anggota = AnggotaPengabdian::findOrFail($id);
+        if ($anggota->usulan->user_id !== Auth::id()) {
+            abort(403);
+        }
 
         $validated = $request->validate([
             'peran' => 'sometimes|required|in:ketua,anggota',
@@ -76,17 +64,22 @@ class AnggotaPenelitianController extends Controller
         $anggota->update($validated);
 
         return response()->json([
-            'message' => 'Anggota dosen penelitian berhasil diperbarui',
+            'message' => 'Anggota dosen pengabdian berhasil diperbarui',
             'data' => $anggota
         ]);
     }
 
     public function destroy($id)
     {
-        AnggotaPenelitian::findOrFail($id)->delete();
+        $anggota = AnggotaPengabdian::findOrFail($id);
+        if ($anggota->usulan->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        $anggota->delete();
 
         return response()->json([
-            'message' => 'Anggota dihapus'
+            'message' => 'Anggota dosen pengabdian berhasil dihapus'
         ]);
     }
 }

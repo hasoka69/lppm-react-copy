@@ -17,9 +17,18 @@ interface LuaranListProps {
     usulanId: number;
     onEdit: (luaran: Luaran) => void;
     refreshTrigger?: number;
+    isPengabdian?: boolean;
+    filterKategori?: string;
 }
 
-export const LuaranList: React.FC<LuaranListProps> = ({ usulanId, onEdit, refreshTrigger = 0 }) => {
+export const LuaranList: React.FC<LuaranListProps> = ({
+    usulanId,
+    onEdit,
+    refreshTrigger = 0,
+    isPengabdian = false,
+    filterKategori = ''
+}) => {
+    const apiPrefix = isPengabdian ? '/dosen/pengabdian' : '/dosen/penelitian';
     const [items, setItems] = useState<Luaran[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -31,8 +40,12 @@ export const LuaranList: React.FC<LuaranListProps> = ({ usulanId, onEdit, refres
         setError(null);
 
         try {
-            const response = await LuaranAPI.getList(usulanId);
-            setItems(response.data || []);
+            const response = await LuaranAPI.getList(usulanId, apiPrefix);
+            let data = response.data || [];
+            if (filterKategori) {
+                data = data.filter((item: Luaran) => item.kategori === filterKategori);
+            }
+            setItems(data);
         } catch (err) {
             setError(getErrorMessage(err));
         } finally {
@@ -55,7 +68,7 @@ export const LuaranList: React.FC<LuaranListProps> = ({ usulanId, onEdit, refres
         setDeletingId(id);
 
         try {
-            await LuaranAPI.delete(id);
+            await LuaranAPI.delete(id, apiPrefix);
             // Reload data after delete
             await loadItems();
         } catch (err) {
@@ -105,14 +118,14 @@ export const LuaranList: React.FC<LuaranListProps> = ({ usulanId, onEdit, refres
         <div className="bg-white rounded-lg shadow-md overflow-hidden">
             {/* Header */}
             <div className="bg-gradient-to-r from-green-600 to-green-700 p-6 text-white">
-                <p className="text-sm opacity-90">Total Luaran Penelitian</p>
+                <p className="text-sm opacity-90">Total Luaran {isPengabdian ? 'Pengabdian' : 'Penelitian'}</p>
                 <p className="text-3xl font-bold">{items.length}</p>
             </div>
 
             {/* Items List */}
             {items.length === 0 ? (
                 <div className="p-6 text-center text-gray-500">
-                    <p>Belum ada luaran penelitian. Mulai dengan menambah luaran baru.</p>
+                    <p>Belum ada luaran {isPengabdian ? 'pengabdian' : 'penelitian'}. Mulai dengan menambah luaran baru.</p>
                 </div>
             ) : (
                 <div className="divide-y">

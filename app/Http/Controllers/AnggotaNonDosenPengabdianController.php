@@ -3,12 +3,19 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\AnggotaNonDosen;
+use App\Models\AnggotaNonDosenPengabdian;
+use App\Models\UsulanPengabdian;
+use Illuminate\Support\Facades\Auth;
 
-class AnggotaNonDosenController extends Controller
+class AnggotaNonDosenPengabdianController extends Controller
 {
     public function store(Request $request, $usulanId)
     {
+        $usulan = UsulanPengabdian::findOrFail($usulanId);
+        if ($usulan->user_id !== Auth::id()) {
+            abort(403);
+        }
+
         $validated = $request->validate([
             'jenis_anggota' => 'required|string',
             'no_identitas' => 'required|string',
@@ -17,25 +24,23 @@ class AnggotaNonDosenController extends Controller
             'tugas' => 'nullable|string',
         ]);
 
-        $anggota = AnggotaNonDosen::create([
+        $anggota = AnggotaNonDosenPengabdian::create([
             'usulan_id' => $usulanId,
-            'jenis_anggota' => $validated['jenis_anggota'],
-            'no_identitas' => $validated['no_identitas'],
-            'nama' => $validated['nama'],
-            'jurusan' => $validated['jurusan'] ?? null,
-            'tugas' => $validated['tugas'] ?? null,
-            'status_approval' => 'pending',
+            ...$validated
         ]);
 
         return response()->json([
-            'message' => 'Anggota non-dosen berhasil ditambahkan',
+            'message' => 'Anggota non-dosen pengabdian berhasil ditambahkan',
             'data' => $anggota
         ], 201);
     }
 
     public function update(Request $request, $id)
     {
-        $anggota = AnggotaNonDosen::findOrFail($id);
+        $anggota = AnggotaNonDosenPengabdian::findOrFail($id);
+        if ($anggota->usulan->user_id !== Auth::id()) {
+            abort(403);
+        }
 
         $validated = $request->validate([
             'jenis_anggota' => 'sometimes|required|string',
@@ -48,17 +53,22 @@ class AnggotaNonDosenController extends Controller
         $anggota->update($validated);
 
         return response()->json([
-            'message' => 'Anggota non-dosen berhasil diperbarui',
+            'message' => 'Anggota non-dosen pengabdian berhasil diperbarui',
             'data' => $anggota
         ]);
     }
 
     public function destroy($id)
     {
-        AnggotaNonDosen::findOrFail($id)->delete();
+        $anggota = AnggotaNonDosenPengabdian::findOrFail($id);
+        if ($anggota->usulan->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        $anggota->delete();
 
         return response()->json([
-            'message' => 'Anggota non-dosen berhasil dihapus'
+            'message' => 'Anggota non-dosen pengabdian berhasil dihapus'
         ]);
     }
 }

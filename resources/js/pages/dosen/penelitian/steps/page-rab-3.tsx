@@ -36,12 +36,12 @@ const PageRAB: React.FC<PageRABProps> = ({ onKembali, onSelanjutnya, usulanId: p
     const [isSaving, setIsSaving] = useState(false);
 
     useEffect(() => {
-        if (usulan && usulan.rab_items) {
-            const items: RABItem[] = usulan.rab_items;
-            setBahanItems(items.filter(i => i.tipe === 'bahan'));
-            setPerjalananItems(items.filter(i => i.tipe === 'perjalanan'));
-            setPublikasiItems(items.filter(i => i.tipe === 'publikasi'));
-            setPengumpulanItems(items.filter(i => i.tipe === 'pengumpulan_data'));
+        const items = usulan?.rab_items || usulan?.rabItems;
+        if (items) {
+            setBahanItems(items.filter((i: any) => i.tipe === 'bahan'));
+            setPerjalananItems(items.filter((i: any) => i.tipe === 'perjalanan'));
+            setPublikasiItems(items.filter((i: any) => i.tipe === 'publikasi'));
+            setPengumpulanItems(items.filter((i: any) => i.tipe === 'pengumpulan_data'));
         }
     }, [usulan]);
 

@@ -102,11 +102,12 @@ class KaprodiController extends Controller
             return redirect()->route('kaprodi.dashboard')->with('error', 'Profil anda tidak memiliki Prodi.');
         }
 
-        $usulanList = UsulanPenelitian::with(['ketua.dosen'])
+        // List Penelitian
+        $penelitianList = UsulanPenelitian::with(['ketua.dosen'])
             ->whereHas('ketua.dosen', function ($q) use ($prodi) {
                 $q->where('prodi', $prodi);
             })
-            ->where('status', 'submitted') // Only show submitted (incoming)
+            ->where('status', 'submitted')
             ->latest()
             ->get()
             ->map(function ($usulan, $index) {
@@ -119,11 +120,36 @@ class KaprodiController extends Controller
                     'tahun' => $usulan->tahun_pertama,
                     'status' => $usulan->status,
                     'tanggal' => $usulan->created_at->format('d/m/Y'),
+                    'type' => 'penelitian'
+                ];
+            });
+
+        // List Pengabdian [NEW]
+        $pengabdianList = \App\Models\UsulanPengabdian::with(['ketua.dosen'])
+            ->whereHas('ketua.dosen', function ($q) use ($prodi) {
+                $q->where('prodi', $prodi);
+            })
+            ->where('status', 'submitted')
+            ->latest()
+            ->get()
+            ->map(function ($usulan, $index) {
+                return [
+                    'no' => $index + 1,
+                    'id' => $usulan->id,
+                    'judul' => $usulan->judul,
+                    'pengusul' => $usulan->ketua->name,
+                    'skema' => $usulan->kelompok_skema,
+                    'tahun' => $usulan->tahun_pengusulan, // Note: field might differ
+                    'status' => $usulan->status,
+                    'tanggal' => $usulan->created_at->format('d/m/Y'),
+                    'type' => 'pengabdian'
                 ];
             });
 
         return Inertia::render('kaprodi/usulan/Index', [
-            'usulanList' => $usulanList,
+            'usulanList' => $penelitianList, // Backward compat checks
+            'penelitianList' => $penelitianList,
+            'pengabdianList' => $pengabdianList,
             'prodiName' => $prodi
         ]);
     }
@@ -140,29 +166,46 @@ class KaprodiController extends Controller
             return redirect()->route('kaprodi.dashboard')->with('error', 'Profil anda tidak memiliki Prodi.');
         }
 
-        $usulanList = UsulanPenelitian::with(['ketua.dosen'])
-            ->whereHas('ketua.dosen', function ($q) use ($prodi) {
-                $q->where('prodi', $prodi);
-            })
-            ->where('status', '!=', 'draft')
-            ->where('status', '!=', 'submitted')
-            ->latest()
+        // Fetch history from ReviewHistory table (Polymorphic) where reviewer is this user (Kaprodi)
+        // Note: Kaprodi acts as a reviewer here.
+        $reviews = \App\Models\ReviewHistory::with(['usulan'])
+            ->where('reviewer_id', Auth::id())
+            ->where('reviewer_type', 'kaprodi') // OR 'reviewer' if that's how we saved it? I saved as 'kaprodi' in store method.
+            ->latest('reviewed_at')
             ->get()
-            ->map(function ($usulan, $index) {
+            ->map(function ($review, $index) {
+                // Determine header/details from the polymorphic usulan
+                if (!$review->usulan)
+                    return null;
+
+                $usulan = $review->usulan;
+                // Safely access relationships (polymorphic 'ketua'/'user' might differ in alias, but I aligned them somewhat)
+                // UsulanPenelitian: ketua -> User
+                // UsulanPengabdian: ketua -> User (via alias or standard)
+                // Let's use flexible access
+                $pengusulName = $usulan->ketua->name ?? $usulan->user->name ?? 'Unknown';
+
                 return [
-                    'no' => $index + 1,
                     'id' => $usulan->id,
                     'judul' => $usulan->judul,
-                    'pengusul' => $usulan->ketua->name,
+                    'pengusul' => $pengusulName,
                     'skema' => $usulan->kelompok_skema,
-                    'tahun' => $usulan->tahun_pertama,
+                    // 'tahun' => ... (varies, maybe omit or try field check)
                     'status' => $usulan->status,
-                    'tanggal' => $usulan->created_at->format('d/m/Y'),
+                    'tanggal' => $review->reviewed_at->format('d/m/Y H:i'),
+                    'comments' => $review->comments, // [NEW] The notes!
+                    'type' => str_contains($review->usulan_type, 'Pengabdian') ? 'Pengabdian' : 'Penelitian'
                 ];
+            })
+            ->filter() // remove nulls
+            ->values()
+            ->map(function ($item, $idx) {
+                $item['no'] = $idx + 1;
+                return $item;
             });
 
         return Inertia::render('kaprodi/usulan/History', [
-            'usulanList' => $usulanList,
+            'usulanList' => $reviews,
             'prodiName' => $prodi
         ]);
     }
@@ -220,18 +263,128 @@ class KaprodiController extends Controller
             }
 
             $usulan->status = 'approved_prodi';
-            $usulan->current_reviewer_id = $reviewer->id;
-            $usulan->kaprodi_reviewer_id = Auth::id();
+            // $usulan->current_reviewer_id = $reviewer->id; // Logic assignment bisa di sini atau nanti
+            // $usulan->kaprodi_reviewer_id = Auth::id();
         } else {
             $usulan->status = 'rejected_prodi';
         }
-
-        // Save review notes if needed (e.g. in a separate Review model)
-        // For now, simplistically updating status
 
         $usulan->save();
 
         return redirect()->route('kaprodi.usulan.index')
             ->with('success', 'Usulan berhasil direview.');
+    }
+
+    // ==========================================
+    // SEKSI PENGABDIAN (Baru)
+    // ==========================================
+
+    public function indexPengabdian() // Bisa digabung ke index() kalau mau satu list
+    {
+        // Untuk sementara kita pisah route fetch-nya, tapi di frontend bisa satu halaman
+        $dosenProfile = $this->getKaprodiProfile();
+        $prodi = $dosenProfile ? $dosenProfile->prodi : null;
+
+        if (!$prodi) {
+            return []; // Or error
+        }
+
+        $pengabdianList = \App\Models\UsulanPengabdian::with(['ketua.dosen'])
+            ->whereHas('ketua.dosen', function ($q) use ($prodi) {
+                $q->where('prodi', $prodi);
+            })
+            ->where('status', 'submitted')
+            ->latest()
+            ->get()
+            ->map(function ($usulan, $index) {
+                return [
+                    'no' => $index + 1,
+                    'id' => $usulan->id,
+                    'judul' => $usulan->judul,
+                    'pengusul' => $usulan->ketua->name,
+                    'skema' => $usulan->kelompok_skema,
+                    'tahun' => $usulan->tahun_pengusulan,
+                    'status' => $usulan->status,
+                    'tanggal' => $usulan->created_at->format('d/m/Y'),
+                    'type' => 'pengabdian'
+                ];
+            });
+
+        return response()->json($pengabdianList);
+    }
+
+    public function showPengabdian($id)
+    {
+        $usulan = \App\Models\UsulanPengabdian::with(['ketua.dosen', 'anggotaDosen', 'anggotaNonDosen', 'luaranItems', 'rabItems', 'mitra'])
+            ->findOrFail($id);
+
+        // Security check
+        $kaprodi = $this->getKaprodiProfile();
+        $pengusulProdi = $usulan->ketua->dosen->prodi ?? null;
+
+        if (!$kaprodi || $kaprodi->prodi !== $pengusulProdi) {
+            abort(403, 'Anda tidak memiliki akses ke usulan dari Prodi lain.');
+        }
+
+        return Inertia::render('kaprodi/usulan/ReviewPengabdian', [
+            'usulan' => $usulan,
+            'pengusul' => $usulan->ketua->dosen,
+            'anggota' => $usulan->anggotaDosen->map(function ($ang) {
+                return [
+                    'id' => $ang->id,
+                    'nama_dosen' => $ang->nama, // Nama is stored directly in table, or via Dosen relation
+                    'peran' => $ang->peran,
+                    'fakultas' => $ang->dosen->fakultas ?? '-',
+                    // Add other needed fields
+                ];
+            }),
+            'anggotaNonDosen' => $usulan->anggotaNonDosen,
+            'luaran' => $usulan->luaranItems, // [NEW]
+            'rabTotal' => $usulan->getTotalAnggaran()
+        ]);
+    }
+
+    public function storeReviewPengabdian(Request $request, $id)
+    {
+        $request->validate([
+            'decision' => 'required|in:approve,reject',
+            'notes' => 'nullable|string'
+        ]);
+
+        $usulan = \App\Models\UsulanPengabdian::findOrFail($id);
+
+        // Security check
+        $kaprodi = $this->getKaprodiProfile();
+        $pengusulProdi = $usulan->ketua->dosen->prodi ?? null;
+
+        if (!$kaprodi || $kaprodi->prodi !== $pengusulProdi) {
+            abort(403);
+        }
+
+        if ($request->decision === 'approve') {
+            // Logic Assign Reviewer (bisa manual atau auto)
+            // Untuk Pengabdian, kita set status approved_prodi dulu
+            $usulan->status = 'approved_prodi';
+            $action = 'kaprodi_approved';
+        } else {
+            $usulan->status = 'rejected_prodi';
+            $action = 'kaprodi_rejected';
+        }
+
+        // Create History
+        \App\Models\ReviewHistory::create([
+            'usulan_id' => $usulan->id,
+            'usulan_type' => get_class($usulan),
+            'reviewer_id' => Auth::id(), // Kaprodi User ID
+            'reviewer_type' => 'kaprodi',
+            'action' => $action,
+            'comments' => $request->notes,
+            'reviewed_at' => now(),
+        ]);
+
+        $usulan->save();
+
+        return redirect()->route('kaprodi.usulan.index')
+            ->with('success', 'Usulan Pengabdian berhasil direview.');
     }
 }

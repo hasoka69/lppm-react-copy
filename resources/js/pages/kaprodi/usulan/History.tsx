@@ -54,6 +54,7 @@ export default function KaprodiUsulanHistory({ usulanList, prodiName }: PageProp
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Judul / Skema</th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pengusul</th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Catatan</th>
                                     <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                                     <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                                 </tr>
@@ -61,7 +62,7 @@ export default function KaprodiUsulanHistory({ usulanList, prodiName }: PageProp
                             <tbody className="bg-white divide-y divide-gray-200">
                                 {usulanList.length === 0 ? (
                                     <tr>
-                                        <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
+                                        <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
                                             Belum ada riwayat review.
                                         </td>
                                     </tr>
@@ -74,7 +75,7 @@ export default function KaprodiUsulanHistory({ usulanList, prodiName }: PageProp
                                             <td className="px-6 py-4">
                                                 <div className="text-sm font-semibold text-gray-900 line-clamp-2">{usulan.judul}</div>
                                                 <div className="text-xs text-blue-600 mt-1 inline-flex items-center px-2 py-0.5 rounded bg-blue-50">
-                                                    {usulan.skema}
+                                                    {usulan.skema} ({usulan.type || 'Penelitian'})
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
@@ -83,12 +84,16 @@ export default function KaprodiUsulanHistory({ usulanList, prodiName }: PageProp
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                                 {usulan.tanggal}
                                             </td>
+                                            <td className="px-6 py-4 text-sm text-gray-600 italic line-clamp-2 max-w-xs">
+                                                {/* Display comments/notes if available */}
+                                                {(usulan as any).comments || '-'}
+                                            </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-center">
                                                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
                                                     ${usulan.status === 'submitted' ? 'bg-yellow-100 text-yellow-800' :
                                                         usulan.status === 'approved_prodi' ? 'bg-green-100 text-green-800' :
                                                             usulan.status === 'rejected_prodi' ? 'bg-red-100 text-red-800' :
-                                                                'bg-blue-100 text-blue-800' // Default blue for other statuses like reviewer_review
+                                                                'bg-blue-100 text-blue-800'
                                                     }`}>
                                                     {usulan.status === 'submitted' && 'Menunggu Tinjauan'}
                                                     {usulan.status === 'approved_prodi' && 'Disetujui Prodi'}
@@ -99,7 +104,7 @@ export default function KaprodiUsulanHistory({ usulanList, prodiName }: PageProp
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                                 <Link
-                                                    href={`/kaprodi/review/${usulan.id}`}
+                                                    href={`/kaprodi/review/${usulan.id}`} // Or logic for pengabdian link if necessary
                                                     className="text-gray-600 hover:text-gray-900 inline-flex items-center bg-gray-100 hover:bg-gray-200 px-3 py-1 rounded-md transition"
                                                 >
                                                     <Eye className="w-4 h-4 mr-1" /> Lihat Detail

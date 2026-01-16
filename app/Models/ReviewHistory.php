@@ -10,6 +10,7 @@ class ReviewHistory extends Model
 
     protected $fillable = [
         'usulan_id',
+        'usulan_type', // [NEW] - Allow mass assignment
         'reviewer_id',
         'reviewer_type',
         'action',
@@ -28,7 +29,7 @@ class ReviewHistory extends Model
      */
     public function usulan()
     {
-        return $this->belongsTo(UsulanPenelitian::class);
+        return $this->morphTo(); // [NEW] - Polymorphic
     }
 
     /**

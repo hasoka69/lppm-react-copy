@@ -49,7 +49,7 @@ class UsulanPenelitianController extends Controller
         // Ambil data master
         $masterData = $this->getMasterData();
 
-        return Inertia::render('pengajuan/Index', [
+        return Inertia::render('dosen/penelitian/Index', [
             'usulanList' => $usulanList,
             'latestDraft' => $latestDraft ? [
                 'id' => $latestDraft->id,
@@ -350,7 +350,7 @@ class UsulanPenelitianController extends Controller
 
         $masterData = $this->getMasterDataWithMakroRiset();
 
-        return Inertia::render("pengajuan/Index", [
+        return Inertia::render("dosen/penelitian/Index", [
             'usulanId' => $usulan->id,
             'usulan' => $usulan,
             'currentStep' => $step,

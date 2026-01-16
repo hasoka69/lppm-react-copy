@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\UsulanPengabdian;
 use App\Models\RabItem;
+use App\Models\RumpunIlmu;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -20,11 +21,7 @@ class UsulanPengabdianController extends Controller
     {
         $user = Auth::user();
 
-        // [TODO] Add reviewHistories relationship to UsulanPengabdian if needed (skipped for now or create migration)
-        // For now, assuming similar structure logic
-        $usulanList = UsulanPengabdian::with([
-            // 'reviewHistories' // Uncomment if relation exists
-        ])
+        $usulanList = UsulanPengabdian::with(['reviewHistories'])
             ->where('user_id', $user->id)
             ->latest()
             ->get()
@@ -34,11 +31,10 @@ class UsulanPengabdianController extends Controller
                 'skema' => $u->kelompok_skema ?? 'N/A',
                 'judul' => $u->judul,
                 'tahun_pelaksanaan' => $u->tahun_pertama ?? date('Y'),
-                // 'makro_riset' => $u->kelompok_makro_riset ?? 'N/A', // Pengabdian might not use makro riset
                 'peran' => 'Ketua',
                 'status' => $u->status,
-                // 'catatan' => ...,
-                // 'reviewer_action' => ...,
+                // Get latest review comment (from Reviewer or Kaprodi)
+                'catatan' => $u->reviewHistories->sortByDesc('reviewed_at')->first()?->comments ?? '-',
             ]);
 
         $latestDraft = UsulanPengabdian::where('user_id', $user->id)
@@ -46,7 +42,7 @@ class UsulanPengabdianController extends Controller
             ->latest()
             ->first();
 
-        // Ambil data master (reused from penelitian mostly, or specific tables if any)
+        // Ambil data master
         $masterData = $this->getMasterData();
 
         return Inertia::render('dosen/pengabdian/Index', [
@@ -69,15 +65,15 @@ class UsulanPengabdianController extends Controller
     /**
      * Simpan draft baru
      */
+    /**
+     * Simpan draft baru
+     */
     public function storeDraft(Request $request)
     {
         $validated = $request->validate([
             'judul' => 'nullable|string|max:500',
+            'tahun_pengusulan' => 'nullable|integer',
             'kelompok_skema' => 'nullable|string',
-            'ruang_lingkup' => 'nullable|string',
-            'bidang_fokus' => 'nullable|string',
-            'tahun_pertama' => 'nullable|integer',
-            'lama_kegiatan' => 'nullable|integer',
         ]);
 
         try {
@@ -86,12 +82,17 @@ class UsulanPengabdianController extends Controller
             $usulan = UsulanPengabdian::create([
                 'user_id' => Auth::id(),
                 'status' => 'draft',
-                ...$validated,
+                'tahun_pengusulan' => $validated['tahun_pengusulan'] ?? date('Y'),
+                'judul' => $validated['judul'] ?? 'Draft Usulan Pengabdian',
+                'kelompok_skema' => $validated['kelompok_skema'] ?? null,
             ]);
 
             DB::commit();
 
             Log::info('Draft Pengabdian created', ['usulan_id' => $usulan->id]);
+
+            session()->flash('usulanId', $usulan->id);
+            session()->flash('success', 'Draft pengabdian berhasil disimpan');
 
             return response()->json([
                 'success' => true,
@@ -119,17 +120,52 @@ class UsulanPengabdianController extends Controller
         }
 
         $validated = $request->validate([
-            'judul' => 'sometimes|required|string|max:500',
-            'kelompok_skema' => 'nullable|string',
-            'ruang_lingkup' => 'nullable|string',
-            'bidang_fokus' => 'nullable|string',
-            'tahun_pertama' => 'nullable|integer',
-            'lama_kegiatan' => 'nullable|integer',
+            'judul' => 'sometimes|nullable|string|max:500',
+            'tahun_pengusulan' => 'sometimes|nullable|integer',
+            // 1.2
+            'jenis_bidang_fokus' => 'sometimes|nullable|string',
+            'bidang_fokus' => 'sometimes|nullable|string',
+            // 1.3
+            'kelompok_skema' => 'sometimes|nullable|string',
+            'ruang_lingkup' => 'sometimes|nullable|string',
+            'tahun_pertama' => 'sometimes|nullable|integer',
+            'lama_kegiatan' => 'sometimes|nullable|integer',
+            // 1.4
+            'rumpun_ilmu_level1_id' => 'sometimes|nullable|integer',
+            'rumpun_ilmu_level2_id' => 'sometimes|nullable|integer',
+            'rumpun_ilmu_level3_id' => 'sometimes|nullable|integer',
+
             'total_anggaran' => 'nullable|numeric',
         ]);
 
         try {
-            $usulan->update($validated);
+            $data = $request->all();
+
+            // Handle Rumpun Ilmu Labels (Snapshotting)
+            if (!empty($data['rumpun_ilmu_level1_id'])) {
+                $r1 = RumpunIlmu::find($data['rumpun_ilmu_level1_id']);
+                $data['rumpun_ilmu_level1_label'] = $r1 ? $r1->nama : null;
+            }
+            if (!empty($data['rumpun_ilmu_level2_id'])) {
+                $r2 = RumpunIlmu::find($data['rumpun_ilmu_level2_id']);
+                $data['rumpun_ilmu_level2_label'] = $r2 ? $r2->nama : null;
+            }
+            if (!empty($data['rumpun_ilmu_level3_id'])) {
+                $r3 = RumpunIlmu::find($data['rumpun_ilmu_level3_id']);
+                $data['rumpun_ilmu_level3_label'] = $r3 ? $r3->nama : null;
+            }
+
+            // Handle File Upload Manually if present
+            if ($request->hasFile('file_substansi')) {
+                // Delete old file if exists
+                if ($usulan->file_substansi) {
+                    Storage::disk('public')->delete($usulan->file_substansi);
+                }
+                $path = $request->file('file_substansi')->store('substansi_pengabdian', 'public');
+                $data['file_substansi'] = $path;
+            }
+
+            $usulan->update($data);
             return back()->with('success', 'Data berhasil diperbarui!');
         } catch (\Exception $e) {
             return back()->with('error', 'Gagal memperbarui data: ' . $e->getMessage());
@@ -137,12 +173,41 @@ class UsulanPengabdianController extends Controller
     }
 
     /**
+     * Edit usulan (redirect ke form dengan data)
+     */
+    public function edit($id)
+    {
+        $usulan = UsulanPengabdian::where('user_id', Auth::id())
+            ->findOrFail($id);
+
+        $masterData = $this->getMasterData();
+
+        return Inertia::render('dosen/pengabdian/Index', [
+            'usulanId' => $usulan->id,
+            'usulan' => $usulan,
+            'currentStep' => 1,
+            'editMode' => true,
+            ...$masterData,
+        ]);
+    }
+
+    /**
+     * Show form for specific step
+     */
+    /**
      * Show form for specific step
      */
     public function showStep($usulanId, $step)
     {
         $step = (int) $step;
-        $usulan = UsulanPengabdian::with(['anggotaDosen', 'anggotaNonDosen', 'rabItems'])->where('user_id', Auth::id())->findOrFail($usulanId);
+        // Eager load everything needed for all steps to be safe, or optimize per step
+        $usulan = UsulanPengabdian::with([
+            'anggotaDosen',
+            'anggotaNonDosen',
+            'luaranItems',
+            'rabItems',
+            'mitra' // [NEW] load mitra for step 4 AND 5
+        ])->where('user_id', Auth::id())->findOrFail($usulanId);
 
         $masterData = $this->getMasterData();
 
@@ -163,40 +228,88 @@ class UsulanPengabdianController extends Controller
             abort(403);
         }
 
-        if (!$usulan->judul || !$usulan->kelompok_skema) {
-            return back()->with('error', 'Data usulan belum lengkap!');
+        Log::info('Submitting Usulan: ' . $usulan->id);
+
+        // 1. Validate Identitas
+        if (!$usulan->judul || !$usulan->kelompok_skema || !$usulan->ruang_lingkup || !$usulan->rumpun_ilmu_level3_id) {
+            Log::info('Validation Failed: Identitas incomplete', $usulan->toArray());
+            return back()->with('error', 'Lengkapi Data Identitas & Rumpun Ilmu (Level 3) terlebih dahulu!');
+        }
+
+        // 2. Validate Substansi & Luaran
+        if (!$usulan->file_substansi) {
+            Log::info('Validation Failed: File substansi missing');
+            return back()->with('error', 'File Substansi belum diunggah!');
+        }
+        if ($usulan->luaranItems()->count() === 0) {
+            Log::info('Validation Failed: No Luaran items');
+            return back()->with('error', 'Minimal harus ada satu Target Luaran!');
+        }
+
+        // 3. Validate RAB
+        if ($usulan->rabItems()->count() === 0) {
+            Log::info('Validation Failed: No RAB items');
+            return back()->with('error', 'RAB belum diisi!');
+        }
+
+        // 4. Validate Mitra
+        if ($usulan->mitra()->count() === 0) {
+            Log::info('Validation Failed: No Mitra');
+            return back()->with('error', 'Minimal harus ada satu Mitra Sasaran!');
         }
 
         try {
+            Log::info('Validation Passed. Updating status to submitted.');
             $usulan->update(['status' => 'submitted']);
             return redirect()->route('dosen.pengabdian.index')
                 ->with('success', 'Usulan Pengabdian berhasil diajukan!');
         } catch (\Exception $e) {
+            Log::error('Submission Error: ' . $e->getMessage());
             return back()->with('error', 'Gagal mengajukan usulan: ' . $e->getMessage());
         }
     }
 
-    // Reuse helper methods or adapt as needed
     private function getMasterData()
     {
-        // Adjust these queries if Pengabdian uses different master tables
+        // Minimal master data required for pages to render dropdowns initially
+        // Ririns/Tematiks can be hardcoded or fetched if in DB
         return [
-            'kelompokSkemaList' => DB::table('kelompok_skema')->where('aktif', true)->get(), // Maybe filter by type?
-            'ruangLingkupList' => DB::table('ruang_lingkup')->where('aktif', true)->get(),
-            'bidangFokusList' => DB::table('bidang_fokus')->where('aktif', true)->get(),
-            // Remove/Add tables as necessary for Pengabdian
+            // Example hardcoded if DB tables missing, or fetch if exist
+            'kelompokSkemaList' => [
+                ['id' => 'PKM', 'nama' => 'PKM'],
+                ['id' => 'PKM-K', 'nama' => 'PKM-K'],
+                ['id' => 'PKM-M', 'nama' => 'PKM-M'],
+                ['id' => 'PKM-T', 'nama' => 'PKM-T'],
+            ],
+            'ruangLingkupList' => [
+                ['id' => 'Pendidikan', 'nama' => 'Pendidikan'],
+                ['id' => 'Kesehatan', 'nama' => 'Kesehatan'],
+                ['id' => 'Ekonomi', 'nama' => 'Ekonomi'],
+                ['id' => 'Sosial Budaya', 'nama' => 'Sosial Budaya'],
+                ['id' => 'Teknologi', 'nama' => 'Teknologi'],
+            ],
+            'rumpunIlmuLevel1List' => RumpunIlmu::where('level', 1)->get(),
         ];
     }
 
-    // Anggota methods reused but pointing to Pengabdian relations
     public function getAnggotaDosen(UsulanPengabdian $usulan)
-    { /* ... similar logic ... */
-    }
-    public function getAnggotaNonDosen(UsulanPengabdian $usulan)
-    { /* ... similar logic ... */
+    {
+        if ($usulan->user_id !== Auth::id()) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+        $data = $usulan->anggotaDosen()->get();
+        return response()->json(['data' => $data]);
     }
 
-    // Upload Substansi
+    public function getAnggotaNonDosen(UsulanPengabdian $usulan)
+    {
+        if ($usulan->user_id !== Auth::id()) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+        $data = $usulan->anggotaNonDosen()->get();
+        return response()->json(['data' => $data]);
+    }
+
     public function uploadSubstansi(Request $request, UsulanPengabdian $usulan)
     {
         $request->validate([

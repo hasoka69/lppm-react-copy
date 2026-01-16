@@ -14,12 +14,16 @@ const ReviewerReview: React.FC<ReviewerReviewProps> = ({ proposal, dosen }) => {
     // --- Reuse Logic from PageTinjauan for parsing data ---
     const usulan = proposal;
 
-    // Calculate Total RAB
-    const rabBahan = usulan.rab_bahan || [];
-    const rabData = usulan.rab_pengumpulan_data || [];
-    const totalBahan = rabBahan.reduce((acc: number, item: any) => acc + (Number(item.total) || 0), 0);
-    const totalData = rabData.reduce((acc: number, item: any) => acc + (Number(item.total) || 0), 0);
-    const totalAnggaran = totalBahan + totalData;
+    // Calculate Total RAB from Relationship
+    const rabItems = usulan.rab_items || usulan.rabItems || [];
+    const totalAnggaran = rabItems.reduce((acc: number, item: any) => acc + (Number(item.total) || 0), 0);
+
+    // Group items for display
+    const rabBahan = rabItems.filter((item: any) => item.tipe === 'bahan');
+    const rabPerjalanan = rabItems.filter((item: any) => item.tipe === 'perjalanan');
+    const rabPublikasi = rabItems.filter((item: any) => item.tipe === 'publikasi');
+    const rabData = rabItems.filter((item: any) => item.tipe === 'pengumpulan_data');
+    const rabSewa = rabItems.filter((item: any) => item.tipe === 'sewa_peralatan');
 
     const formatRupiah = (number: number) => {
         return new Intl.NumberFormat('id-ID', {
@@ -135,9 +139,9 @@ const ReviewerReview: React.FC<ReviewerReviewProps> = ({ proposal, dosen }) => {
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-200">
-                                    {usulan.anggota_dosen && usulan.anggota_dosen.length > 0 ? (
-                                        usulan.anggota_dosen.map((anggota: any, idx: number) => (
-                                            <tr key={idx}>
+                                    {(usulan.anggota_dosen || usulan.anggotaDosen) && (usulan.anggota_dosen || usulan.anggotaDosen).length > 0 ? (
+                                        (usulan.anggota_dosen || usulan.anggotaDosen).map((anggota: any, idx: number) => (
+                                            <tr key={anggota.nidn || idx}>
                                                 <td className="px-4 py-2">{anggota.nama}</td>
                                                 <td className="px-4 py-2">{anggota.nidn}</td>
                                                 <td className="px-4 py-2 capitalize">{anggota.peran}</td>
@@ -164,8 +168,8 @@ const ReviewerReview: React.FC<ReviewerReviewProps> = ({ proposal, dosen }) => {
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-200">
-                                    {usulan.anggota_non_dosen && usulan.anggota_non_dosen.length > 0 ? (
-                                        usulan.anggota_non_dosen.map((anggota: any, idx: number) => (
+                                    {(usulan.anggota_non_dosen || usulan.anggotaNonDosen) && (usulan.anggota_non_dosen || usulan.anggotaNonDosen).length > 0 ? (
+                                        (usulan.anggota_non_dosen || usulan.anggotaNonDosen).map((anggota: any, idx: number) => (
                                             <tr key={idx}>
                                                 <td className="px-4 py-2">{anggota.nama}</td>
                                                 <td className="px-4 py-2">{anggota.no_identitas}</td>
@@ -217,8 +221,8 @@ const ReviewerReview: React.FC<ReviewerReviewProps> = ({ proposal, dosen }) => {
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-200">
-                                    {usulan.luaran_list && usulan.luaran_list.length > 0 ? (
-                                        usulan.luaran_list.map((luaran: any, idx: number) => (
+                                    {(usulan.luaran_list || usulan.luaranList) && (usulan.luaran_list || usulan.luaranList).length > 0 ? (
+                                        (usulan.luaran_list || usulan.luaranList).map((luaran: any, idx: number) => (
                                             <tr key={idx}>
                                                 <td className="px-4 py-2">Tahun {luaran.tahun}</td>
                                                 <td className="px-4 py-2">{luaran.kategori}</td>
@@ -259,11 +263,31 @@ const ReviewerReview: React.FC<ReviewerReviewProps> = ({ proposal, dosen }) => {
                                     {rabBahan.map((item: any, idx: number) => (
                                         <tr key={`bahan-${idx}`}>
                                             <td className="px-4 py-2 text-gray-500">Bahan Habis Pakai</td>
-                                            <td className="px-4 py-2">{item.item}</td>
-                                            <td className="px-4 py-2 text-right">{item.satuan}</td>
-                                            <td className="px-4 py-2 text-right">{item.volume}</td>
-                                            <td className="px-4 py-2 text-right">{formatRupiah(item.hargaSatuan)}</td>
-                                            <td className="px-4 py-2 text-right font-medium">{formatRupiah(item.total)}</td>
+                                            <td className="px-4 py-2">{item.item || '-'}</td>
+                                            <td className="px-4 py-2 text-right">{item.satuan || '-'}</td>
+                                            <td className="px-4 py-2 text-right">{item.volume || 0}</td>
+                                            <td className="px-4 py-2 text-right">{formatRupiah(item.harga_satuan || item.hargaSatuan || 0)}</td>
+                                            <td className="px-4 py-2 text-right font-medium">{formatRupiah(item.total || 0)}</td>
+                                        </tr>
+                                    ))}
+                                    {rabPerjalanan.map((item: any, idx: number) => (
+                                        <tr key={`perj-${idx}`}>
+                                            <td className="px-4 py-2 text-gray-500">Perjalanan</td>
+                                            <td className="px-4 py-2">{item.item || '-'}</td>
+                                            <td className="px-4 py-2 text-right">{item.satuan || '-'}</td>
+                                            <td className="px-4 py-2 text-right">{item.volume || 0}</td>
+                                            <td className="px-4 py-2 text-right">{formatRupiah(item.harga_satuan || item.hargaSatuan || 0)}</td>
+                                            <td className="px-4 py-2 text-right font-medium">{formatRupiah(item.total || 0)}</td>
+                                        </tr>
+                                    ))}
+                                    {rabPublikasi.map((item: any, idx: number) => (
+                                        <tr key={`publ-${idx}`}>
+                                            <td className="px-4 py-2 text-gray-500">Publikasi</td>
+                                            <td className="px-4 py-2">{item.item || '-'}</td>
+                                            <td className="px-4 py-2 text-right">{item.satuan || '-'}</td>
+                                            <td className="px-4 py-2 text-right">{item.volume || 0}</td>
+                                            <td className="px-4 py-2 text-right">{formatRupiah(item.harga_satuan || item.hargaSatuan || 0)}</td>
+                                            <td className="px-4 py-2 text-right font-medium">{formatRupiah(item.total || 0)}</td>
                                         </tr>
                                     ))}
                                     {rabData.map((item: any, idx: number) => (
@@ -272,10 +296,23 @@ const ReviewerReview: React.FC<ReviewerReviewProps> = ({ proposal, dosen }) => {
                                             <td className="px-4 py-2">{item.item}</td>
                                             <td className="px-4 py-2 text-right">{item.satuan}</td>
                                             <td className="px-4 py-2 text-right">{item.volume}</td>
-                                            <td className="px-4 py-2 text-right">{formatRupiah(item.hargaSatuan)}</td>
+                                            <td className="px-4 py-2 text-right">{formatRupiah(item.harga_satuan || item.hargaSatuan)}</td>
                                             <td className="px-4 py-2 text-right font-medium">{formatRupiah(item.total)}</td>
                                         </tr>
                                     ))}
+                                    {rabSewa.map((item: any, idx: number) => (
+                                        <tr key={`sewa-${idx}`}>
+                                            <td className="px-4 py-2 text-gray-500">Sewa Peralatan</td>
+                                            <td className="px-4 py-2">{item.item}</td>
+                                            <td className="px-4 py-2 text-right">{item.satuan}</td>
+                                            <td className="px-4 py-2 text-right">{item.volume}</td>
+                                            <td className="px-4 py-2 text-right">{formatRupiah(item.harga_satuan || item.hargaSatuan)}</td>
+                                            <td className="px-4 py-2 text-right font-medium">{formatRupiah(item.total)}</td>
+                                        </tr>
+                                    ))}
+                                    {rabItems.length === 0 && (
+                                        <tr><td colSpan={6} className="px-4 py-2 text-center text-gray-500">Tidak ada data RAB</td></tr>
+                                    )}
                                 </tbody>
                             </table>
                         </div>
@@ -346,10 +383,10 @@ const ReviewerReview: React.FC<ReviewerReviewProps> = ({ proposal, dosen }) => {
                                 <button
                                     onClick={submitReview}
                                     className={`px-4 py-2 rounded-md text-white font-bold ${actionType === 'approve'
-                                            ? 'bg-green-600 hover:bg-green-700'
-                                            : actionType === 'revise'
-                                                ? 'bg-yellow-600 hover:bg-yellow-700'
-                                                : 'bg-red-600 hover:bg-red-700'
+                                        ? 'bg-green-600 hover:bg-green-700'
+                                        : actionType === 'revise'
+                                            ? 'bg-yellow-600 hover:bg-yellow-700'
+                                            : 'bg-red-600 hover:bg-red-700'
                                         }`}
                                 >
                                     Ya, {actionType === 'approve' ? 'Setujui' : actionType === 'revise' ? 'Minta Revisi' : 'Tolak'}

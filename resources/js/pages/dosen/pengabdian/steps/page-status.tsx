@@ -15,9 +15,10 @@ const PageStatus: React.FC<PageStatusProps> = ({
 }) => {
     const steps = [
         { number: 1, label: 'Identitas Usulan' },
-        { number: 2, label: 'Substansi Usulan' },
+        { number: 2, label: 'Substansi & Luaran' },
         { number: 3, label: 'RAB' },
-        { number: 4, label: 'Konfirmasi Usulan' }
+        { number: 4, label: 'Mitra & Dokumen' },
+        { number: 5, label: 'Konfirmasi' }
     ];
 
     return (

@@ -17,20 +17,29 @@ return new class extends Migration {
 
             // Data Identitas Usulan
             $table->string('judul');
-            // Field lain yang mungkin relevan atau sama dengan penelitian
+
+            // 1.2 Fokus Pengabdian
+            $table->enum('jenis_bidang_fokus', ['tematik', 'ririn'])->nullable();
+            $table->string('bidang_fokus')->nullable(); // Value spesifiknya (e.g. Ketahanan Pangan, etc)
+
+            // 1.3 Skema & Pelaksanaan
+            $table->string('kelompok_skema')->nullable();
+            $table->text('ruang_lingkup')->nullable(); // Dropdown / Text Area
+            $table->year('tahun_pengusulan')->nullable();
+            $table->year('tahun_pertama')->nullable();
+            $table->integer('lama_kegiatan')->nullable(); // 1, 2, 3
+
+            // 1.4 Rumpun Ilmu
+            $table->foreignId('rumpun_ilmu_level1_id')->nullable();
+            $table->string('rumpun_ilmu_level1_label')->nullable(); // simpan label snapshot jika perlu, atau cukup ID
+            $table->foreignId('rumpun_ilmu_level2_id')->nullable();
+            $table->string('rumpun_ilmu_level2_label')->nullable();
+            $table->foreignId('rumpun_ilmu_level3_id')->nullable();
+            $table->string('rumpun_ilmu_level3_label')->nullable();
+
+            // Field exist dari sebelumnya
             $table->integer('tkt_saat_ini')->nullable();
             $table->integer('target_akhir_tkt')->nullable();
-
-            // Pemilihan Program
-            $table->string('kelompok_skema')->nullable();
-            $table->string('ruang_lingkup')->nullable();
-
-            // Tambahan field spesifik pengabdian jika ada (untuk sementara disamakan strukturnya)
-            $table->string('bidang_fokus')->nullable();
-
-            // Waktu
-            $table->year('tahun_pertama')->nullable();
-            $table->integer('lama_kegiatan')->nullable(); // dalam tahun
 
             // Substansi
             $table->string('file_substansi')->nullable(); // path file
@@ -42,6 +51,9 @@ return new class extends Migration {
             // Status
             $table->enum('status', ['draft', 'submitted', 'under_review', 'approved_prodi', 'rejected_prodi', 'reviewer_review', 'approved', 'rejected'])
                 ->default('draft');
+
+            // Revision count
+            $table->integer('revision_count')->default(0);
 
             $table->timestamps();
             $table->softDeletes();

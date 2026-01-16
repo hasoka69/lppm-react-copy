@@ -190,6 +190,7 @@ const PenelitianIndex = () => {
                     <PageTinjauan
                         onKembali={handleKembali}
                         onKonfirmasi={handleKembaliKeDaftar}
+                        onTutupForm={handleKembaliKeDaftar}
                         usulanId={currentUsulanId ?? undefined}
                     />
                 );

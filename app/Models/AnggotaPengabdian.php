@@ -24,4 +24,9 @@ class AnggotaPengabdian extends Model
     {
         return $this->belongsTo(UsulanPengabdian::class, 'usulan_id');
     }
+
+    public function dosen()
+    {
+        return $this->belongsTo(Dosen::class, 'nidn', 'nidn');
+    }
 }

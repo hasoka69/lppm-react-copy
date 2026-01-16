@@ -7,6 +7,7 @@ use App\Models\RabItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class RabItemPengabdianController extends Controller
 {
@@ -57,7 +58,7 @@ class RabItemPengabdianController extends Controller
                 'satuan' => $validated['satuan'],
                 'volume' => $validated['volume'],
                 'harga_satuan' => $validated['harga_satuan'],
-                'keterangan' => $validated['keterangan'],
+                'keterangan' => $validated['keterangan'] ?? null,
             ]);
 
             // Set polymorphic relation manually or via relation create
@@ -81,6 +82,7 @@ class RabItemPengabdianController extends Controller
             ], 201);
         } catch (\Exception $e) {
             DB::rollBack();
+            Log::error('Failed to store RAB item', ['error' => $e->getMessage()]);
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal menambahkan RAB item: ' . $e->getMessage(),

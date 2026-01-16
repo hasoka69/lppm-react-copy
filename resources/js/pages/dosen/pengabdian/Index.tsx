@@ -6,8 +6,9 @@ import PageIdentitas from '././steps/page-identitas-1';
 import PageUsulan from '././steps/page-usulan';
 import PageSubstansi from '././steps/page-substansi-2';
 import PageRAB from '././steps/page-rab-3';
+import PageMitra from '././steps/page-mitra-4';
+import PageKonfirmasi from '././steps/page-konfirmasi-5';
 import PageStatus from '././steps/page-status';
-import PageTinjauan from '././steps/page-tinjauan-4';
 import styles from '../../../../css/pengajuan.module.css';
 
 export interface Usulan {
@@ -16,7 +17,6 @@ export interface Usulan {
     skema: string;
     judul: string;
     tahun_pelaksanaan: number;
-    // makro_riset: string; // Pengabdian might not have makro riset
     peran: string;
     status: string;
 }
@@ -28,7 +28,7 @@ export interface UsulanData extends Usulan {
     ruang_lingkup: string;
 }
 
-export type CurrentStep = 1 | 2 | 3 | 4;
+export type CurrentStep = 1 | 2 | 3 | 4 | 5;
 type ActiveView = 'daftar' | 'pengajuan';
 
 const PengabdianIndex = () => {
@@ -38,7 +38,6 @@ const PengabdianIndex = () => {
     const serverCurrentStep = props.currentStep ? Number(props.currentStep) : null;
     const serverUsulan = (props.usulan as Partial<UsulanData>) || null;
 
-    // ✅ Determine initial view
     const initialView: ActiveView = (serverCurrentStep && serverCurrentStep > 1) || props.editMode ? 'pengajuan' : 'daftar';
 
     const [activeView, setActiveView] = useState<ActiveView>(initialView);
@@ -47,7 +46,6 @@ const PengabdianIndex = () => {
     const [editingUsulan, setEditingUsulan] = useState<Partial<UsulanData> | null>(serverUsulan || latestDraft);
     const [currentUsulanId, setCurrentUsulanId] = useState<number | null>(serverUsulan?.id || (latestDraft?.id ?? null));
 
-    // ✅ Sync state when props change
     useEffect(() => {
         if (serverCurrentStep) {
             setActiveView('pengajuan');
@@ -59,7 +57,6 @@ const PengabdianIndex = () => {
         }
     }, [serverCurrentStep, serverUsulan]);
 
-    // ✅ Auto-resume draft
     useEffect(() => {
         if (!serverUsulan && latestDraft && latestDraft.id && !currentUsulanId) {
             console.log('🔄 Auto-resuming draft pengabdian:', latestDraft.id);
@@ -86,11 +83,7 @@ const PengabdianIndex = () => {
 
     const handleTambahUsulan = () => {
         if (currentUsulanId && latestDraft) {
-            const confirm = window.confirm(
-                'Anda memiliki draft pengabdian yang belum selesai. Ingin melanjutkan draft tersebut atau membuat baru?'
-            );
-
-            if (confirm) {
+            if (window.confirm('Anda memiliki draft pengabdian yang belum selesai. Ingin melanjutkan draft tersebut atau membuat baru?')) {
                 setEditingUsulan(latestDraft);
             } else {
                 setEditingUsulan(null);
@@ -100,7 +93,6 @@ const PengabdianIndex = () => {
             setEditingUsulan(null);
             setCurrentUsulanId(null);
         }
-
         setActiveView('pengajuan');
         setActiveTab('pengajuan');
         setCurrentStep(1);
@@ -118,7 +110,7 @@ const PengabdianIndex = () => {
 
     const handleSelanjutnya = () => {
         const nextStep = currentStep + 1;
-        if (nextStep <= 4) {
+        if (nextStep <= 5) {
             if (currentUsulanId) {
                 router.visit(`/dosen/pengabdian/${currentUsulanId}/step/${nextStep}`);
             } else {
@@ -139,11 +131,7 @@ const PengabdianIndex = () => {
     };
 
     const handleDraftCreated = (usulanId: number) => {
-        console.log('✅ Draft pengabdian created/updated with ID:', usulanId);
-        if (!usulanId || usulanId <= 0) {
-            alert('Error: ID usulan tidak valid');
-            return;
-        }
+        if (!usulanId || usulanId <= 0) return;
         setCurrentUsulanId(usulanId);
     };
 
@@ -157,11 +145,11 @@ const PengabdianIndex = () => {
                         onSelanjutnya={handleSelanjutnya}
                         onTutupForm={handleKembaliKeDaftar}
                         onDraftCreated={handleDraftCreated}
-                        isPengabdian={true} // [TODO] handle specific fields in PageIdentitas if needed
+                        isPengabdian={true}
+                        {...props} // Pass master props (rumpun ilmu types, etc)
                     />
                 );
             case 2:
-                // Substansi pengabdian might be same style
                 return (
                     <PageSubstansi
                         onKembali={handleKembali}
@@ -170,7 +158,6 @@ const PengabdianIndex = () => {
                     />
                 );
             case 3:
-                // RAB Pengabdian (Modified PageRAB)
                 return (
                     <PageRAB
                         onKembali={handleKembali}
@@ -180,9 +167,19 @@ const PengabdianIndex = () => {
                 );
             case 4:
                 return (
-                    <PageTinjauan
+                    <PageMitra
+                        onKembali={handleKembali}
+                        onSelanjutnya={handleSelanjutnya}
+                        usulanId={currentUsulanId ?? undefined}
+                        provinsiList={props.provinsiList} // Assuming passed from controller if eager loaded, or will fetch
+                    />
+                );
+            case 5:
+                return (
+                    <PageKonfirmasi
                         onKembali={handleKembali}
                         onKonfirmasi={handleKembaliKeDaftar}
+                        onTutupForm={handleKembaliKeDaftar}
                         usulanId={currentUsulanId ?? undefined}
                     />
                 );
@@ -196,40 +193,15 @@ const PengabdianIndex = () => {
             return (
                 <>
                     {latestDraft && latestDraft.id && (
-                        <div style={{
-                            backgroundColor: '#dbeafe',
-                            border: '1px solid #3b82f6',
-                            borderRadius: '8px',
-                            padding: '12px 16px',
-                            marginBottom: '16px',
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center'
-                        }}>
+                        <div style={{ backgroundColor: '#dbeafe', border: '1px solid #3b82f6', borderRadius: '8px', padding: '12px 16px', marginBottom: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <div>
                                 <strong>📝 Draft Terakhir Pengabdian:</strong> {latestDraft.judul || 'Belum ada judul'} (ID: {latestDraft.id})
                             </div>
-                            <button
-                                onClick={() => {
-                                    setEditingUsulan(latestDraft);
-                                    setCurrentUsulanId(latestDraft.id!);
-                                    setActiveView('pengajuan');
-                                    setActiveTab('pengajuan');
-                                }}
-                                style={{
-                                    backgroundColor: '#3b82f6',
-                                    color: 'white',
-                                    padding: '6px 12px',
-                                    borderRadius: '6px',
-                                    border: 'none',
-                                    cursor: 'pointer'
-                                }}
-                            >
+                            <button onClick={() => { setEditingUsulan(latestDraft); setCurrentUsulanId(latestDraft.id!); setActiveView('pengajuan'); setActiveTab('pengajuan'); }} style={{ backgroundColor: '#3b82f6', color: 'white', padding: '6px 12px', borderRadius: '6px', border: 'none', cursor: 'pointer' }}>
                                 Lanjutkan
                             </button>
                         </div>
                     )}
-
                     <PageUsulan
                         onTambahUsulan={handleTambahUsulan}
                         onEditUsulan={handleEditUsulan}
@@ -240,23 +212,16 @@ const PengabdianIndex = () => {
                             });
                         }}
                         onViewUsulan={(usulan: Usulan) => {
-                            if (usulan.id) {
-                                router.visit(`/dosen/pengabdian/${usulan.id}/step/4`);
-                            }
+                            if (usulan.id) router.visit(`/dosen/pengabdian/${usulan.id}/step/5`);
                         }}
                         usulanList={usulanList}
-                        title="Daftar Pengabdian" // Optional prop if PageUsulan supports it to change header
                     />
                 </>
             );
         }
         return (
             <>
-                <PageStatus
-                    currentStep={currentStep}
-                    title={getStepTitle(currentStep)}
-                    infoText={getStepInfoText(currentStep)}
-                />
+                <PageStatus currentStep={currentStep} title={getStepTitle(currentStep)} infoText={getStepInfoText(currentStep)} />
                 {renderStepContent()}
             </>
         );
@@ -264,20 +229,22 @@ const PengabdianIndex = () => {
 
     const getStepTitle = (step: CurrentStep) => {
         switch (step) {
-            case 1: return 'Identitas Pengabdian';
-            case 2: return 'Substansi Pengabdian';
-            case 3: return 'RAB Pengabdian';
-            case 4: return 'Tinjauan';
+            case 1: return 'Identitas Usulan';
+            case 2: return 'Substansi & Luaran';
+            case 3: return 'RAB';
+            case 4: return 'Mitra & Dokumen';
+            case 5: return 'Konfirmasi';
             default: return 'Usulan Pengabdian';
         }
     };
 
     const getStepInfoText = (step: CurrentStep) => {
         switch (step) {
-            case 1: return 'Isi form identitas pengabdian.';
-            case 2: return 'Isi substansi.';
-            case 3: return 'Isi RAB.';
-            case 4: return 'Tinjau dan konfirmasi.';
+            case 1: return 'Informasi dasar, Rumpun Ilmu, dan Tim.';
+            case 2: return 'Dokumen substansi dan target luaran.';
+            case 3: return 'Rencana Anggaran Biaya.';
+            case 4: return 'Data Mitra dan dokumen pendukung.';
+            case 5: return 'Tinjau dan kirim usulan.';
             default: return '';
         }
     };

@@ -67,7 +67,7 @@ export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: Breadcrum
             {isPengajuanDropdownOpen && (
               <div className="absolute top-full left-0 mt-1 w-64 bg-white border border-gray-200 rounded-md shadow-lg z-50">
                 <div className="py-2">
-                  <Link href="/pengajuan/Index" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-blue-600">Usulan</Link>
+                  <Link href="/dosen/penelitian/Index" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-blue-600">Usulan</Link>
                   <Link href="/pengajuan/perbaikan" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-blue-600">Perbaikan</Link>
                   <Link href="/pengajuan/laporan-kemajuan" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-blue-600">Laporan Kemajuan</Link>
                   <Link href="/pengajuan/catatan-harian" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-blue-600">Catatan Harian</Link>

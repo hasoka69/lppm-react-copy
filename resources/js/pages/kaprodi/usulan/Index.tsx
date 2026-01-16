@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, Head } from '@inertiajs/react';
-import Header from '@/components/Header'; // Assuming standard Header
-import Footer from '@/components/footer'; // Assuming standard Footer
-import { Home, ChevronRight, FileText, CheckCircle, Clock, XCircle, Eye } from 'lucide-react';
+import Header from '@/components/Header';
+import Footer from '@/components/footer';
+import { Home, ChevronRight, Eye, Layers } from 'lucide-react';
 
 interface Usulan {
     no: number;
@@ -13,17 +13,25 @@ interface Usulan {
     tahun: number;
     status: string;
     tanggal: string;
+    type?: 'penelitian' | 'pengabdian';
 }
 
 interface PageProps {
-    usulanList: Usulan[];
+    penelitianList: Usulan[];
+    pengabdianList: Usulan[];
     prodiName: string;
+    // Fallback for types if needed
+    usulanList?: Usulan[];
 }
 
-export default function KaprodiUsulanIndex({ usulanList, prodiName }: PageProps) {
+export default function KaprodiUsulanIndex({ penelitianList = [], pengabdianList = [], prodiName }: PageProps) {
+    const [activeTab, setActiveTab] = useState<'penelitian' | 'pengabdian'>('penelitian');
+
+    const activeList = activeTab === 'penelitian' ? penelitianList : pengabdianList;
+
     return (
         <div className="min-h-screen bg-gray-50 font-sans">
-            <Head title="Daftar Usulan Penelitian" />
+            <Head title={`Daftar Usulan - ${activeTab === 'penelitian' ? 'Penelitian' : 'Pengabdian'}`} />
             <Header />
 
             <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
@@ -37,12 +45,34 @@ export default function KaprodiUsulanIndex({ usulanList, prodiName }: PageProps)
                 </div>
 
                 <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                    <div className="flex justify-between items-center mb-6">
+                    <div className="flex flex-col md:flex-row justify-between items-center mb-6">
                         <div>
                             <h1 className="text-2xl font-bold text-gray-800">Daftar Usulan Masuk</h1>
                             <p className="text-gray-500 mt-1">
-                                Berikut adalah daftar usulan penelitian dari dosen Program Studi {prodiName}.
+                                Berikut adalah daftar usulan dari dosen Program Studi {prodiName}.
                             </p>
+                        </div>
+
+                        {/* Tabs */}
+                        <div className="flex space-x-2 mt-4 md:mt-0 bg-gray-100 p-1 rounded-lg">
+                            <button
+                                onClick={() => setActiveTab('penelitian')}
+                                className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${activeTab === 'penelitian'
+                                        ? 'bg-white text-blue-600 shadow-sm'
+                                        : 'text-gray-500 hover:text-gray-700'
+                                    }`}
+                            >
+                                Penelitian
+                            </button>
+                            <button
+                                onClick={() => setActiveTab('pengabdian')}
+                                className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${activeTab === 'pengabdian'
+                                        ? 'bg-white text-blue-600 shadow-sm'
+                                        : 'text-gray-500 hover:text-gray-700'
+                                    }`}
+                            >
+                                Pengabdian
+                            </button>
                         </div>
                     </div>
 
@@ -59,17 +89,17 @@ export default function KaprodiUsulanIndex({ usulanList, prodiName }: PageProps)
                                 </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
-                                {usulanList.length === 0 ? (
+                                {activeList.length === 0 ? (
                                     <tr>
                                         <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
-                                            Tidak ada data usulan.
+                                            Tidak ada data usulan {activeTab}.
                                         </td>
                                     </tr>
                                 ) : (
-                                    usulanList.map((usulan) => (
+                                    activeList.map((usulan, idx) => (
                                         <tr key={usulan.id} className="hover:bg-gray-50 transition">
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                {usulan.no}
+                                                {idx + 1}
                                             </td>
                                             <td className="px-6 py-4">
                                                 <div className="text-sm font-semibold text-gray-900 line-clamp-2">{usulan.judul}</div>
@@ -98,7 +128,10 @@ export default function KaprodiUsulanIndex({ usulanList, prodiName }: PageProps)
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                                 <Link
-                                                    href={`/kaprodi/review/${usulan.id}`}
+                                                    href={activeTab === 'penelitian'
+                                                        ? `/kaprodi/review/${usulan.id}`
+                                                        : route('kaprodi.usulan_pengabdian.show', usulan.id)
+                                                    }
                                                     className="text-blue-600 hover:text-blue-900 inline-flex items-center"
                                                 >
                                                     <Eye className="w-4 h-4 mr-1" /> Review

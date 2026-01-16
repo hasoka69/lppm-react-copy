@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { LuaranAPI, isValidationError, getValidationErrors, getErrorMessage } from '@/services/pengajuanAPI';
 
-interface Luaran {
+export interface Luaran {
     id: number;
     usulan_id: number;
     tahun: number;
@@ -18,6 +18,9 @@ interface LuaranFormProps {
     luaran?: Luaran;
     onSubmitSuccess: () => void;
     onCancel: () => void;
+    isPengabdian?: boolean;
+    initialKategori?: string;
+    fixedKategori?: string;
 }
 
 interface FormData {
@@ -37,12 +40,16 @@ export const LuaranForm: React.FC<LuaranFormProps> = ({
     luaran,
     onSubmitSuccess,
     onCancel,
+    isPengabdian = false,
+    initialKategori = '',
+    fixedKategori = ''
 }) => {
+    const apiPrefix = isPengabdian ? '/dosen/pengabdian' : '/dosen/penelitian';
     const isEditMode = !!luaran;
 
     const [formData, setFormData] = useState<FormData>({
         tahun: luaran?.tahun || 1,
-        kategori: luaran?.kategori || '',
+        kategori: luaran?.kategori || fixedKategori || initialKategori,
         deskripsi: luaran?.deskripsi || '',
         status: luaran?.status || 'Rencana',
         keterangan: luaran?.keterangan || '',
@@ -75,9 +82,9 @@ export const LuaranForm: React.FC<LuaranFormProps> = ({
 
         try {
             if (isEditMode) {
-                await LuaranAPI.update(luaran!.id, formData);
+                await LuaranAPI.update(luaran!.id, formData, apiPrefix);
             } else {
-                await LuaranAPI.create(usulanId, formData);
+                await LuaranAPI.create(usulanId, formData, apiPrefix);
             }
 
             // Success
@@ -96,14 +103,14 @@ export const LuaranForm: React.FC<LuaranFormProps> = ({
     return (
         <div className="bg-white rounded-lg shadow-md p-6 mb-6">
             <h3 className="text-xl font-semibold mb-4">
-                {isEditMode ? 'Edit Luaran Penelitian' : 'Tambah Luaran Penelitian'}
+                {isEditMode ? `Edit Luaran ${isPengabdian ? 'Pengabdian' : 'Penelitian'}` : `Tambah Luaran ${isPengabdian ? 'Pengabdian' : 'Penelitian'}`}
             </h3>
 
             <form onSubmit={handleSubmit} className="space-y-4">
                 {/* Tahun */}
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Tahun Penelitian <span className="text-red-500">*</span>
+                        Tahun {isPengabdian ? 'Pengabdian' : 'Penelitian'} <span className="text-red-500">*</span>
                     </label>
                     <select
                         name="tahun"
