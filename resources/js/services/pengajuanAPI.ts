@@ -10,6 +10,7 @@ interface LuaranData {
     tahun: number;
     kategori: string;
     deskripsi: string;
+    is_wajib: boolean;
     status?: string;
     keterangan?: string;
 }

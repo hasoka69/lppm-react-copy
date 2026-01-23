@@ -37,19 +37,18 @@ class KaprodiController extends Controller
 
         $prodi = $dosenProfile->prodi;
 
-        // Fetch stats based on Prodi
         $stats = [
-            'waiting_review' => UsulanPenelitian::whereHas('ketua.dosen', function ($q) use ($prodi) {
-                $q->where('prodi', $prodi);
-            })->where('status', 'submitted')->count(),
+            'waiting_review' => \App\Models\UsulanPengabdian::whereHas('ketua.dosen', function ($q) use ($prodi) {
+                $q->where('prodi', '=', $prodi);
+            })->where('status', '=', 'submitted')->count(),
 
-            'forwarded' => UsulanPenelitian::whereHas('ketua.dosen', function ($q) use ($prodi) {
-                $q->where('prodi', $prodi);
-            })->whereIn('status', ['approved_prodi', 'reviewer_review'])->count(),
+            'forwarded' => \App\Models\UsulanPengabdian::whereHas('ketua.dosen', function ($q) use ($prodi) {
+                $q->where('prodi', '=', $prodi);
+            })->whereIn('status', ['reviewer_review', 'reviewed', 'didanai'])->count(),
 
-            'rejected' => UsulanPenelitian::whereHas('ketua.dosen', function ($q) use ($prodi) {
-                $q->where('prodi', $prodi);
-            })->where('status', 'rejected_prodi')->count(),
+            'rejected' => \App\Models\UsulanPengabdian::whereHas('ketua.dosen', function ($q) use ($prodi) {
+                $q->where('prodi', '=', $prodi);
+            })->where('status', '=', 'rejected_prodi')->count(),
         ];
 
         // Fetch recent proposals (limit 5)
@@ -70,7 +69,7 @@ class KaprodiController extends Controller
                         'name' => $usulan->ketua->name,
                         'prodi' => $usulan->ketua->dosen->prodi ?? '-',
                     ],
-                    'date' => $usulan->created_at->format('d M Y'),
+                    'date' => $usulan->created_at ? \Carbon\Carbon::parse($usulan->created_at)->format('d M Y') : '-',
                     'status' => $usulan->status,
                 ];
             });
@@ -79,10 +78,10 @@ class KaprodiController extends Controller
             'program' => [
                 'name' => $prodi,
                 'faculty' => 'Fakultas Teknik', // Placeholder or fetch from relation
-                'lecturers_count' => \App\Models\Dosen::where('prodi', $prodi)->count(),
+                'lecturers_count' => \App\Models\Dosen::where('prodi', '=', $prodi, 'and')->count(),
                 'proposals_2024' => UsulanPenelitian::whereHas('ketua.dosen', function ($q) use ($prodi) {
-                    $q->where('prodi', $prodi);
-                })->whereYear('created_at', date('Y'))->count(),
+                    $q->where('prodi', '=', $prodi, 'and');
+                })->whereYear('created_at', '=', date('Y'), 'and')->count(),
             ],
             'summary' => $stats,
             'proposals' => $recentProposals,
@@ -192,7 +191,7 @@ class KaprodiController extends Controller
                     'skema' => $usulan->kelompok_skema,
                     // 'tahun' => ... (varies, maybe omit or try field check)
                     'status' => $usulan->status,
-                    'tanggal' => $review->reviewed_at->format('d/m/Y H:i'),
+                    'tanggal' => $review->reviewed_at ? \Carbon\Carbon::parse($review->reviewed_at)->format('d/m/Y H:i') : '-',
                     'comments' => $review->comments, // [NEW] The notes!
                     'type' => str_contains($review->usulan_type, 'Pengabdian') ? 'Pengabdian' : 'Penelitian'
                 ];
@@ -230,6 +229,7 @@ class KaprodiController extends Controller
             'usulan' => $usulan,
             'pengusul' => $usulan->ketua->dosen,
             'anggota' => $usulan->anggotaDosen,
+            'anggotaNonDosen' => $usulan->anggotaNonDosen,
             'rabTotal' => $usulan->getTotalAnggaran()
         ]);
     }
@@ -255,19 +255,23 @@ class KaprodiController extends Controller
         }
 
         if ($request->decision === 'approve') {
-            // Find a reviewer to assign (simple: get first user with 'Reviewer' role)
-            $reviewer = User::role('Reviewer')->first();
-
-            if (!$reviewer) {
-                return back()->with('error', 'Tidak ada reviewer yang tersedia. Hubungi admin.');
-            }
-
             $usulan->status = 'approved_prodi';
-            // $usulan->current_reviewer_id = $reviewer->id; // Logic assignment bisa di sini atau nanti
-            // $usulan->kaprodi_reviewer_id = Auth::id();
+            $action = 'kaprodi_approved';
         } else {
-            $usulan->status = 'rejected_prodi';
+            $usulan->status = 'ditolak_akhir';
+            $action = 'kaprodi_rejected';
         }
+
+        // Create History
+        \App\Models\ReviewHistory::create([
+            'usulan_id' => $usulan->id,
+            'usulan_type' => get_class($usulan),
+            'reviewer_id' => Auth::id(),
+            'reviewer_type' => 'kaprodi',
+            'action' => $action,
+            'comments' => $request->notes,
+            'reviewed_at' => now(),
+        ]);
 
         $usulan->save();
 
@@ -362,12 +366,11 @@ class KaprodiController extends Controller
         }
 
         if ($request->decision === 'approve') {
-            // Logic Assign Reviewer (bisa manual atau auto)
-            // Untuk Pengabdian, kita set status approved_prodi dulu
+            // Status menjadi DISETUJUI KAPRODI (approved_prodi)
             $usulan->status = 'approved_prodi';
             $action = 'kaprodi_approved';
         } else {
-            $usulan->status = 'rejected_prodi';
+            $usulan->status = 'ditolak_akhir';
             $action = 'kaprodi_rejected';
         }
 

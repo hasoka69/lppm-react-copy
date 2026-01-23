@@ -29,6 +29,11 @@ class AnggotaPenelitianController extends Controller
 
     public function store(Request $request, $usulanId)
     {
+        $usulan = \App\Models\UsulanPenelitian::findOrFail($usulanId);
+        if (!in_array($usulan->status, ['draft', 'revision_dosen'])) {
+            return response()->json(['message' => 'Usulan tidak dalam tahap pengeditan'], 403);
+        }
+
         $request->validate([
             'nidn' => 'required',
             'nama' => 'required',
@@ -67,6 +72,11 @@ class AnggotaPenelitianController extends Controller
     public function update(Request $request, $id)
     {
         $anggota = AnggotaPenelitian::findOrFail($id);
+        $usulan = $anggota->usulan; // Assuming relationship exists
+
+        if (!in_array($usulan->status, ['draft', 'revision_dosen'])) {
+            return response()->json(['message' => 'Usulan tidak dalam tahap pengeditan'], 403);
+        }
 
         $validated = $request->validate([
             'peran' => 'sometimes|required|in:ketua,anggota',
@@ -83,7 +93,12 @@ class AnggotaPenelitianController extends Controller
 
     public function destroy($id)
     {
-        AnggotaPenelitian::findOrFail($id)->delete();
+        $anggota = AnggotaPenelitian::findOrFail($id);
+        if (!in_array($anggota->usulan->status, ['draft', 'revision_dosen'])) {
+            return response()->json(['message' => 'Usulan tidak dalam tahap pengeditan'], 403);
+        }
+
+        $anggota->delete();
 
         return response()->json([
             'message' => 'Anggota dihapus'

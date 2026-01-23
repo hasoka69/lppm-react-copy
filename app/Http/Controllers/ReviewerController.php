@@ -20,8 +20,8 @@ class ReviewerController extends Controller
 
         // 1. Penelitian
         $usulanPenelitian = UsulanPenelitian::with(['user.dosen'])
-            ->where('current_reviewer_id', $user->id)
-            ->whereIn('status', ['approved_prodi', 'reviewer_review', 'needs_revision'])
+            ->where('reviewer_id', '=', $user->id, 'and')
+            ->whereIn('status', ['reviewer_assigned', 'resubmitted_revision'])
             ->latest()
             ->get()
             ->map(fn($item) => [
@@ -30,15 +30,15 @@ class ReviewerController extends Controller
                 'ketua' => $item->user->name,
                 'prodi' => $item->user->dosen->prodi ?? '-',
                 'skema' => $item->kelompok_skema,
-                'tanggal_pengajuan' => $item->submitted_at ? $item->submitted_at->format('d M Y') : '-',
+                'tanggal_pengajuan' => ($item->submitted_at ?? $item->created_at)->format('d M Y'),
                 'status' => $item->status,
                 'type' => 'penelitian'
             ]);
 
-        // 2. Pengabdian (Open Pool for now: 'approved_prodi')
+        // 2. Pengabdian
         $usulanPengabdian = \App\Models\UsulanPengabdian::with(['ketua.dosen'])
-            // ->where('current_reviewer_id', $user->id) 
-            ->whereIn('status', ['approved_prodi', 'reviewer_review', 'needs_revision'])
+            ->where('reviewer_id', '=', $user->id, 'and')
+            ->whereIn('status', ['reviewer_assigned', 'resubmitted_revision'])
             ->latest()
             ->get()
             ->map(fn($item) => [
@@ -47,7 +47,7 @@ class ReviewerController extends Controller
                 'ketua' => $item->ketua->name,
                 'prodi' => $item->ketua->dosen->prodi ?? '-',
                 'skema' => $item->kelompok_skema,
-                'tanggal_pengajuan' => $item->created_at->format('d M Y'),
+                'tanggal_pengajuan' => ($item->submitted_at ?? $item->created_at)->format('d M Y'),
                 'status' => $item->status,
                 'type' => 'pengabdian'
             ]);
@@ -70,8 +70,8 @@ class ReviewerController extends Controller
         // We use lazy loading or specific constraints if needed.
         // Both Usulan models have 'user' (or alias) and 'dosen' relationships available via user.
         $reviewHistories = ReviewHistory::with('usulan') // Load the polymorphic relation
-            ->where('reviewer_id', $user->id)
-            ->where('reviewer_type', 'reviewer')
+            ->where('reviewer_id', '=', $user->id, 'and')
+            ->where('reviewer_type', '=', 'reviewer', 'and')
             ->latest('reviewed_at')
             ->get()
             ->map(function ($review) {
@@ -94,7 +94,7 @@ class ReviewerController extends Controller
                     'prodi' => $dosen->prodi ?? '-',
                     'action' => $review->action,
                     'comments' => $review->comments,
-                    'reviewed_at' => $review->reviewed_at->format('d M Y H:i'),
+                    'reviewed_at' => $review->reviewed_at ? \Carbon\Carbon::parse($review->reviewed_at)->format('d M Y H:i') : '-',
                     'status_usulan' => $review->usulan->status,
                     'type' => str_contains($review->usulan_type, 'Pengabdian') ? 'Pengabdian' : 'Penelitian'
                 ];
@@ -121,12 +121,11 @@ class ReviewerController extends Controller
             'luaranList',
             'rabItems'
         ])
-            ->where('id', $id)
-            // Check if assigned OR if they have reviewed it previously (for history)
+            ->where('id', '=', $id, 'and')
             ->where(function ($query) use ($user) {
-                $query->where('current_reviewer_id', $user->id)
+                $query->where('reviewer_id', '=', $user->id, 'and')
                     ->orWhereHas('reviewHistories', function ($q) use ($user) {
-                        $q->where('reviewer_id', $user->id);
+                        $q->where('reviewer_id', '=', $user->id, 'and');
                     });
             })
             ->firstOrFail();
@@ -147,55 +146,38 @@ class ReviewerController extends Controller
             'comments' => 'required|string|min:10',
         ]);
 
-        $usulan = UsulanPenelitian::where('id', $id)
-            ->where('current_reviewer_id', Auth::id())
+        $usulan = UsulanPenelitian::where('id', '=', $id, 'and')
+            ->where('reviewer_id', '=', Auth::id(), 'and')
             ->firstOrFail();
 
         DB::transaction(function () use ($request, $usulan) {
-            // Map action to review history action
+            $statusMap = [
+                'approve' => 'reviewed_approved',
+                'reject' => 'rejected_reviewer',
+                'revise' => 'under_revision_admin'
+            ];
+
+            $newStatus = $statusMap[$request->action];
+
             $actionMap = [
                 'approve' => 'reviewer_approved',
                 'reject' => 'reviewer_rejected',
                 'revise' => 'reviewer_revision_requested'
             ];
 
-            $action = $actionMap[$request->action];
-
-            // Map action to proposal status
-            $statusMap = [
-                'approve' => 'didanai',
-                'reject' => 'ditolak',
-                'revise' => 'needs_revision'
-            ];
-
-            $newStatus = $statusMap[$request->action];
-
             // 1. Create Review History
             ReviewHistory::create([
                 'usulan_id' => $usulan->id,
+                'usulan_type' => get_class($usulan),
                 'reviewer_id' => Auth::id(),
                 'reviewer_type' => 'reviewer',
-                'action' => $action,
+                'action' => $actionMap[$request->action],
                 'comments' => $request->comments,
                 'reviewed_at' => now(),
             ]);
 
             // 2. Update Proposal Status
-            $updateData = [
-                'status' => $newStatus,
-            ];
-
-            // If approved or rejected, clear reviewer assignment
-            if ($request->action !== 'revise') {
-                $updateData['current_reviewer_id'] = null;
-            }
-
-            // Increment revision count if requesting revision
-            if ($request->action === 'revise') {
-                $usulan->increment('revision_count');
-            }
-
-            $usulan->update($updateData);
+            $usulan->update(['status' => $newStatus]);
         });
 
         return redirect()->route('reviewer.usulan.index')->with('success', 'Review berhasil dikirim.');
@@ -227,7 +209,7 @@ class ReviewerController extends Controller
                 'ketua' => $item->ketua->name,
                 'prodi' => $item->ketua->dosen->prodi ?? '-',
                 'skema' => $item->kelompok_skema,
-                'tanggal_pengajuan' => $item->created_at->format('d M Y'),
+                'tanggal_pengajuan' => ($item->submitted_at ?? $item->created_at)->format('d M Y'),
                 'status' => $item->status,
                 'type' => 'pengabdian'
             ]);
@@ -275,53 +257,37 @@ class ReviewerController extends Controller
             'comments' => 'required|string|min:10',
         ]);
 
-        $usulan = \App\Models\UsulanPengabdian::findOrFail($id);
+        $usulan = \App\Models\UsulanPengabdian::where('id', '=', $id, 'and')
+            ->where('reviewer_id', '=', Auth::id(), 'and')
+            ->firstOrFail();
 
         DB::transaction(function () use ($request, $usulan) {
+            $statusMap = [
+                'approve' => 'reviewed_approved',
+                'reject' => 'rejected_reviewer',
+                'revise' => 'under_revision_admin'
+            ];
+            $newStatus = $statusMap[$request->action];
+
             $actionMap = [
                 'approve' => 'reviewer_approved',
                 'reject' => 'reviewer_rejected',
                 'revise' => 'reviewer_revision_requested'
             ];
-            $action = $actionMap[$request->action];
-
-            $statusMap = [
-                'approve' => 'didanai',
-                'reject' => 'ditolak',
-                'revise' => 'needs_revision'
-            ];
-            $newStatus = $statusMap[$request->action];
-
-            // 1. Create Review History (Polymorphic would be better, but assuming shared table or separate)
-            // If ReviewHistory uses 'usulan_id' aimed at one table, we might have issue.
-            // Check ReviewHistory model. Assuming generic or we add 'usulan_type'.
-            // For now, create specific or reuse if ID unique enough (risky).
-            // BETTER: Add 'usulan_type' to ReviewHistory migration if not exists, 
-            // OR reuse field if IDs don't clash (they might).
-            // SAFEST NOW: Update status directly, skip history temporarily if complex schema change needed.
-            // BUT user requested 'revisi' feature.
 
             // 1. Create Review History (Polymorphic)
             ReviewHistory::create([
                 'usulan_id' => $usulan->id,
-                'usulan_type' => get_class($usulan), // Polymorphic type
+                'usulan_type' => get_class($usulan),
                 'reviewer_id' => Auth::id(),
                 'reviewer_type' => 'reviewer',
-                'action' => $action,
+                'action' => $actionMap[$request->action],
                 'comments' => $request->comments,
                 'reviewed_at' => now(),
             ]);
 
             // 2. Update Proposal Status
-            $updateData = ['status' => $newStatus];
-            if ($request->action !== 'revise') {
-                // Option: clear reviewer assignment if desired, or keep tracking
-            }
-            if ($request->action === 'revise') {
-                $usulan->increment('revision_count');
-            }
-
-            $usulan->update($updateData);
+            $usulan->update(['status' => $newStatus]);
         });
 
         return redirect()->route('reviewer.usulan.index')->with('success', 'Review Pengabdian berhasil dikirim.');

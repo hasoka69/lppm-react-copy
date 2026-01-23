@@ -23,6 +23,7 @@ class UsulanPengabdianController extends Controller
 
         $usulanList = UsulanPengabdian::with(['reviewHistories'])
             ->where('user_id', $user->id)
+            ->whereNotIn('status', ['under_revision_admin', 'revision_dosen'])
             ->latest()
             ->get()
             ->map(fn($u, $i) => [
@@ -82,9 +83,10 @@ class UsulanPengabdianController extends Controller
             $usulan = UsulanPengabdian::create([
                 'user_id' => Auth::id(),
                 'status' => 'draft',
-                'tahun_pengusulan' => $validated['tahun_pengusulan'] ?? date('Y'),
+                'tahun_pengusulan' => 2026,
                 'judul' => $validated['judul'] ?? 'Draft Usulan Pengabdian',
                 'kelompok_skema' => $validated['kelompok_skema'] ?? null,
+                'tahun_pertama' => 2026,
             ]);
 
             DB::commit();
@@ -165,6 +167,8 @@ class UsulanPengabdianController extends Controller
                 $data['file_substansi'] = $path;
             }
 
+            $data['tahun_pengusulan'] = 2026;
+            $data['tahun_pertama'] = 2026;
             $usulan->update($data);
             return back()->with('success', 'Data berhasil diperbarui!');
         } catch (\Exception $e) {
@@ -206,7 +210,8 @@ class UsulanPengabdianController extends Controller
             'anggotaNonDosen',
             'luaranItems',
             'rabItems',
-            'mitra' // [NEW] load mitra for step 4 AND 5
+            'mitra',
+            'reviewHistories.reviewer'
         ])->where('user_id', Auth::id())->findOrFail($usulanId);
 
         $masterData = $this->getMasterData();
@@ -258,11 +263,34 @@ class UsulanPengabdianController extends Controller
             return back()->with('error', 'Minimal harus ada satu Mitra Sasaran!');
         }
 
+        // Only allowed to submit if status is draft or revision_dosen
+        if (!in_array($usulan->status, ['draft', 'revision_dosen'])) {
+            return back()->with('error', 'Usulan tidak dalam tahap pengajuan/revisi.');
+        }
+
         try {
-            Log::info('Validation Passed. Updating status to submitted.');
-            $usulan->update(['status' => 'submitted']);
+            $oldStatus = $usulan->status;
+            $newStatus = ($oldStatus === 'revision_dosen') ? 'resubmitted_revision' : 'submitted';
+
+            Log::info('Validation Passed. Updating status to ' . $newStatus);
+            $usulan->update([
+                'status' => $newStatus,
+                'submitted_at' => now(), // Assuming column is added or we fallback in view
+            ]);
+
+            // Create History entry
+            \App\Models\ReviewHistory::create([
+                'usulan_id' => $usulan->id,
+                'usulan_type' => get_class($usulan),
+                'reviewer_id' => Auth::id(),
+                'reviewer_type' => 'dosen',
+                'action' => $newStatus === 'resubmitted_revision' ? 'resubmit_revision' : 'submit',
+                'comments' => $newStatus === 'resubmitted_revision' ? 'Revisi berhasil diajukan oleh Dosen.' : 'Usulan diajukan oleh Dosen.',
+                'reviewed_at' => now(),
+            ]);
+
             return redirect()->route('dosen.pengabdian.index')
-                ->with('success', 'Usulan Pengabdian berhasil diajukan!');
+                ->with('success', 'Usulan Berhasil Diajukan!');
         } catch (\Exception $e) {
             Log::error('Submission Error: ' . $e->getMessage());
             return back()->with('error', 'Gagal mengajukan usulan: ' . $e->getMessage());
@@ -342,5 +370,38 @@ class UsulanPengabdianController extends Controller
         } catch (\Exception $e) {
             return back()->with('error', 'Gagal menghapus usulan: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Tampilkan usulan yang perlu perbaikan
+     */
+    public function perbaikan()
+    {
+        $user = Auth::user();
+
+        $usulanList = UsulanPengabdian::with(['reviewHistories'])
+            ->where('user_id', $user->id)
+            ->whereIn('status', ['under_revision_admin', 'revision_dosen'])
+            ->latest()
+            ->get()
+            ->map(fn($u, $i) => [
+                'no' => $i + 1,
+                'id' => $u->id,
+                'skema' => $u->kelompok_skema ?? 'N/A',
+                'judul' => $u->judul,
+                'tahun_pelaksanaan' => $u->tahun_pertama ?? date('Y'),
+                'peran' => 'Ketua',
+                'status' => $u->status,
+                'catatan' => $u->reviewHistories->sortByDesc('reviewed_at')->first()?->comments ?? '-',
+            ]);
+
+        $masterData = $this->getMasterData();
+
+        return Inertia::render('dosen/pengabdian/Index', [
+            'usulanList' => $usulanList,
+            'isPerbaikanView' => true,
+            'title' => 'Perbaikan Usulan Pengabdian',
+            ...$masterData,
+        ]);
     }
 }

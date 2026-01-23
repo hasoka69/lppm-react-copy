@@ -36,6 +36,7 @@ interface PageUsulanProps {
     onViewUsulan?: (usulan: Usulan) => void;
     usulanList?: Usulan[];
     title?: string;
+    isPerbaikanView?: boolean;
 }
 
 const PageUsulan: React.FC<PageUsulanProps> = ({
@@ -44,7 +45,8 @@ const PageUsulan: React.FC<PageUsulanProps> = ({
     onDeleteUsulan,
     onViewUsulan,
     usulanList: propUsulanList,
-    title = "Usulan Pengabdian"
+    title = "Usulan Pengabdian",
+    isPerbaikanView = false
 }) => {
     const { props } = usePage<PageProps>();
     const usulanList = propUsulanList || props.usulanList || [];
@@ -55,11 +57,13 @@ const PageUsulan: React.FC<PageUsulanProps> = ({
                 <h1 className={styles.title}>{title}</h1>
             </div>
 
-            <div className={styles.actionHeader}>
-                <button className={styles.addButton} onClick={onTambahUsulan}>
-                    Tambah Usulan Baru
-                </button>
-            </div>
+            {!isPerbaikanView && (
+                <div className={styles.actionHeader}>
+                    <button className={styles.addButton} onClick={onTambahUsulan}>
+                        Tambah Usulan Baru
+                    </button>
+                </div>
+            )}
 
             <div className={styles.tableSection}>
                 <div className={styles.tableContainer}>
@@ -101,6 +105,8 @@ const PageUsulan: React.FC<PageUsulanProps> = ({
                                                     'rejected_prodi': { label: 'Ditolak Prodi', className: 'px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800' },
                                                     'reviewer_review': { label: 'Review Reviewer', className: 'px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800' },
                                                     'needs_revision': { label: 'Perlu Revisi', className: 'px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800' },
+                                                    'revision_dosen': { label: 'Revisi Dosen', className: 'px-2 py-1 text-xs font-semibold rounded-full bg-orange-100 text-orange-800' },
+                                                    'under_revision_admin': { label: 'Diperiksa Admin (Revisi)', className: 'px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800' },
                                                     'didanai': { label: 'Didanai', className: 'px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800' },
                                                     'ditolak': { label: 'Ditolak', className: 'px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800' },
                                                 };
@@ -136,8 +142,8 @@ const PageUsulan: React.FC<PageUsulanProps> = ({
                                                     </DropdownMenuItem>
                                                     <DropdownMenuItem
                                                         onClick={() => onEditUsulan?.(u)}
-                                                        disabled={u.status === 'rejected_prodi' || u.status === 'ditolak' || u.status === 'didanai'}
-                                                        className={u.status === 'rejected_prodi' || u.status === 'ditolak' || u.status === 'didanai' ? 'opacity-50 cursor-not-allowed' : ''}
+                                                        disabled={!['draft', 'revision_dosen'].includes(u.status)}
+                                                        className={!['draft', 'revision_dosen'].includes(u.status) ? 'opacity-50 cursor-not-allowed' : ''}
                                                     >
                                                         <Edit className="mr-2 h-4 w-4" /> Edit
                                                     </DropdownMenuItem>
@@ -148,7 +154,8 @@ const PageUsulan: React.FC<PageUsulanProps> = ({
                                                                 onDeleteUsulan?.(u.id);
                                                             }
                                                         }}
-                                                        className="text-red-600 focus:text-red-600"
+                                                        disabled={u.status !== 'draft'}
+                                                        className={u.status !== 'draft' ? 'text-red-600 opacity-50 cursor-not-allowed' : 'text-red-600 focus:text-red-600'}
                                                     >
                                                         <Trash className="mr-2 h-4 w-4" /> Hapus
                                                     </DropdownMenuItem>

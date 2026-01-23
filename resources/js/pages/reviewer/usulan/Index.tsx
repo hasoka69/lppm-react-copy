@@ -35,13 +35,15 @@ const ReviewerIndex: React.FC = () => {
                 return <span className="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">Submitted</span>;
             case 'kaprodi_approved':
             case 'approved_prodi':
-                return <span className="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Disetujui Prodi</span>;
+            case 'reviewer_assigned':
             case 'reviewer_review':
-                return <span className="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">Sedang Direview</span>;
-            case 'didanai':
+                return <span className="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">Sedang Direview</span>;
+            case 'reviewed_approved':
             case 'reviewer_approved':
-                return <span className="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Didanai</span>;
+            case 'didanai':
+                return <span className="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Lulus Review</span>;
             case 'ditolak':
+            case 'ditolak_akhir':
             case 'reviewer_rejected':
                 return <span className="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">Ditolak</span>;
             case 'needs_revision':

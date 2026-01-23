@@ -70,12 +70,14 @@ const PageSubstansi: React.FC<PageSubstansiProps> = ({
     // }, [usulanId, makroRisetList.length]);
 
     // Inertia form handler untuk Substansi
-    const { data, setData, post, put, progress } = useForm<{
+    const { data, setData, post, processing, errors, progress } = useForm<{
         makro_riset_id: number | '';
         file_substansi: File | null;
+        _method: string;
     }>({
-        makro_riset_id: substansi?.makro_riset_id ?? '',
+        makro_riset_id: props.substansi?.makro_riset_id ?? '',
         file_substansi: null,
+        _method: 'put',
     });
 
     // Submit handler untuk Substansi (Simpan Draft)
@@ -84,11 +86,11 @@ const PageSubstansi: React.FC<PageSubstansiProps> = ({
             alert('Usulan ID tidak ditemukan. Silakan simpan draft terlebih dahulu.');
             return;
         }
-        // ✅ Menggunakan route update standard
-        put(`/dosen/penelitian/${usulanId}`, {
+        // ✅ Menggunakan POST + _method: PUT untuk support file upload
+        post(`/dosen/penelitian/${usulanId}`, {
+            forceFormData: true,
             preserveScroll: true,
             onSuccess: () => {
-                // Optional: Show feedback
                 console.log('Substansi saved successfully');
             }
         });
@@ -294,7 +296,8 @@ const PageSubstansi: React.FC<PageSubstansiProps> = ({
                                 return;
                             }
                             // Save makro_riset_id first before moving to next step
-                            put(`/dosen/penelitian/${usulanId}`, {
+                            post(`/dosen/penelitian/${usulanId}`, {
+                                forceFormData: true,
                                 preserveScroll: true,
                                 onSuccess: () => {
                                     console.log('Substansi saved, moving to next step');

@@ -61,12 +61,12 @@ const PageIdentitas: React.FC<PageIdentitasProps> = ({
 
     const { data, setData, post, put, processing, errors } = useForm<UsulanData>({
         judul: usulan?.judul ?? '',
-        tahun_pengusulan: usulan?.tahun_pengusulan ?? new Date().getFullYear(),
+        tahun_pengusulan: 2026,
         jenis_bidang_fokus: (usulan?.jenis_bidang_fokus as 'tematik' | 'ririn') ?? '',
         bidang_fokus: usulan?.bidang_fokus ?? '',
         kelompok_skema: usulan?.kelompok_skema ?? '',
         ruang_lingkup: usulan?.ruang_lingkup ?? '',
-        tahun_pertama: usulan?.tahun_pertama ?? '',
+        tahun_pertama: 2026,
         lama_kegiatan: usulan?.lama_kegiatan ?? '1',
         rumpun_ilmu_level1_id: usulan?.rumpun_ilmu_level1_id ?? '',
         rumpun_ilmu_level2_id: usulan?.rumpun_ilmu_level2_id ?? '',
@@ -171,10 +171,14 @@ const PageIdentitas: React.FC<PageIdentitasProps> = ({
                         </div>
                         <div className={styles.formGroup}>
                             <label className={styles.label}>Tahun Pengusulan</label>
-                            <select className={styles.select} value={data.tahun_pengusulan} onChange={(e) => setData('tahun_pengusulan', e.target.value)}>
-                                <option value={new Date().getFullYear()}>{new Date().getFullYear()}</option>
-                                <option value={new Date().getFullYear() + 1}>{new Date().getFullYear() + 1}</option>
-                            </select>
+                            <input
+                                type="text"
+                                className={styles.input}
+                                value="2026"
+                                disabled
+                                readOnly
+                            />
+                            <input type="hidden" name="tahun_pengusulan" value="2026" />
                         </div>
                     </div>
                 </div>
@@ -232,12 +236,14 @@ const PageIdentitas: React.FC<PageIdentitasProps> = ({
                         </div>
                         <div className={styles.formGroup}>
                             <label className={styles.label}>Tahun Pertama Usulan</label>
-                            <select className={styles.select} value={data.tahun_pertama} onChange={(e) => setData('tahun_pertama', e.target.value)}>
-                                <option value="">Pilih Tahun</option>
-                                <option value="2024">2024</option>
-                                <option value="2025">2025</option>
-                                <option value="2026">2026</option>
-                            </select>
+                            <input
+                                type="text"
+                                className={styles.input}
+                                value="2026"
+                                disabled
+                                readOnly
+                            />
+                            <input type="hidden" name="tahun_pertama" value="2026" />
                         </div>
                         <div className={styles.formGroup}>
                             <label className={styles.label}>Lama Kegiatan</label>

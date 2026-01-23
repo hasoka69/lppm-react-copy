@@ -69,9 +69,8 @@ export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: Breadcrum
                 <div className="py-2">
                   <Link href="/dosen/penelitian/Index" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-blue-600">Usulan</Link>
                   <Link href="/pengajuan/perbaikan" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-blue-600">Perbaikan</Link>
-                  <Link href="/pengajuan/laporan-kemajuan" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-blue-600">Laporan Kemajuan</Link>
-                  <Link href="/pengajuan/catatan-harian" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-blue-600">Catatan Harian</Link>
-                  <Link href="/pengajuan/laporan-akhir" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-blue-600">Laporan Akhir</Link>
+                  <Link href="/dosen/penelitian/laporan-kemajuan" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-blue-600">Laporan Kemajuan</Link>
+                  <Link href="/dosen/penelitian/laporan-akhir" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-blue-600">Laporan Akhir</Link>
                   <Link href="/pengajuan/pengkinian-luaran" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-blue-600">Pengkinian Capaian Luaran</Link>
                   <Link href="/pengajuan/bintek" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-blue-600">Bintek</Link>
                 </div>
@@ -96,9 +95,8 @@ export function AppSidebarHeader({ breadcrumbs = [] }: { breadcrumbs?: Breadcrum
                 <div className="py-2">
                   <Link href="/pengabdian/usulan" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-blue-600">Usulan</Link>
                   <Link href="/pengabdian/perbaikan" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-blue-600">Perbaikan</Link>
-                  <Link href="/pengabdian/laporan-kemajuan" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-blue-600">Laporan Kemajuan</Link>
-                  <Link href="/pengabdian/catatan-harian" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-blue-600">Catatan Harian</Link>
-                  <Link href="/pengabdian/laporan-akhir" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-blue-600">Laporan Akhir</Link>
+                  <Link href="/dosen/pengabdian/laporan-kemajuan" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-blue-600">Laporan Kemajuan</Link>
+                  <Link href="/dosen/pengabdian/laporan-akhir" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-blue-600">Laporan Akhir</Link>
                   <Link href="/pengabdian/pengkinian-luaran" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-blue-600">Pengkinian Capaian Luaran</Link>
                   <Link href="/pengabdian/bintek" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-blue-600">Bintek</Link>
                 </div>

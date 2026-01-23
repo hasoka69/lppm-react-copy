@@ -31,9 +31,9 @@ type NavItem = {
 const ROLE_MENU: Record<string, NavItem[]> = {
     "admin lppm": [
         { href: "/lppm/dashboard", label: "Dashboard" }, // Updated to LPPM dashboard
-        { href: "/admin/penelitian", label: "Penelitian" },
-        { href: "/admin/pengabdian", label: "Pengabdian" },
-        { href: "/admin/luaran", label: "Luaran" },
+        { href: "/lppm/penelitian", label: "Penelitian" },
+        { href: "/lppm/pengabdian", label: "Pengabdian" },
+        { href: "/lppm/luaran", label: "Luaran" },
         // Mengelompokkan menu sistem ke dalam dropdown 'Manajemen'
         {
             label: "Manajemen",
@@ -50,7 +50,9 @@ const ROLE_MENU: Record<string, NavItem[]> = {
         { href: "/dosen/dashboard", label: "Dashboard" },
         { href: "/dosen/penelitian", label: "Penelitian" },
         { href: "/dosen/pengabdian", label: "Pengabdian" },
+
         { href: "/dosen/luaran", label: "Submit Luaran PKM" },
+
     ],
 
     reviewer: [
@@ -111,7 +113,7 @@ const getRoleFromUrl = (url: string): string | null => {
 export default function Header() {
     const [userDropdown, setUserDropdown] = useState(false); // Ganti nama state agar lebih jelas
     const [mobileMenu, setMobileMenu] = useState(false);
-    const [adminDropdown, setAdminDropdown] = useState(false); // State baru untuk dropdown Admin
+    const [activeDropdown, setActiveDropdown] = useState<string | null>(null); // State baru untuk handling multiple dropdowns
 
     // SAFE TYPED PAGE PROPS
     const page = usePage<PageProps>();
@@ -147,10 +149,9 @@ export default function Header() {
 
     const currentUrl = page.url;
 
-    // Cek apakah salah satu item di dropdown Management sedang aktif (untuk styling)
-    const isManagementActive = navItems.some(item =>
-        item.items && item.items.some(subItem => currentUrl.startsWith(subItem.href))
-    );
+    // Cek apakah salah satu sub-item dropdown sedang aktif
+    const isDropdownActive = (items: { href: string }[]) =>
+        items.some(subItem => currentUrl.startsWith(subItem.href));
 
     return (
         <header className="w-full bg-white shadow-sm border-b px-6 py-3 flex items-center justify-between sticky top-0 z-30">
@@ -190,26 +191,29 @@ export default function Header() {
                         );
                     }
 
-                    // Jika item adalah dropdown (hanya admin yang punya)
+                    // Jika item adalah dropdown
                     if (item.items) {
+                        const isOpen = activeDropdown === item.label;
+                        const isActive = isDropdownActive(item.items);
+
                         return (
                             <div key={index} className="relative">
                                 <button
-                                    onClick={() => setAdminDropdown(!adminDropdown)}
+                                    onClick={() => setActiveDropdown(isOpen ? null : item.label)}
                                     className={`flex items-center gap-1 focus:outline-none pb-1 transition duration-150 
-                                        ${adminDropdown || isManagementActive
+                                        ${isOpen || isActive
                                             ? "text-blue-600 font-semibold border-b-2 border-blue-600"
                                             : "hover:text-blue-600"
                                         }`}
                                 >
                                     {item.label}
-                                    <svg xmlns="http://www.w3.org/2000/svg" className={`h-4 w-4 transform transition-transform duration-200 ${adminDropdown ? 'rotate-180' : 'rotate-0'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className={`h-4 w-4 transform transition-transform duration-200 ${isOpen ? 'rotate-180' : 'rotate-0'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
                                     </svg>
                                 </button>
 
-                                {adminDropdown && (
-                                    <div className="absolute left-1/2 transform -translate-x-1/2 w-48 bg-white shadow-xl rounded-lg py-2 mt-4 z-50 border border-gray-100">
+                                {isOpen && (
+                                    <div className="absolute left-1/2 transform -translate-x-1/2 w-52 bg-white shadow-xl rounded-lg py-2 mt-4 z-50 border border-gray-100 animate-fadeIn">
                                         {item.items.map((subItem, subIndex) => (
                                             <Link
                                                 key={subIndex}

@@ -39,6 +39,10 @@ class LuaranPenelitianController extends Controller
             abort(403);
         }
 
+        if (!in_array($usulan->status, ['draft', 'revision_dosen'])) {
+            return response()->json(['success' => false, 'message' => 'Usulan tidak dalam tahap pengeditan'], 403);
+        }
+
         // Validasi input
         $validated = $request->validate([
             'tahun' => 'required|integer|min:1|max:5',
@@ -80,6 +84,10 @@ class LuaranPenelitianController extends Controller
             abort(403);
         }
 
+        if (!in_array($usulan->status, ['draft', 'revision_dosen'])) {
+            return response()->json(['success' => false, 'message' => 'Usulan tidak dalam tahap pengeditan'], 403);
+        }
+
         // Validasi input
         $validated = $request->validate([
             'tahun' => 'sometimes|required|integer|min:1|max:5',
@@ -116,6 +124,10 @@ class LuaranPenelitianController extends Controller
         // Validasi ownership
         if ($usulan->user_id !== Auth::id()) {
             abort(403);
+        }
+
+        if (!in_array($usulan->status, ['draft', 'revision_dosen'])) {
+            return response()->json(['success' => false, 'message' => 'Usulan tidak dalam tahap pengeditan'], 403);
         }
 
         try {

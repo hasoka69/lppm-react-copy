@@ -36,12 +36,18 @@ class UsulanPenelitian extends Model
         'rab_pengumpulan_data', // [NEW]
         'total_anggaran',
         'status',
+        'submitted_at',         // [NEW]
+        'current_reviewer_id',  // [NEW]
+        'kaprodi_reviewer_id',  // [NEW]
+        'dana_disetujui',
+        'reviewer_id',
     ];
 
     protected $casts = [
         'total_anggaran' => 'decimal:2',
         'rab_bahan' => 'array',            // [NEW] cast to array
         'rab_pengumpulan_data' => 'array', // [NEW] cast to array
+        'submitted_at' => 'datetime',      // [NEW] cast to datetime
     ];
 
     // ========================================

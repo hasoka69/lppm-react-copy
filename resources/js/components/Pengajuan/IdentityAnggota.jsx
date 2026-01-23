@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { usePage } from '@inertiajs/react';
 import axios from 'axios';
 import SearchableDosenSelect from './SearchableDosenSelect';
-import SearchableMahasiswaSelect from './SearchableMahasiswaSelect';
+// Removed SearchableMahasiswaSelect for manual input
 
 const api = axios.create({
     baseURL: '/',
@@ -288,32 +288,18 @@ const IdentityAnggota = ({ usulanId, onCreateDraft, isPengabdian = false }) => {
                                 </select>
                             </div>
 
-                            {formNonDosenData.jenis_anggota === 'mahasiswa' ? (
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Cari Mahasiswa</label>
-                                    <SearchableMahasiswaSelect onChange={(selected) => setFormNonDosenData({
-                                        ...formNonDosenData,
-                                        no_identitas: selected?.mahasiswa.nim || '',
-                                        nama: selected?.mahasiswa.nama || '',
-                                        jurusan: selected?.mahasiswa.jurusan || ''
-                                    })} />
-                                </div>
-                            ) : (
-                                <>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">No Identitas (NIM/NIK/Lainnya)</label>
-                                        <input type="text" value={formNonDosenData.no_identitas} onChange={(e) => setFormNonDosenData({ ...formNonDosenData, no_identitas: e.target.value })} className="w-full px-3 py-2 border rounded" placeholder="Masukkan nomor identitas" />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap</label>
-                                        <input type="text" value={formNonDosenData.nama} onChange={(e) => setFormNonDosenData({ ...formNonDosenData, nama: e.target.value })} className="w-full px-3 py-2 border rounded" placeholder="Masukkan nama lengkap" />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">Prodi / Unit / Instansi</label>
-                                        <input type="text" value={formNonDosenData.jurusan} onChange={(e) => setFormNonDosenData({ ...formNonDosenData, jurusan: e.target.value })} className="w-full px-3 py-2 border rounded" placeholder="Contoh: Teknik Informatika / PT. ABC" />
-                                    </div>
-                                </>
-                            )}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">No Identitas (NIM/NIK/Lainnya)</label>
+                                <input type="text" value={formNonDosenData.no_identitas} onChange={(e) => setFormNonDosenData({ ...formNonDosenData, no_identitas: e.target.value })} className="w-full px-3 py-2 border rounded" placeholder="Masukkan nomor identitas" />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap</label>
+                                <input type="text" value={formNonDosenData.nama} onChange={(e) => setFormNonDosenData({ ...formNonDosenData, nama: e.target.value })} className="w-full px-3 py-2 border rounded" placeholder="Masukkan nama lengkap" />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Prodi / Unit / Instansi</label>
+                                <input type="text" value={formNonDosenData.jurusan} onChange={(e) => setFormNonDosenData({ ...formNonDosenData, jurusan: e.target.value })} className="w-full px-3 py-2 border rounded" placeholder="Contoh: Teknik Informatika / PT. ABC" />
+                            </div>
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Uraian Tugas</label>

@@ -32,6 +32,10 @@ class LuaranPengabdianController extends Controller
             abort(403);
         }
 
+        if (!in_array($usulan->status, ['draft', 'revision_dosen'])) {
+            return response()->json(['success' => false, 'message' => 'Usulan tidak dalam tahap pengeditan'], 403);
+        }
+
         $validated = $request->validate([
             'tahun' => 'required|integer|min:1|max:5',
             'kategori' => 'required|string|max:100',
@@ -70,6 +74,10 @@ class LuaranPengabdianController extends Controller
             abort(403);
         }
 
+        if (!in_array($usulan->status, ['draft', 'revision_dosen'])) {
+            return response()->json(['success' => false, 'message' => 'Usulan tidak dalam tahap pengeditan'], 403);
+        }
+
         $validated = $request->validate([
             'tahun' => 'sometimes|required|integer|min:1|max:5',
             'kategori' => 'sometimes|required|string|max:100',
@@ -103,6 +111,10 @@ class LuaranPengabdianController extends Controller
 
         if ($usulan->user_id !== Auth::id()) {
             abort(403);
+        }
+
+        if (!in_array($usulan->status, ['draft', 'revision_dosen'])) {
+            return response()->json(['success' => false, 'message' => 'Usulan tidak dalam tahap pengeditan'], 403);
         }
 
         try {

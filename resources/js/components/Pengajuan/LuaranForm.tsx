@@ -9,6 +9,7 @@ export interface Luaran {
     tahun: number;
     kategori: string;
     deskripsi: string;
+    is_wajib: boolean;
     status: string;
     keterangan?: string;
 }
@@ -27,6 +28,7 @@ interface FormData {
     tahun: number;
     kategori: string;
     deskripsi: string;
+    is_wajib: boolean;
     status: string;
     keterangan: string;
 }
@@ -51,6 +53,7 @@ export const LuaranForm: React.FC<LuaranFormProps> = ({
         tahun: luaran?.tahun || 1,
         kategori: luaran?.kategori || fixedKategori || initialKategori,
         deskripsi: luaran?.deskripsi || '',
+        is_wajib: luaran?.is_wajib ?? true,
         status: luaran?.status || 'Rencana',
         keterangan: luaran?.keterangan || '',
     });
@@ -63,7 +66,7 @@ export const LuaranForm: React.FC<LuaranFormProps> = ({
 
         setFormData((prev) => ({
             ...prev,
-            [name]: name === 'tahun' ? parseInt(value) || 1 : value,
+            [name]: name === 'tahun' ? parseInt(value) || 1 : (name === 'is_wajib' ? value === 'true' : value),
         }));
 
         // Clear error for this field when user starts editing
@@ -145,6 +148,25 @@ export const LuaranForm: React.FC<LuaranFormProps> = ({
                         placeholder="Contoh: Publikasi Jurnal, Seminar, Paten, dll"
                     />
                     {errors.kategori && <p className="text-red-500 text-sm mt-1">{errors.kategori[0]}</p>}
+                </div>
+
+                {/* Jenis Luaran (Wajib/Tambahan) */}
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Jenis Luaran <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                        name="is_wajib"
+                        value={formData.is_wajib.toString()}
+                        onChange={handleChange}
+                        disabled={loading}
+                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.is_wajib ? 'border-red-500' : 'border-gray-300'
+                            }`}
+                    >
+                        <option value="true">Luaran Wajib</option>
+                        <option value="false">Luaran Tambahan</option>
+                    </select>
+                    {errors.is_wajib && <p className="text-red-500 text-sm mt-1">{errors.is_wajib[0]}</p>}
                 </div>
 
                 {/* Deskripsi */}

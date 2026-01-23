@@ -68,8 +68,19 @@ class RabItemPengabdianController extends Controller
             $rabItem->save();
 
             // Update total_anggaran di usulan_pengabdian
+            $newTotal = $usulan->getTotalAnggaran();
+
+            // Validation: Budget Limit
+            if ($usulan->status === 'revision_dosen' && $usulan->dana_disetujui > 0 && $newTotal > $usulan->dana_disetujui) {
+                DB::rollBack();
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Total anggaran melebihi dana yang ditetapkan Admin (' . number_format($usulan->dana_disetujui) . ')',
+                ], 422);
+            }
+
             $usulan->update([
-                'total_anggaran' => $usulan->getTotalAnggaran(),
+                'total_anggaran' => $newTotal,
             ]);
 
             DB::commit();
@@ -107,6 +118,10 @@ class RabItemPengabdianController extends Controller
             abort(403);
         }
 
+        if (!in_array($usulan->status, ['draft', 'revision_dosen'])) {
+            return response()->json(['success' => false, 'message' => 'Proposal tidak dalam tahap pengeditan.'], 403);
+        }
+
         $validated = $request->validate([
             'tipe' => 'sometimes|required|string|in:pelatihan,konsumsi,transport_mitra,alat_bahan',
             'kategori' => 'sometimes|required|string|max:100',
@@ -129,8 +144,19 @@ class RabItemPengabdianController extends Controller
             }
 
             // Update total_anggaran di usulan
+            $newTotal = $usulan->getTotalAnggaran();
+
+            // Validation: Budget Limit
+            if ($usulan->status === 'revision_dosen' && $usulan->dana_disetujui > 0 && $newTotal > $usulan->dana_disetujui) {
+                DB::rollBack();
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Total anggaran melebihi dana yang ditetapkan Admin (' . number_format($usulan->dana_disetujui) . ')',
+                ], 422);
+            }
+
             $usulan->update([
-                'total_anggaran' => $usulan->getTotalAnggaran(),
+                'total_anggaran' => $newTotal,
             ]);
 
             DB::commit();
@@ -160,9 +186,14 @@ class RabItemPengabdianController extends Controller
             abort(403);
         }
 
+        // Restriction: Only allow editing in draft or revision_dosen
+        if (!in_array($usulan->status, ['draft', 'revision_dosen'])) {
+            return response()->json(['success' => false, 'message' => 'Proposal tidak dalam tahap pengeditan.'], 403);
+        }
+
         try {
             DB::beginTransaction();
-            $rabItem->delete();
+            RabItem::destroy($rabItem->id);
             $usulan->update([
                 'total_anggaran' => $usulan->getTotalAnggaran(),
             ]);

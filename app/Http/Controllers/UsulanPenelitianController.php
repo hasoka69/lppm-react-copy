@@ -25,6 +25,7 @@ class UsulanPenelitianController extends Controller
             }
         ])
             ->where('user_id', $user->id)
+            ->whereNotIn('status', ['under_revision_admin', 'revision_dosen'])
             ->latest()
             ->get()
             ->map(fn($u, $i) => [
@@ -41,10 +42,10 @@ class UsulanPenelitianController extends Controller
             ]);
 
         // ✅ TAMBAHAN: Ambil draft terakhir yang sedang dikerjakan
-        $latestDraft = UsulanPenelitian::where('user_id', $user->id)
+        $latestDraft = UsulanPenelitian::where('user_id', '=', Auth::id(), 'and')
             ->where('status', 'draft')
             ->latest()
-            ->first();
+            ->first(['*']);
 
         // Ambil data master
         $masterData = $this->getMasterData();
@@ -104,11 +105,16 @@ class UsulanPenelitianController extends Controller
                 'user_id' => Auth::id(),
                 'status' => 'draft',
                 ...$validated,
+                'tahun_pertama' => 2026,
             ]);
 
             DB::commit();
 
             Log::info('Draft created', ['usulan_id' => $usulan->id]);
+
+            // ✅ Simpan ke session agar Inertia bisa baca flash data
+            session()->flash('usulanId', $usulan->id);
+            session()->flash('success', 'Draft penelitian berhasil disimpan');
 
             // ✅ PENTING: RETURN JSON
             return response()->json([
@@ -137,6 +143,10 @@ class UsulanPenelitianController extends Controller
             abort(403);
         }
 
+        if (!in_array($usulan->status, ['draft', 'revision_dosen'])) {
+            return back()->with('error', 'Usulan tidak dalam tahap pengeditan.');
+        }
+
         $validated = $request->validate([
             'judul' => 'sometimes|required|string|max:500',
             'tkt_saat_ini' => 'nullable|integer',
@@ -159,6 +169,7 @@ class UsulanPenelitianController extends Controller
             'rab_bahan' => 'nullable|array',
             'rab_pengumpulan_data' => 'nullable|array',
             'total_anggaran' => 'nullable|numeric',
+            'file_substansi' => 'nullable|file|mimes:pdf,doc,docx|max:10240',
         ]);
 
         try {
@@ -174,6 +185,16 @@ class UsulanPenelitianController extends Controller
                 // tapi untuk sekarang kita ikut existing schema string.
             }
 
+            // Handle File Substansi Upload
+            if ($request->hasFile('file_substansi')) {
+                if ($usulan->file_substansi) {
+                    Storage::disk('public')->delete($usulan->file_substansi);
+                }
+                $path = $request->file('file_substansi')->store('substansi', 'public');
+                $validated['file_substansi'] = $path;
+            }
+
+            $validated['tahun_pertama'] = 2026;
             $usulan->update($validated);
 
             return back()->with('success', 'Data berhasil diperbarui!');
@@ -187,7 +208,7 @@ class UsulanPenelitianController extends Controller
      */
     public function edit($id)
     {
-        $usulan = UsulanPenelitian::where('user_id', Auth::id())
+        $usulan = UsulanPenelitian::where('user_id', '=', Auth::id(), 'and')
             ->findOrFail($id);
 
         $masterData = $this->getMasterData();
@@ -238,10 +259,34 @@ class UsulanPenelitianController extends Controller
             return back()->with('error', 'Data usulan belum lengkap!');
         }
 
-        try {
-            $usulan->update(['status' => 'submitted']);
+        // Only allowed to submit if status is draft or revision_dosen
+        if (!in_array($usulan->status, ['draft', 'revision_dosen'])) {
+            return back()->with('error', 'Usulan tidak dalam tahap pengajuan/revisi.');
+        }
 
-            return redirect()->route('pengajuan.index')
+        try {
+            $oldStatus = $usulan->status;
+
+            // Logic: if draft -> submitted, if revision_dosen -> resubmitted_revision
+            $newStatus = ($oldStatus === 'revision_dosen') ? 'resubmitted_revision' : 'submitted';
+
+            $usulan->update([
+                'status' => $newStatus,
+                'submitted_at' => now(),
+            ]);
+
+            // Create History for submission
+            \App\Models\ReviewHistory::create([
+                'usulan_id' => $usulan->id,
+                'usulan_type' => get_class($usulan),
+                'reviewer_id' => Auth::id(),
+                'reviewer_type' => 'dosen',
+                'action' => $newStatus === 'resubmitted_revision' ? 'resubmit_revision' : 'submit',
+                'comments' => $newStatus === 'resubmitted_revision' ? 'Revisi berhasil diajukan oleh Dosen.' : 'Usulan diajukan oleh Dosen.',
+                'reviewed_at' => now(),
+            ]);
+
+            return redirect()->route('dosen.penelitian.index')
                 ->with('success', 'Usulan berhasil diajukan!');
         } catch (\Exception $e) {
             return back()->with('error', 'Gagal mengajukan usulan: ' . $e->getMessage());
@@ -263,7 +308,7 @@ class UsulanPenelitianController extends Controller
                 Storage::disk('public')->delete($usulan->file_substansi);
             }
 
-            $usulan->delete();
+            UsulanPenelitian::destroy($usulan->id);
 
             return back()->with('success', 'Usulan berhasil dihapus!');
         } catch (\Exception $e) {
@@ -346,14 +391,33 @@ class UsulanPenelitianController extends Controller
     public function showStep($usulanId, $step)
     {
         $step = (int) $step;
-        $usulan = UsulanPenelitian::with(['anggotaDosen', 'anggotaNonDosen', 'luaranList', 'rabItems'])->where('user_id', Auth::id())->findOrFail($usulanId);
+        $usulan = UsulanPenelitian::with([
+            'anggotaDosen',
+            'anggotaNonDosen',
+            'luaranList',
+            'rabItems',
+            'reviewHistories.reviewer'
+        ])->where('user_id', Auth::id())->findOrFail($usulanId);
 
         $masterData = $this->getMasterDataWithMakroRiset();
+
+        // Cari ID Makro Riset berdasarkan nama yang tersimpan
+        $makroRisetId = null;
+        if ($usulan->kelompok_makro_riset) {
+            $makro = DB::table('makro_riset')
+                ->where('nama', '=', $usulan->kelompok_makro_riset)
+                ->first();
+            $makroRisetId = $makro?->id;
+        }
 
         return Inertia::render("dosen/penelitian/Index", [
             'usulanId' => $usulan->id,
             'usulan' => $usulan,
             'currentStep' => $step,
+            'substansi' => [
+                'makro_riset_id' => $makroRisetId,
+                'file_substansi' => $usulan->file_substansi,
+            ],
             ...$masterData,
         ]);
     }
@@ -391,5 +455,44 @@ class UsulanPenelitianController extends Controller
             Log::error('getAnggotaNonDosen error', ['message' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
             return response()->json(['message' => 'Error: ' . $e->getMessage(), 'trace' => $e->getTraceAsString()], 500);
         }
+    }
+
+    /**
+     * Tampilkan usulan yang perlu perbaikan
+     */
+    public function perbaikan()
+    {
+        $user = Auth::user();
+
+        $usulanList = UsulanPenelitian::with([
+            'reviewHistories' => function ($query) {
+                $query->latest('reviewed_at')->limit(1);
+            }
+        ])
+            ->where('user_id', $user->id)
+            ->whereIn('status', ['under_revision_admin', 'revision_dosen'])
+            ->latest()
+            ->get()
+            ->map(fn($u, $i) => [
+                'no' => $i + 1,
+                'id' => $u->id,
+                'skema' => $u->kelompok_skema ?? 'N/A',
+                'judul' => $u->judul,
+                'tahun_pelaksanaan' => $u->tahun_pertama ?? date('Y'),
+                'makro_riset' => $u->kelompok_makro_riset ?? 'N/A',
+                'peran' => 'Ketua',
+                'status' => $u->status,
+                'catatan' => $u->reviewHistories->first()?->comments ?? null,
+                'reviewer_action' => $u->reviewHistories->first()?->action ?? null,
+            ]);
+
+        $masterData = $this->getMasterData();
+
+        return Inertia::render('dosen/penelitian/Index', [
+            'usulanList' => $usulanList,
+            'isPerbaikanView' => true,
+            'title' => 'Perbaikan Usulan Penelitian',
+            ...$masterData,
+        ]);
     }
 }

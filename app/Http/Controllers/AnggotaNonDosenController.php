@@ -9,6 +9,8 @@ class AnggotaNonDosenController extends Controller
 {
     public function store(Request $request, $usulanId)
     {
+        $usulan = \App\Models\UsulanPenelitian::findOrFail($usulanId);
+
         $validated = $request->validate([
             'jenis_anggota' => 'required|string',
             'no_identitas' => 'required|string',
@@ -55,7 +57,9 @@ class AnggotaNonDosenController extends Controller
 
     public function destroy($id)
     {
-        AnggotaNonDosen::findOrFail($id)->delete();
+        $anggota = AnggotaNonDosen::findOrFail($id);
+
+        $anggota->delete();
 
         return response()->json([
             'message' => 'Anggota non-dosen berhasil dihapus'

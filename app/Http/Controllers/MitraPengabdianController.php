@@ -17,15 +17,18 @@ class MitraPengabdianController extends Controller
         $request->validate([
             'usulan_id' => 'required|exists:usulan_pengabdian,id',
             'nama_mitra' => 'required|string',
+            'email' => 'required|email',
             'jenis_mitra' => 'required|string',
             'pendanaan_tahun_1' => 'nullable|numeric',
             'nama_provinsi' => 'required|string|max:255',
             'nama_kota' => 'required|string|max:255',
             'alamat_mitra' => 'nullable|string',
+            'pimpinan_mitra' => 'nullable|string',
             'penanggung_jawab' => 'nullable|string',
-            'kontak_mitra' => 'nullable|string', // Frontend sends kontak_mitra
+            'kontak_mitra' => 'nullable|string',
             'provinsi_id' => 'nullable',
             'kota_id' => 'nullable',
+            'kelompok_mitra' => 'nullable|string',
         ]);
 
         // Ensure user owns the usulan
@@ -33,14 +36,23 @@ class MitraPengabdianController extends Controller
             ->where('user_id', Auth::id())
             ->firstOrFail();
 
-        // Map frontend fields to DB columns if needed
+        if (!in_array($usulan->status, ['draft', 'revision_dosen'])) {
+            return response()->json(['message' => 'Usulan tidak dalam tahap pengeditan'], 403);
+        }
+
+        // Map frontend fields to DB columns
         $data = $request->except(['file_mitra']);
-        $data['no_telepon'] = $request->kontak_mitra; // Map kontak_mitra -> no_telepon
+        if (!$request->penanggung_jawab && $request->pimpinan_mitra) {
+            $data['penanggung_jawab'] = $request->pimpinan_mitra;
+        }
+        if (!$request->no_telepon && $request->kontak_mitra) {
+            $data['no_telepon'] = $request->kontak_mitra;
+        }
 
         // Handle File Upload
         if ($request->hasFile('file_mitra')) {
             $path = $request->file('file_mitra')->store('mitra_files', 'public');
-            $data['file_surat_kesediaan'] = $path; // Fixed column name
+            $data['file_surat_kesediaan'] = $path;
         }
 
         $mitra = MitraPengabdian::create($data);
@@ -62,6 +74,10 @@ class MitraPengabdianController extends Controller
         // Check ownership
         if ($mitra->usulan->user_id !== Auth::id()) {
             abort(403);
+        }
+
+        if (!in_array($mitra->usulan->status, ['draft', 'revision_dosen'])) {
+            return back()->with('error', 'Usulan tidak dalam tahap pengeditan');
         }
 
         $mitra->delete();

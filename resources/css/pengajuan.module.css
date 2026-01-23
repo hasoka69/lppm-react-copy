@@ -1477,3 +1477,5 @@
 .miniTitle { font-size: 14px; font-weight: 600; color: #34495e; margin-bottom: 8px; }
 .luaranReviewList { padding-left: 20px; margin: 0; }
 .luaranReviewItem { font-size: 13px; color: #555; margin-bottom: 6px; line-height: 1.4; }
+.warningBox { background-color: #fff9db; border: 1px solid #ffe066; border-left: 4px solid #fcc419; padding: 16px; border-radius: 8px; margin: 24px 0; font-size: 14px; color: #856404; }
+

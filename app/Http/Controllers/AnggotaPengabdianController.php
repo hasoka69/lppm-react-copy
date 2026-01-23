@@ -16,6 +16,10 @@ class AnggotaPengabdianController extends Controller
             abort(403);
         }
 
+        if (!in_array($usulan->status, ['draft', 'revision_dosen'])) {
+            return response()->json(['message' => 'Usulan tidak dalam tahap pengeditan'], 403);
+        }
+
         $request->validate([
             'nidn' => 'required',
             'nama' => 'required',
@@ -56,6 +60,10 @@ class AnggotaPengabdianController extends Controller
             abort(403);
         }
 
+        if (!in_array($anggota->usulan->status, ['draft', 'revision_dosen'])) {
+            return response()->json(['message' => 'Usulan tidak dalam tahap pengeditan'], 403);
+        }
+
         $validated = $request->validate([
             'peran' => 'sometimes|required|in:ketua,anggota',
             'tugas' => 'nullable|string',
@@ -74,6 +82,10 @@ class AnggotaPengabdianController extends Controller
         $anggota = AnggotaPengabdian::findOrFail($id);
         if ($anggota->usulan->user_id !== Auth::id()) {
             abort(403);
+        }
+
+        if (!in_array($anggota->usulan->status, ['draft', 'revision_dosen'])) {
+            return response()->json(['message' => 'Usulan tidak dalam tahap pengeditan'], 403);
         }
 
         $anggota->delete();

@@ -6,7 +6,7 @@ import { Toaster, toast } from 'sonner';
 
 interface Dosen {
     id: number;
-    name: string;
+    nama: string;
     nidn: string;
     prodi: string;
     fakultas: string;
@@ -14,8 +14,10 @@ interface Dosen {
 
 interface AnggotaDosen {
     id: number;
-    dosen_id: number;
-    dosen: Dosen;
+    nidn: string;
+    nama: string;
+    peran: string;
+    dosen?: Dosen;
 }
 
 interface AnggotaNonDosen {
@@ -81,6 +83,7 @@ interface Proposal {
     anggota_dosen: AnggotaDosen[];
     mitra?: Mitra[]; // Now an array
     rabItems?: RabItem[];
+    dana_disetujui?: number;
     luaranItems?: Luaran[];
 }
 
@@ -241,7 +244,7 @@ export default function ReviewPengabdian({ proposal, dosen, mitra = [], anggotaN
                                     K
                                 </div>
                                 <div>
-                                    <p className="text-sm font-bold text-gray-900">{dosen.name} <span className="text-xs font-normal text-gray-500">(Ketua)</span></p>
+                                    <p className="text-sm font-bold text-gray-900">{dosen.nama} <span className="text-xs font-normal text-gray-500">(Ketua)</span></p>
                                     <p className="text-xs text-gray-600">{dosen.prodi} - {dosen.fakultas}</p>
                                 </div>
                             </div>
@@ -256,8 +259,8 @@ export default function ReviewPengabdian({ proposal, dosen, mitra = [], anggotaN
                                                 A
                                             </div>
                                             <div>
-                                                <p className="text-sm font-bold text-gray-900">{anggota.dosen?.name || 'Nama Tidak Ditemukan'}</p>
-                                                <p className="text-xs text-gray-600">{anggota.dosen?.prodi || 'NIDN: ' + (anggota.dosen?.nidn || '-')}</p>
+                                                <p className="text-sm font-bold text-gray-900">{anggota.nama || anggota.dosen?.nama || 'Nama Tidak Ditemukan'}</p>
+                                                <p className="text-xs text-gray-600">{(anggota.dosen?.prodi) || 'NIDN: ' + (anggota.nidn || anggota.dosen?.nidn || '-')}</p>
                                             </div>
                                         </div>
                                     ))}
@@ -367,9 +370,16 @@ export default function ReviewPengabdian({ proposal, dosen, mitra = [], anggotaN
                                     <span className="bg-blue-100 text-blue-700 text-xs w-6 h-6 flex items-center justify-center rounded-full mr-2">3</span>
                                     Rencana Anggaran Biaya
                                 </h2>
-                                <span className="bg-green-100 text-green-800 text-sm font-bold px-3 py-1 rounded-full">
-                                    Total: {formatRupiah(totalAnggaran)}
-                                </span>
+                                <div className="flex flex-col items-end gap-1">
+                                    {(proposal?.dana_disetujui ?? 0) > 0 && (
+                                        <span className="bg-blue-100 text-blue-800 text-xs font-bold px-3 py-1 rounded-full">
+                                            Pagu Admin: {formatRupiah(Number(proposal?.dana_disetujui ?? 0))}
+                                        </span>
+                                    )}
+                                    <span className="bg-green-100 text-green-800 text-sm font-bold px-3 py-1 rounded-full">
+                                        Total Usulan: {formatRupiah(totalAnggaran)}
+                                    </span>
+                                </div>
                             </div>
 
                             {items.length > 0 ? (
@@ -503,15 +513,17 @@ export default function ReviewPengabdian({ proposal, dosen, mitra = [], anggotaN
                                 </div>
 
                                 <div className="space-y-3">
-                                    <button
-                                        type="button"
-                                        onClick={() => handleActionClick('approve')}
-                                        disabled={processing}
-                                        className="w-full flex justify-center items-center px-4 py-3 border border-transparent rounded-md shadow-sm text-sm font-bold text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 transition-all"
-                                    >
-                                        <CheckCircle className="w-5 h-5 mr-2" />
-                                        Setujui (Didanai)
-                                    </button>
+                                    {proposal.status === 'resubmitted_revision' && (
+                                        <button
+                                            type="button"
+                                            onClick={() => handleActionClick('approve')}
+                                            disabled={processing}
+                                            className="w-full flex justify-center items-center px-4 py-3 border border-transparent rounded-md shadow-sm text-sm font-bold text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 transition-all"
+                                        >
+                                            <CheckCircle className="w-5 h-5 mr-2" />
+                                            Setujui (Lulus Review)
+                                        </button>
+                                    )}
 
                                     <button
                                         type="button"

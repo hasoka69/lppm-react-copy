@@ -32,17 +32,26 @@ export type CurrentStep = 1 | 2 | 3 | 4;
 type ActiveView = 'daftar' | 'pengajuan';
 
 const PenelitianIndex = () => {
-    const { props } = usePage();
-    const usulanList: Usulan[] = (props.usulanList as Usulan[]) || [];
-    const latestDraft = (props.latestDraft as Partial<UsulanData>) || null;
+    const { props } = usePage<{
+        usulanList: Usulan[];
+        latestDraft?: Partial<UsulanData>;
+        currentStep?: string | number;
+        usulan?: Partial<UsulanData>;
+        editMode?: boolean;
+        isPerbaikanView?: boolean;
+        title?: string;
+    }>();
+    const usulanList = props.usulanList || [];
+    const latestDraft = props.latestDraft || null;
     const serverCurrentStep = props.currentStep ? Number(props.currentStep) : null;
-    const serverUsulan = (props.usulan as Partial<UsulanData>) || null;
+    const serverUsulan = props.usulan || null;
+    const { isPerbaikanView, title: pageTitle } = props;
 
     // ✅ Determine initial view: if step > 1 or usulan exists (edit mode), show 'pengajuan'
     const initialView: ActiveView = (serverCurrentStep && serverCurrentStep > 1) || props.editMode ? 'pengajuan' : 'daftar';
 
     const [activeView, setActiveView] = useState<ActiveView>(initialView);
-    const [activeTab, setActiveTab] = useState<'daftar' | 'pengajuan' | 'riwayat' | 'panduan'>('daftar');
+    const [activeTab, setActiveTab] = useState<'daftar' | 'pengajuan' | 'riwayat' | 'panduan' | 'perbaikan' | 'laporan-kemajuan' | 'catatan-harian' | 'laporan-akhir' | 'pengkinian-capaian'>(isPerbaikanView ? 'perbaikan' : 'daftar');
     const [currentStep, setCurrentStep] = useState<CurrentStep>((serverCurrentStep as CurrentStep) || 1);
     const [editingUsulan, setEditingUsulan] = useState<Partial<UsulanData> | null>(serverUsulan || latestDraft);
     const [currentUsulanId, setCurrentUsulanId] = useState<number | null>(serverUsulan?.id || (latestDraft?.id ?? null));
@@ -256,10 +265,25 @@ const PenelitianIndex = () => {
                             }
                         }}
                         usulanList={usulanList}
+                        title={pageTitle}
                     />
                 </>
             );
         }
+
+        if (activeTab === 'laporan-kemajuan') {
+            return <div className="p-8 text-center bg-white rounded-lg shadow">Halaman Laporan Kemajuan (Segera Hadir)</div>;
+        }
+        if (activeTab === 'catatan-harian') {
+            return <div className="p-8 text-center bg-white rounded-lg shadow">Halaman Catatan Harian (Segera Hadir)</div>;
+        }
+        if (activeTab === 'laporan-akhir') {
+            return <div className="p-8 text-center bg-white rounded-lg shadow">Halaman Laporan Akhir (Segera Hadir)</div>;
+        }
+        if (activeTab === 'pengkinian-capaian') {
+            return <div className="p-8 text-center bg-white rounded-lg shadow">Halaman Pengkinian Capaian Luaran (Segera Hadir)</div>;
+        }
+
         return (
             <>
                 <PageStatus
@@ -297,10 +321,35 @@ const PenelitianIndex = () => {
             <Header />
             <div className={styles.tabContainer}>
                 <div className={styles.tabs}>
-                    <button className={`${styles.tab} ${activeTab === 'daftar' ? styles.active : ''}`} onClick={() => { setActiveView('daftar'); setActiveTab('daftar'); }}>Daftar Usulan</button>
-                    <button className={`${styles.tab} ${activeTab === 'pengajuan' ? styles.active : ''}`} onClick={() => { setActiveView('pengajuan'); setActiveTab('pengajuan'); }}>Pengajuan Baru</button>
-                    <button className={`${styles.tab} ${activeTab === 'riwayat' ? styles.active : ''}`} onClick={() => setActiveTab('riwayat')}>Riwayat</button>
-                    <button className={`${styles.tab} ${activeTab === 'panduan' ? styles.active : ''}`} onClick={() => setActiveTab('panduan')}>Panduan</button>
+                    <button
+                        className={`${styles.tab} ${activeTab === 'daftar' ? styles.active : ''}`}
+                        onClick={() => {
+                            if (isPerbaikanView) {
+                                router.visit('/dosen/penelitian');
+                            } else {
+                                setActiveView('daftar');
+                                setActiveTab('daftar');
+                            }
+                        }}
+                    >
+                        Daftar Usulan
+                    </button>
+                    <button
+                        className={`${styles.tab} ${activeTab === 'perbaikan' ? styles.active : ''}`}
+                        onClick={() => {
+                            if (!isPerbaikanView) {
+                                router.visit('/dosen/penelitian/perbaikan');
+                            } else {
+                                setActiveTab('perbaikan');
+                            }
+                        }}
+                    >
+                        Perbaikan Usulan
+                    </button>
+                    <button className={`${styles.tab} ${activeTab === 'laporan-kemajuan' ? styles.active : ''}`} onClick={() => router.visit(route('dosen.penelitian.laporan-kemajuan.index'))}>Laporan Kemajuan</button>
+                    <button className={`${styles.tab} ${activeTab === 'catatan-harian' ? styles.active : ''}`} onClick={() => router.visit(route('dosen.penelitian.catatan-harian.index'))}>Catatan Harian</button>
+                    <button className={`${styles.tab} ${activeTab === 'laporan-akhir' ? styles.active : ''}`} onClick={() => router.visit(route('dosen.penelitian.laporan-akhir.index'))}>Laporan Akhir</button>
+                    <button className={`${styles.tab} ${activeTab === 'pengkinian-capaian' ? styles.active : ''}`} onClick={() => setActiveTab('pengkinian-capaian')}>Pengkinian Capaian Luaran</button>
                 </div>
             </div>
             <div className={styles.contentArea}>{renderContent()}</div>

@@ -161,8 +161,15 @@ const PageRAB: React.FC<PageRABProps> = ({ onKembali, onSelanjutnya, usulanId: p
         <>
             <div className={styles.formSection}>
                 <h2 className={styles.sectionTitle}>Rencana Anggaran Belanja (Penelitian)</h2>
-                <div className={styles.infoBox}>
-                    Total RAB: <strong>Rp {totalRAB.toLocaleString('id-ID')}</strong>
+                <div className="flex flex-col gap-2">
+                    {usulan?.dana_disetujui > 0 && (
+                        <div className={`${styles.infoBox} !bg-blue-50 !border-blue-200 !text-blue-800`}>
+                            Anggaran Disetujui Admin: <strong>Rp {Number(usulan.dana_disetujui).toLocaleString('id-ID')}</strong>
+                        </div>
+                    )}
+                    <div className={styles.infoBox}>
+                        Total RAB Saat Ini: <strong>Rp {totalRAB.toLocaleString('id-ID')}</strong>
+                    </div>
                 </div>
             </div>
 

@@ -8,10 +8,11 @@ interface ReviewProps {
     usulan: any; // Type properly if possible
     pengusul: any;
     anggota: any[];
+    anggotaNonDosen: any[];
     rabTotal: number;
 }
 
-export default function KaprodiUsulanReview({ usulan, pengusul, anggota, rabTotal }: ReviewProps) {
+export default function KaprodiUsulanReview({ usulan, pengusul, anggota, anggotaNonDosen, rabTotal }: ReviewProps) {
     const { data, setData, post, processing, errors } = useForm({
         decision: '',
         notes: '',
@@ -106,6 +107,21 @@ export default function KaprodiUsulanReview({ usulan, pengusul, anggota, rabTota
                                                 </li>
                                             ))}
                                         </ul>
+                                    )}
+                                </div>
+                                <div className="mt-4 border-t pt-4">
+                                    <h3 className="text-sm font-semibold text-gray-700 mb-2">Anggota Mahasiswa / Non-Dosen</h3>
+                                    {anggotaNonDosen && anggotaNonDosen.length > 0 ? (
+                                        <ul className="space-y-2">
+                                            {anggotaNonDosen.map((mhs: any) => (
+                                                <li key={mhs.id} className="bg-gray-50 p-3 rounded border border-gray-200 text-sm">
+                                                    <span className="font-medium">{mhs.nama}</span> ({mhs.no_identitas})
+                                                    <span className="block text-gray-500 text-xs capitalize">{mhs.jenis_anggota} - {mhs.peran}</span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    ) : (
+                                        <p className="text-sm text-gray-500 italic">Tidak ada anggota mahasiswa.</p>
                                     )}
                                 </div>
                             </div>

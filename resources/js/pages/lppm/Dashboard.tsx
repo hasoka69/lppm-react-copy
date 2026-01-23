@@ -103,7 +103,7 @@ export default function DashboardAdmin() {
                     {/* Quick Action Cards - Diperbarui sesuai gambar */}
                     <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
                         {/* Kartu Kelola Usulan (Penelitian) - LOGO DIPERBARUI */}
-                        <a href="#" className="flex items-center bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition duration-150 group">
+                        <a href={route('lppm.penelitian.index')} className="flex items-center bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition duration-150 group">
                             {/* Perbaikan: className yang benar dan warna latar biru tua */}
                             <div className={`p-4 rounded-xl bg-blue-600 text-white mr-4 flex-shrink-0`}>
                                 {/* Ikon Teks / Dokumen */}
@@ -116,7 +116,7 @@ export default function DashboardAdmin() {
                         </a>
 
                         {/* Kartu Kelola Usulan (Pengabdian) - Disesuaikan dengan layout baru */}
-                        <a href="#" className="flex items-center bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition duration-150 group">
+                        <a href={route('lppm.pengabdian.index')} className="flex items-center bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition duration-150 group">
                             <div className={`p-4 rounded-xl bg-green-600 text-white mr-4 flex-shrink-0`}>
                                 {/* Ikon Tangan / Sosial */}
                                 <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" /></svg>

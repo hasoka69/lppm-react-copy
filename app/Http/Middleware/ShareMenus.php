@@ -15,10 +15,11 @@ class ShareMenus
         $user = $request->user();
 
         Inertia::share('menus', function () use ($user) {
-            if (!$user) return [];
+            if (!$user)
+                return [];
 
             // Ambil semua menu secara flat
-            $allMenus = Menu::orderBy('order')->get();
+            $allMenus = Menu::orderBy('order', 'asc')->get();
 
             // Index berdasarkan ID
             $indexed = $allMenus->keyBy('id');
@@ -29,7 +30,7 @@ class ShareMenus
                     ->filter(
                         fn($menu) =>
                         $menu->parent_id === $parentId &&
-                            (!$menu->permission_name || $user->can($menu->permission_name))
+                        (!$menu->permission_name || $user->can($menu->permission_name))
                     )
                     ->map(function ($menu) use (&$buildTree) {
                         $menu->children = $buildTree($menu->id)->values();
@@ -43,6 +44,7 @@ class ShareMenus
             };
 
             $menus = $buildTree();
+
 
             return $menus;
         });

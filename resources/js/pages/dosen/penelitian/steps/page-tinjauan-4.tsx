@@ -19,6 +19,9 @@ const PageTinjauan: React.FC<PageTinjauanProps> = ({
     const usulan = props.usulan;
     const usulanId = propUsulanId ?? usulan?.id;
 
+    const [isChecked, setIsChecked] = React.useState(false);
+    const [isSubmitting, setIsSubmitting] = React.useState(false);
+
     // Helper untuk format rupiah
     const formatRupiah = (number: number) => {
         return new Intl.NumberFormat('id-ID', {
@@ -38,15 +41,23 @@ const PageTinjauan: React.FC<PageTinjauanProps> = ({
             return;
         }
 
+        if (!['draft', 'revision_dosen'].includes(usulan.status)) {
+            alert('Status usulan tidak memungkinkan untuk pengiriman (Sudah diajukan atau diproses).');
+            return;
+        }
+
         if (confirm('Apakah Anda yakin ingin mengirim usulan ini? Data tidak dapat diubah setelah dikirim.')) {
+            setIsSubmitting(true);
             router.post(`/dosen/penelitian/${usulanId}/submit`, {}, {
                 onSuccess: () => {
                     alert('Usulan berhasil dikirim!');
                     onKonfirmasi?.();
+                    setIsSubmitting(false);
                 },
                 onError: (errors) => {
                     console.error(errors);
                     alert('Gagal mengirim usulan. Silakan cek kembali kelengkapan data.');
+                    setIsSubmitting(false);
                 }
             });
         }
@@ -341,6 +352,61 @@ const PageTinjauan: React.FC<PageTinjauanProps> = ({
                 </div>
             </div>
 
+            {/* Riwayat Usulan & Catatan */}
+            {(usulan.review_histories || usulan.reviewHistories) && (usulan.review_histories || usulan.reviewHistories).length > 0 && (
+                <div className={styles.formSection}>
+                    <h2 className={styles.sectionTitle}>Riwayat Usulan & Catatan</h2>
+                    <div className="space-y-4 pt-2">
+                        {(usulan.review_histories || usulan.reviewHistories).map((h: any, i: number) => (
+                            <div key={i} className="flex gap-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                                <div className="min-w-[120px]">
+                                    <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">
+                                        {new Date(h.reviewed_at || h.created_at).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                    </div>
+                                    <div className="text-[10px] font-bold text-gray-500 tabular-nums">
+                                        {new Date(h.reviewed_at || h.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
+                                    </div>
+                                </div>
+                                <div className="flex-1">
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <span className="text-xs font-black text-gray-900 uppercase tracking-tight">
+                                            {h.action.toUpperCase().replace(/_/g, ' ')}
+                                        </span>
+                                        <span className="text-[9px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-black border border-blue-200 uppercase tracking-tighter">
+                                            {h.reviewer_type?.replace(/_/g, ' ')}
+                                        </span>
+                                    </div>
+                                    {h.comments && (
+                                        <div className="text-sm text-gray-600 italic bg-white p-3 rounded border border-gray-100 shadow-sm mt-2 border-l-4 border-l-blue-400">
+                                            "{h.comments}"
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {/* Pernyataan Konfirmasi */}
+            {['draft', 'revision_dosen'].includes(usulan.status) && (
+                <div className={styles.warningBox}>
+                    <h4 style={{ margin: '0 0 10px 0', color: '#856404', fontWeight: 700 }}>Pernyataan Konfirmasi</h4>
+                    <label className="flex items-start gap-3 cursor-pointer">
+                        <input
+                            type="checkbox"
+                            checked={isChecked}
+                            onChange={(e) => setIsChecked(e.target.checked)}
+                            className="mt-1 w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                        />
+                        <span className="text-sm leading-relaxed text-gray-700 font-medium">
+                            Dengan ini saya menyatakan bahwa data yang saya isikan adalah benar dan dapat dipertanggungjawabkan.
+                            Saya bersedia mengikuti segala ketentuan yang berlaku dalam pelaksanaan Penelitian ini.
+                        </span>
+                    </label>
+                </div>
+            )}
+
             {/* Action Buttons */}
             <div className={styles.actionContainer}>
                 <div className={styles.actionLeft}>
@@ -355,11 +421,21 @@ const PageTinjauan: React.FC<PageTinjauanProps> = ({
                     <button className={styles.printButton} onClick={handlePrintPDF}>
                         Print PDF
                     </button>
-                    <button className={styles.primaryButton} onClick={handleSubmit}>
-                        Submit Usulan &gt;
+                    <button
+                        className={styles.primaryButton}
+                        onClick={handleSubmit}
+                        disabled={isSubmitting || !['draft', 'revision_dosen'].includes(usulan.status) || (['draft', 'revision_dosen'].includes(usulan.status) && !isChecked)}
+                        style={{
+                            backgroundColor: (['draft', 'revision_dosen'].includes(usulan.status) && isChecked) ? '#16a34a' : '#9ca3af',
+                            cursor: (['draft', 'revision_dosen'].includes(usulan.status) && isChecked) ? 'pointer' : 'not-allowed',
+                            opacity: (['draft', 'revision_dosen'].includes(usulan.status) && !isChecked) ? 0.7 : 1
+                        }}
+                    >
+                        {isSubmitting ? 'Mengirim...' : (['draft', 'revision_dosen'].includes(usulan.status) ? 'Kirim Usulan' : 'Sudah Dikirim')}
                     </button>
                 </div>
             </div>
+
         </>
     );
 };

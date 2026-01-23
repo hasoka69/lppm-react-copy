@@ -33,7 +33,9 @@ class UsulanPengabdian extends Model
         'file_substansi',
         'total_anggaran',
         'status',
-        'revision_count'
+        'revision_count',
+        'dana_disetujui',
+        'reviewer_id'
     ];
 
     protected $casts = [
@@ -118,5 +120,13 @@ class UsulanPengabdian extends Model
     public function reviewHistories()
     {
         return $this->morphMany(ReviewHistory::class, 'usulan');
+    }
+
+    /**
+     * Relationship to Reviewer (User)
+     */
+    public function reviewer()
+    {
+        return $this->belongsTo(User::class, 'reviewer_id');
     }
 }

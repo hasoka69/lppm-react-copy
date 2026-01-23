@@ -1,0 +1,565 @@
+import React, { useState } from 'react';
+import { Link, Head, router } from '@inertiajs/react';
+declare var route: any;
+import Header from '@/components/Header';
+import Footer from '@/components/footer';
+import {
+    Home,
+    ChevronRight,
+    FileText,
+    User,
+    Info,
+    DollarSign,
+    Target,
+    Building,
+    Users,
+    CheckCircle,
+    MapPin,
+    Layers,
+    Clock,
+    ChevronLeft
+} from 'lucide-react';
+
+interface ProposalDetailProps {
+    usulan: any;
+    reviewers: any[];
+}
+
+function AdminActionCard({ title, icon, description, children }: { title: string, icon: any, description: string, children: React.ReactNode }) {
+    return (
+        <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-5 overflow-hidden relative">
+            <div className="absolute top-0 right-0 p-3 opacity-10">{icon}</div>
+            <h3 className="text-sm font-bold text-gray-800 flex items-center mb-1">
+                <span className="mr-2">{icon}</span> {title}
+            </h3>
+            <p className="text-xs text-gray-500 mb-4">{description}</p>
+            {children}
+        </div>
+    );
+}
+
+function ExpandableText({ text, limit = 150 }: { text: string, limit?: number }) {
+    const [isExpanded, setIsExpanded] = useState(false);
+
+    if (!text) return <span>-</span>;
+    if (text.length <= limit) return <span>{text}</span>;
+
+    return (
+        <span>
+            {isExpanded ? text : `${text.substring(0, limit)}... `}
+            <button
+                onClick={() => setIsExpanded(!isExpanded)}
+                className="text-blue-600 hover:text-blue-800 font-semibold text-xs ml-1 focus:outline-none"
+            >
+                {isExpanded ? 'Lihat Sedikit' : 'Baca Selengkapnya'}
+            </button>
+        </span>
+    );
+}
+
+export default function AdminPengabdianDetail({ usulan, reviewers }: ProposalDetailProps) {
+    const formatRupiah = (number: number) => {
+        return new Intl.NumberFormat('id-ID', {
+            style: 'currency',
+            currency: 'IDR',
+            minimumFractionDigits: 0
+        }).format(number);
+    };
+
+    return (
+        <div className="min-h-screen bg-gray-50 font-sans">
+            <Head title={`Admin Detail Pengabdian - ${usulan.judul}`} />
+            <Header />
+
+            <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+                {/* Breadcrumbs & Back */}
+                <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
+                    <div className="flex items-center text-sm text-gray-500">
+                        <Link href="/lppm/dashboard" className="hover:text-blue-600 flex items-center">
+                            <Home className="w-4 h-4 mr-1" /> Dashboard
+                        </Link>
+                        <ChevronRight className="w-4 h-4 mx-2" />
+                        <Link href="/lppm/pengabdian" className="hover:text-blue-600">Daftar Pengabdian</Link>
+                        <ChevronRight className="w-4 h-4 mx-2" />
+                        <span className="font-semibold text-gray-700 truncate max-w-xs">{usulan.judul}</span>
+                    </div>
+                    <Link href="/lppm/pengabdian" className="inline-flex items-center text-sm text-blue-600 font-semibold hover:bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100 transition-colors">
+                        <ChevronLeft className="w-4 h-4 mr-1" /> Kembali ke List
+                    </Link>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    {/* LEFT COLUMN: PRIMARY CONTENT */}
+                    <div className="lg:col-span-2 space-y-8">
+
+                        {/* 1. IDENTITAS USULAN */}
+                        <section className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                            <h2 className="text-lg font-bold text-gray-900 mb-4 border-b border-gray-100 pb-2 flex items-center">
+                                <span className="bg-blue-100 text-blue-700 text-xs w-6 h-6 flex items-center justify-center rounded-full mr-2 font-bold">1</span>
+                                Identitas Usulan
+                            </h2>
+                            <h1 className="text-xl font-bold text-gray-800 leading-relaxed mb-6">
+                                {usulan.judul || 'Judul Tidak Ditemukan'}
+                            </h1>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-8 text-sm">
+                                <div className="bg-blue-50/50 p-3 rounded-lg border border-blue-100 flex flex-col gap-4 md:col-span-2">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <span className="block text-gray-500 text-xs uppercase tracking-wide mb-1 font-semibold">2. TKT Saat Ini</span>
+                                            <span className="font-bold text-blue-900">{usulan.tkt_saat_ini || '-'}</span>
+                                        </div>
+                                        <div>
+                                            <span className="block text-gray-500 text-xs uppercase tracking-wide mb-1 font-semibold text-blue-700">3. Target Akhir TKT</span>
+                                            <span className="font-bold text-blue-900">{usulan.target_akhir_tkt || '-'}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <span className="block text-gray-500 text-xs uppercase tracking-wide mb-1 font-medium">4. Kelompok Skema</span>
+                                    <span className="font-semibold text-gray-800">{usulan.kelompok_skema || '-'}</span>
+                                </div>
+                                <div>
+                                    <span className="block text-gray-500 text-xs uppercase tracking-wide mb-1 font-medium">5. Ruang Lingkup</span>
+                                    <span className="font-semibold text-gray-800">{usulan.ruang_lingkup || '-'}</span>
+                                </div>
+
+                                <div>
+                                    <span className="block text-gray-500 text-xs uppercase tracking-wide mb-1 font-medium italic underline">6. Jenis Bidang Fokus</span>
+                                    <span className="font-semibold text-gray-800 uppercase tracking-tight">{usulan.jenis_bidang_fokus || '-'}</span>
+                                </div>
+                                <div>
+                                    <span className="block text-gray-500 text-xs uppercase tracking-wide mb-1 font-medium">7. Bidang Fokus Pengabdian</span>
+                                    <span className="font-semibold text-gray-800 flex items-center">
+                                        <Target className="w-4 h-4 mr-2 text-blue-500" />
+                                        {usulan.bidang_fokus || '-'}
+                                    </span>
+                                </div>
+
+                                <div className="md:col-span-2 bg-purple-50/30 p-4 rounded-xl border border-purple-100">
+                                    <h4 className="text-xs font-bold text-purple-800 uppercase tracking-widest mb-3 flex items-center">
+                                        <Layers className="w-3 h-3 mr-2" /> Rumpun Ilmu
+                                    </h4>
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <div>
+                                            <span className="block text-gray-500 text-[10px] uppercase tracking-wide mb-1">8. Level 1</span>
+                                            <span className="font-medium text-gray-800 text-xs leading-tight block">{usulan.rumpun_ilmu_level1_label || '-'}</span>
+                                        </div>
+                                        <div>
+                                            <span className="block text-gray-500 text-[10px] uppercase tracking-wide mb-1">9. Level 2</span>
+                                            <span className="font-medium text-gray-800 text-xs leading-tight block">{usulan.rumpun_ilmu_level2_label || '-'}</span>
+                                        </div>
+                                        <div>
+                                            <span className="block text-gray-500 text-[10px] uppercase tracking-wide mb-1">10. Level 3</span>
+                                            <span className="font-medium text-gray-800 text-xs leading-tight block">{usulan.rumpun_ilmu_level3_label || '-'}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
+                                    <div className="flex items-center gap-6">
+                                        <div>
+                                            <span className="block text-gray-500 text-xs uppercase tracking-wide mb-1 font-medium">11. Tahun Pengajuan</span>
+                                            <span className="font-bold text-gray-900">{usulan.tahun_pengusulan || usulan.tahun_pertama || '-'}</span>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-6">
+                                        <div className="border-l border-gray-200 pl-6">
+                                            <span className="block text-gray-500 text-xs uppercase tracking-wide mb-1 font-medium">12. Lama Kegiatan</span>
+                                            <span className="font-bold text-gray-900">{usulan.lama_kegiatan || 0} Tahun</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        {/* 2. ANGGOTA TIM */}
+                        <section className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                            <h2 className="text-lg font-bold text-gray-900 mb-4 border-b border-gray-100 pb-2 flex items-center">
+                                <span className="bg-blue-100 text-blue-700 text-xs w-6 h-6 flex items-center justify-center rounded-full mr-2 font-bold">2</span>
+                                Anggota Tim
+                            </h2>
+                            {/* Ketua */}
+                            <div className="flex items-center p-3 bg-indigo-50 rounded-lg border border-indigo-100 mb-4 shadow-sm">
+                                <div className="w-10 h-10 bg-indigo-200 rounded-full flex items-center justify-center text-indigo-700 font-bold mr-3">
+                                    <User className="w-5 h-5" />
+                                </div>
+                                <div>
+                                    <p className="text-sm font-bold text-gray-900 uppercase tracking-tight">{usulan.ketua?.name} <span className="text-[10px] font-black text-indigo-500 ml-1 border border-indigo-300 px-1 rounded">KETUA</span></p>
+                                    <p className="text-xs text-indigo-600 font-medium">{usulan.ketua?.dosen?.prodi || '-'}</p>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-3 border-l-2 border-gray-200 pl-2">Anggota Dosen</h3>
+                                    {usulan.anggota_dosen && usulan.anggota_dosen.length > 0 ? (
+                                        <div className="space-y-2">
+                                            {usulan.anggota_dosen.map((anggota: any, idx: number) => (
+                                                <div key={idx} className="flex items-center p-2.5 bg-gray-50 rounded-lg border border-gray-200 text-xs">
+                                                    <div className="w-6 h-6 bg-white border border-gray-200 rounded flex items-center justify-center mr-3 font-bold text-gray-400">
+                                                        {idx + 1}
+                                                    </div>
+                                                    <div>
+                                                        <p className="font-bold text-gray-900 line-clamp-1">{anggota.nama || anggota.dosen?.nama}</p>
+                                                        <p className="text-[10px] text-gray-500 font-medium">{anggota.dosen?.prodi || 'Anggota'}</p>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <p className="text-[10px] text-gray-400 italic">Tidak ada anggota dosen tambahan.</p>
+                                    )}
+                                </div>
+                                <div>
+                                    <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-3 border-l-2 border-gray-200 pl-2">Mahasiswa / Non-Dosen</h3>
+                                    {usulan.anggota_non_dosen && usulan.anggota_non_dosen.length > 0 ? (
+                                        <div className="space-y-2">
+                                            {usulan.anggota_non_dosen.map((mhs: any, idx: number) => (
+                                                <div key={idx} className="p-2.5 bg-gray-50 rounded-lg border border-gray-200 text-xs">
+                                                    <div className="flex justify-between items-start mb-0.5">
+                                                        <p className="font-bold text-gray-900">{mhs.nama}</p>
+                                                        <span className="text-[9px] bg-white border border-gray-300 px-1 rounded uppercase font-bold text-gray-500">{mhs.jenis_anggota}</span>
+                                                    </div>
+                                                    <p className="text-[10px] text-gray-500">{mhs.no_identitas}</p>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <p className="text-[10px] text-gray-400 italic">Tidak ada anggota mahasiswa (Step 3).</p>
+                                    )}
+                                </div>
+                            </div>
+                        </section>
+
+                        {/* 3. MITRA SASARAN */}
+                        <section className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                            <h2 className="text-lg font-bold text-gray-900 mb-4 border-b border-gray-100 pb-2 flex items-center">
+                                <span className="bg-blue-100 text-blue-700 text-xs w-6 h-6 flex items-center justify-center rounded-full mr-2 font-bold">3</span>
+                                Mitra Sasaran & Lokasi
+                            </h2>
+                            {usulan.mitra && usulan.mitra.length > 0 ? (
+                                <div className="space-y-4">
+                                    {usulan.mitra.map((m: any, idx: number) => (
+                                        <div key={idx} className="bg-gray-50 p-4 rounded-xl border border-gray-200 group hover:border-blue-200 transition-all">
+                                            <div className="flex justify-between items-start mb-3">
+                                                <h3 className="font-black text-gray-900 tracking-tight flex items-center text-sm uppercase">
+                                                    <Building className="w-4 h-4 mr-2 text-gray-400" /> {m.nama_mitra}
+                                                </h3>
+                                                <span className="text-[10px] bg-blue-100 text-blue-800 px-2 py-0.5 rounded font-black">{m.jenis_mitra}</span>
+                                            </div>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                                                <div className="flex items-start">
+                                                    <MapPin className="w-3.5 h-3.5 text-gray-400 mr-2 mt-0.5" />
+                                                    <div>
+                                                        <p className="font-bold text-gray-700">{m.nama_kota}, {m.nama_provinsi}</p>
+                                                        <p className="text-gray-500 line-clamp-1">{m.alamat_mitra}</p>
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-start">
+                                                    <User className="w-3.5 h-3.5 text-gray-400 mr-2 mt-0.5" />
+                                                    <div>
+                                                        <p className="font-bold text-gray-700">{m.penanggung_jawab || m.pimpinan_mitra}</p>
+                                                        <p className="text-gray-500">{m.no_telepon || m.email}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            {m.file_surat_kesediaan && (
+                                                <div className="mt-3 pt-3 border-t border-gray-200 flex justify-end">
+                                                    <a href={`/storage/${m.file_surat_kesediaan}`} target="_blank" className="text-[10px] font-black text-blue-600 flex items-center hover:underline">
+                                                        <FileText className="w-3 h-3 mr-1" /> LIHAT SURAT KESEDIAAN MITRA
+                                                    </a>
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="text-center py-6 bg-red-50 rounded-xl border border-red-100 flex flex-col items-center">
+                                    <MapPin className="w-10 h-10 text-red-200 mb-2" />
+                                    <p className="text-xs font-bold text-red-700 uppercase">Data Mitra Belum Ada</p>
+                                </div>
+                            )}
+                        </section>
+
+                        {/* 4. SUBSTANSI & LUARAN */}
+                        <section className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                            <h2 className="text-lg font-bold text-gray-900 mb-4 border-b border-gray-100 pb-2 flex items-center">
+                                <span className="bg-blue-100 text-blue-700 text-xs w-6 h-6 flex items-center justify-center rounded-full mr-2 font-bold">4</span>
+                                Substansi & Target
+                            </h2>
+
+                            <h3 className="text-sm font-bold text-gray-800 mb-3 flex items-center">
+                                <FileText className="w-4 h-4 mr-2 text-gray-500" /> Dokumen Usulan
+                            </h3>
+                            {usulan.file_substansi ? (
+                                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200 mb-6 border-l-4 border-l-red-500">
+                                    <div className="flex items-center">
+                                        <div className="bg-red-50 p-2 rounded text-red-600 mr-3">
+                                            <FileText className="w-6 h-6" />
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-bold text-gray-900 uppercase tracking-tight">File Substansi Pengabdian</p>
+                                            <p className="text-[10px] text-gray-400 font-black">PDF • KLIK LIHAT UNTUK MEMBACA</p>
+                                        </div>
+                                    </div>
+                                    <a href={`/storage/${usulan.file_substansi}`} target="_blank" className="bg-white border text-xs font-bold px-4 py-2 rounded-md shadow-sm hover:shadow-md transition-all">
+                                        LIHAT FILE
+                                    </a>
+                                </div>
+                            ) : (
+                                <div className="p-4 bg-yellow-50 text-yellow-800 rounded-lg text-sm flex items-center mb-6">
+                                    <Info className="w-5 h-5 mr-2" />
+                                    File substansi belum diunggah oleh pengusul.
+                                </div>
+                            )}
+
+                            <h3 className="text-sm font-bold text-gray-800 mb-3 flex items-center uppercase tracking-widest">
+                                <Target className="w-4 h-4 mr-2 text-gray-500" /> Rincian Luaran (Step 4)
+                            </h3>
+                            {(usulan.luaran_items || usulan.luaranItems) && (usulan.luaran_items || usulan.luaranItems).length > 0 ? (
+                                <div className="overflow-x-auto border border-gray-100 rounded-lg shadow-inner">
+                                    <table className="min-w-full divide-y divide-gray-200 text-xs">
+                                        <thead className="bg-gray-50">
+                                            <tr>
+                                                <th className="px-3 py-2 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Tahun</th>
+                                                <th className="px-3 py-2 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest border-l border-gray-100">Kategori</th>
+                                                <th className="px-3 py-2 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest border-l border-gray-100">Rincian Deskripsi</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="bg-white divide-y divide-gray-100">
+                                            {(usulan.luaran_items || usulan.luaranItems).map((item: any, idx: number) => (
+                                                <tr key={idx} className="hover:bg-gray-50 transition-colors group">
+                                                    <td className="px-3 py-2.5 whitespace-nowrap font-bold text-gray-900 border-r border-gray-50 bg-gray-50/20">TAHUN {item.tahun}</td>
+                                                    <td className="px-3 py-2.5 font-bold text-blue-700 uppercase tracking-tighter border-l border-gray-50">{item.kategori}</td>
+                                                    <td className="px-3 py-2.5 text-gray-600 text-[11px] italic leading-relaxed border-l border-gray-50">{item.deskripsi}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            ) : (
+                                <div className="text-center py-6 bg-gray-50 rounded-xl border border-gray-200">
+                                    <Target className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+                                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Data Luaran Belum Ada</p>
+                                </div>
+                            )}
+                        </section>
+
+                        {/* 5. RAB SUMMARY */}
+                        <section className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                            <h2 className="text-lg font-bold text-gray-900 mb-4 border-b border-gray-100 pb-2 flex items-center">
+                                <span className="bg-blue-100 text-blue-700 text-xs w-6 h-6 flex items-center justify-center rounded-full mr-2 font-bold">5</span>
+                                Rencana Anggaran (RAB)
+                            </h2>
+                            {(usulan.rab_items || usulan.rabItems) && (usulan.rab_items || usulan.rabItems).length > 0 ? (
+                                <div className="overflow-x-auto border border-gray-100 rounded-lg shadow-inner">
+                                    <table className="min-w-full divide-y divide-gray-200 text-xs">
+                                        <thead className="bg-gray-50">
+                                            <tr>
+                                                <th className="px-3 py-2 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Item / Kategori</th>
+                                                <th className="px-3 py-2 text-right text-[10px] font-black text-gray-400 uppercase tracking-widest border-l border-gray-100">Volume</th>
+                                                <th className="px-3 py-2 text-right text-[10px] font-black text-gray-400 uppercase tracking-widest border-l border-gray-100">Satuan</th>
+                                                <th className="px-3 py-2 text-right text-[10px] font-black text-gray-400 uppercase tracking-widest border-l border-gray-100">Harga Satuan</th>
+                                                <th className="px-3 py-2 text-right text-[10px] font-black text-gray-400 uppercase tracking-widest border-l border-gray-100">Total</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="bg-white divide-y divide-gray-100">
+                                            {(usulan.rab_items || usulan.rabItems).map((item: any, idx: number) => (
+                                                <tr key={idx} className="hover:bg-gray-50 group transition-colors">
+                                                    <td className="px-3 py-2.5">
+                                                        <p className="font-bold text-gray-900 uppercase tracking-tighter">{item.item}</p>
+                                                        <p className="text-[10px] text-blue-600 font-bold uppercase">{item.kategori}</p>
+                                                    </td>
+                                                    <td className="px-3 py-2.5 text-right font-medium text-gray-600 border-l border-gray-50">{item.volume}</td>
+                                                    <td className="px-3 py-2.5 text-right font-medium text-gray-600 border-l border-gray-50">{item.satuan}</td>
+                                                    <td className="px-3 py-2.5 text-right font-medium text-gray-600 border-l border-gray-50">{formatRupiah(item.harga_satuan)}</td>
+                                                    <td className="px-3 py-2.5 text-right font-black text-gray-900 border-l border-gray-50 bg-gray-50/30 group-hover:bg-blue-50/50">{formatRupiah(item.total)}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            ) : (
+                                <div className="text-center py-8 bg-gray-50 rounded-xl border-2 border-dashed border-gray-200">
+                                    <DollarSign className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+                                    <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Data RAB Tidak Ditemukan</p>
+                                </div>
+                            )}
+                        </section>
+
+                        {/* 6. HISTORY */}
+                        <section className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                            <h2 className="text-lg font-bold text-gray-900 mb-6 border-b border-gray-100 pb-2 flex items-center">
+                                <span className="bg-blue-100 text-blue-700 text-xs w-6 h-6 flex items-center justify-center rounded-full mr-2 font-bold">6</span>
+                                Riwayat Transaksi & Keputusan
+                            </h2>
+                            <div className="space-y-6">
+                                {usulan.review_histories && usulan.review_histories.length > 0 ? (
+                                    usulan.review_histories.map((h: any, i: number) => (
+                                        <div key={i} className="flex space-x-4">
+                                            <div className="flex flex-col items-center">
+                                                <div className={`w-8 h-8 rounded-full flex items-center justify-center shadow-sm ${h.action.includes('reject') ? 'bg-red-50 text-red-600' :
+                                                    h.action.includes('approve') || h.action.includes('didanai') ? 'bg-green-50 text-green-600' :
+                                                        'bg-blue-50 text-blue-600'
+                                                    }`}>
+                                                    <Clock className="w-4 h-4" />
+                                                </div>
+                                                {i < usulan.review_histories.length - 1 && <div className="w-px h-full bg-gray-100 my-1"></div>}
+                                            </div>
+                                            <div className="flex-1 pb-6">
+                                                <div className="flex justify-between items-start mb-2">
+                                                    <div>
+                                                        <h4 className="text-sm font-black text-gray-900 uppercase tracking-tighter">
+                                                            {h.action.replace(/_/g, ' ')}
+                                                        </h4>
+                                                        <span className="text-[9px] bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full font-black border border-blue-200 uppercase tracking-widest">{h.reviewer_type?.replace(/_/g, ' ')}</span>
+                                                        {h.reviewer && <span className="text-[11px] text-gray-400 ml-2 font-medium">({h.reviewer.name})</span>}
+                                                    </div>
+                                                    <span className="text-[10px] text-gray-400 font-black tabular-nums">
+                                                        {new Date(h.reviewed_at || h.created_at).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                                    </span>
+                                                </div>
+                                                {h.comments && (
+                                                    <div className="text-xs text-gray-600 bg-gray-50 p-4 rounded-xl border border-gray-200 mt-2 shadow-inner leading-relaxed italic border-l-4 border-l-blue-200">
+                                                        <ExpandableText text={h.comments} limit={250} />
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className="text-center py-10 opacity-30">
+                                        <Clock className="w-12 h-12 mx-auto mb-2" />
+                                        <p className="text-sm font-bold uppercase tracking-widest">Aktivitas Kosong</p>
+                                    </div>
+                                )}
+                            </div>
+                        </section>
+                    </div>
+
+                    {/* RIGHT COLUMN: ACTIONS */}
+                    <div className="lg:col-span-1">
+                        <div className="space-y-6 sticky top-24">
+
+                            {/* STATUS OVERLAY */}
+                            <div className="bg-white rounded-xl shadow-lg border-2 border-gray-800 overflow-hidden">
+                                <div className="bg-gray-900 px-6 py-4">
+                                    <h3 className="text-white text-[10px] font-black tracking-widest uppercase flex items-center">
+                                        <Target className="w-3 h-3 mr-2 text-yellow-500" /> Tahapan Saat Ini
+                                    </h3>
+                                </div>
+                                <div className="p-6">
+                                    <div className={`p-3 rounded-lg text-center font-black text-sm tracking-tighter shadow-inner border
+                                        ${usulan.status === 'didanai' ? 'bg-green-100 text-green-900 border-green-300' :
+                                            usulan.status.includes('reject') ? 'bg-red-100 text-red-900 border-red-300' :
+                                                'bg-blue-100 text-blue-900 border-blue-300'
+                                        }`}>
+                                        {usulan.status.toUpperCase().replace(/_/g, ' ')}
+                                    </div>
+                                    <div className="mt-4 grid grid-cols-2 gap-2 text-[10px] font-bold text-gray-500">
+                                        <div className="bg-gray-50 p-2 rounded text-center border border-gray-100">
+                                            RAB USULAN<br />
+                                            <span className="text-gray-900">{formatRupiah(usulan.total_anggaran)}</span>
+                                        </div>
+                                        <div className="bg-gray-50 p-2 rounded text-center border border-gray-100">
+                                            RAB FINAL<br />
+                                            <span className="text-green-700">{formatRupiah(usulan.dana_disetujui || 0)}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* 1. ASSIGN REVIEWER */}
+                            {['approved_prodi', 'reviewer_assigned'].includes(usulan.status) && (
+                                <AdminActionCard
+                                    title="Tunjuk Reviewer"
+                                    icon={<User className="w-5 h-5 text-blue-600" />}
+                                    description="Reviewer ini akan bertugas menilai kelayakan substansi dan teknis pengabdian."
+                                >
+                                    <form onSubmit={(e) => {
+                                        e.preventDefault();
+                                        const data = new FormData(e.currentTarget);
+                                        router.post(route('lppm.assign_reviewer', { type: 'pengabdian', id: usulan.id }), {
+                                            reviewer_id: data.get('reviewer_id')
+                                        });
+                                    }}>
+                                        <select name="reviewer_id" defaultValue={usulan.reviewer_id} className="w-full text-xs font-bold border-gray-200 rounded-lg mb-4 focus:ring-blue-500 focus:border-blue-500 bg-gray-50 uppercase tracking-tight">
+                                            <option value="">-- PILIH NAMA REVIEWER --</option>
+                                            {reviewers?.map((r: any) => (
+                                                <option key={r.id} value={r.id}>{r.name.toUpperCase()}</option>
+                                            ))}
+                                        </select>
+                                        <button type="submit" className="w-full bg-blue-600 text-white py-3 rounded-lg text-xs font-black hover:bg-blue-700 shadow-md transform active:scale-95 transition-all tracking-widest">
+                                            ASSIGN & NOTIFIKASI
+                                        </button>
+                                    </form>
+                                </AdminActionCard>
+                            )}
+
+                            {/* 2. SET BUDGET (Admin Revision Request) */}
+                            {usulan.status === 'under_revision_admin' && (
+                                <AdminActionCard
+                                    title="Evaluasi & Pagu Dana"
+                                    icon={<DollarSign className="w-5 h-5 text-emerald-600" />}
+                                    description="Tetapkan pagu dana maksimal yang disetujui untuk dikerjakan ulang oleh dosen."
+                                >
+                                    <form onSubmit={(e) => {
+                                        e.preventDefault();
+                                        const data = new FormData(e.currentTarget);
+                                        router.post(route('lppm.set_budget', { type: 'pengabdian', id: usulan.id }), {
+                                            dana_disetujui: data.get('dana_disetujui'),
+                                            notes: data.get('notes')
+                                        });
+                                    }}>
+                                        <div className="mb-4">
+                                            <label className="text-[10px] font-black text-gray-400 mb-1 block uppercase tracking-widest">PAGU DANA DISETUJUI</label>
+                                            <div className="relative">
+                                                <div className="absolute left-3 top-2.5 text-xs font-black text-emerald-600">RP.</div>
+                                                <input type="number" name="dana_disetujui" defaultValue={usulan.total_anggaran} className="w-full pl-10 text-sm font-black border-gray-200 rounded-lg focus:ring-emerald-500 bg-emerald-50/20" />
+                                            </div>
+                                        </div>
+                                        <div className="mb-4">
+                                            <label className="text-[10px] font-black text-gray-400 mb-1 block uppercase tracking-widest">CATATAN REVISI KHUSUS</label>
+                                            <textarea name="notes" className="w-full text-[11px] font-medium border-gray-200 rounded-lg h-28 focus:ring-emerald-500 bg-gray-50" placeholder="Sebutkan item RAB yang harus dihapus atau diubah..."></textarea>
+                                        </div>
+                                        <button type="submit" className="w-full bg-emerald-600 text-white py-3 rounded-lg text-xs font-black hover:bg-emerald-700 shadow-md tracking-widest">
+                                            REQUEST REVISI DOSEN
+                                        </button>
+                                    </form>
+                                </AdminActionCard>
+                            )}
+
+                            {/* 3. FINAL DECISION */}
+                            {usulan.status === 'reviewed_approved' && (
+                                <AdminActionCard
+                                    title="Persetujuan LPPM"
+                                    icon={<CheckCircle className="w-5 h-5 text-purple-600" />}
+                                    description="Proses penilaian selesai. LPPM memberikan ketetapan akhir pendanaan usulan ini."
+                                >
+                                    <div className="grid grid-cols-1 gap-3">
+                                        <button
+                                            onClick={() => router.post(route('lppm.final_decision', { type: 'pengabdian', id: usulan.id }), { decision: 'didanai' })}
+                                            className="bg-green-600 text-white py-4 rounded-xl text-xs font-black hover:bg-green-700 shadow-xl border-b-4 border-green-800 transform active:translate-y-1 transition-all"
+                                        >
+                                            SETUJUI & DANAI SEKARANG
+                                        </button>
+                                        <button
+                                            onClick={() => router.post(route('lppm.final_decision', { type: 'pengabdian', id: usulan.id }), { decision: 'ditolak_akhir' })}
+                                            className="bg-white text-red-600 py-3 rounded-xl text-xs font-black hover:bg-red-50 border-2 border-red-600 tracking-tighter"
+                                        >
+                                            TOLAK PENDANAAN
+                                        </button>
+                                    </div>
+                                </AdminActionCard>
+                            )}
+
+                        </div>
+                    </div>
+                </div>
+            </main>
+            <Footer />
+        </div>
+    );
+}

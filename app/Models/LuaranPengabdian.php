@@ -14,8 +14,22 @@ class LuaranPengabdian extends Model
         'tahun',
         'kategori',
         'deskripsi',
+        'is_wajib',
         'status',
+        'judul_realisasi',
+        'peran_penulis',
+        'nama_jurnal',
+        'issn',
+        'pengindek',
+        'file_bukti',
+        'file_bukti_submit',
+        'url_bukti',
         'keterangan',
+        'judul_realisasi_akhir',
+        'file_bukti_akhir',
+        'url_bukti_akhir',
+        'status_akhir',
+        'keterangan_akhir',
     ];
 
     /**

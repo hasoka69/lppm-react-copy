@@ -9,6 +9,7 @@ interface Luaran {
     tahun: number;
     kategori: string;
     deskripsi: string;
+    is_wajib: boolean;
     status: string;
     keterangan?: string;
 }
@@ -137,6 +138,9 @@ export const LuaranList: React.FC<LuaranListProps> = ({
                                         <h3 className="font-semibold text-lg text-gray-900">{item.kategori}</h3>
                                         <span className={`text-xs px-2 py-1 rounded font-medium ${getStatusColor(item.status)}`}>
                                             {item.status}
+                                        </span>
+                                        <span className={`text-xs px-2 py-1 rounded font-medium ${item.is_wajib ? 'bg-indigo-100 text-indigo-800' : 'bg-gray-100 text-gray-800'}`}>
+                                            {item.is_wajib ? 'Luaran Wajib' : 'Luaran Tambahan'}
                                         </span>
                                     </div>
                                     <p className="text-sm text-gray-600 mb-2">{item.deskripsi}</p>

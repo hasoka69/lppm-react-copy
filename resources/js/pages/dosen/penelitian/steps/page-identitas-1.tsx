@@ -56,7 +56,7 @@ const PageIdentitas: React.FC<PageIdentitasProps> = ({
         rumpun_ilmu_2: usulan?.rumpun_ilmu_2 ?? '',
         rumpun_ilmu_3: usulan?.rumpun_ilmu_3 ?? '',
         prioritas_riset: usulan?.prioritas_riset ?? '',
-        tahun_pertama: usulan?.tahun_pertama ?? '',
+        tahun_pertama: 2026,
         lama_kegiatan: usulan?.lama_kegiatan ?? '',
     });
 
@@ -73,7 +73,7 @@ const PageIdentitas: React.FC<PageIdentitasProps> = ({
             });
         } else {
             // Create new draft
-            post('dosen/penelitian/draft', {
+            post('/dosen/penelitian/draft', {
                 preserveScroll: true,
                 onSuccess: (page) => {
                     const id = (page.props.flash as Record<string, unknown>)?.usulanId as number | undefined;
@@ -102,7 +102,7 @@ const PageIdentitas: React.FC<PageIdentitasProps> = ({
             });
         } else {
             // Create new draft then go next
-            post('dosen/penelitian/draft', {
+            post('/dosen/penelitian/draft', {
                 preserveScroll: true,
                 onSuccess: (page) => {
                     const id = (page.props.flash as Record<string, unknown>)?.usulanId as number | undefined;
@@ -126,7 +126,7 @@ const PageIdentitas: React.FC<PageIdentitasProps> = ({
 
         console.log('Creating draft via ensureDraftExists...');
         try {
-            const response = await axios.post('dosen/penelitian/draft', {}, {
+            const response = await axios.post('/dosen/penelitian/draft', {}, {
                 headers: {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
                     'X-Requested-With': 'XMLHttpRequest',
@@ -352,16 +352,14 @@ const PageIdentitas: React.FC<PageIdentitasProps> = ({
                         {/* Tahun Pertama */}
                         <div className={styles.formGroup}>
                             <label className={styles.label}>14. Tahun Pertama *</label>
-                            <select
-                                className={styles.select}
-                                value={data.tahun_pertama}
-                                onChange={(e) => setData("tahun_pertama", e.target.value)}
-                            >
-                                <option value="">Pilih Tahun</option>
-                                <option value="2024">2024</option>
-                                <option value="2025">2025</option>
-                                <option value="2026">2026</option>
-                            </select>
+                            <input
+                                type="text"
+                                className={styles.input}
+                                value="2026"
+                                disabled
+                                readOnly
+                            />
+                            <input type="hidden" name="tahun_pertama" value="2026" />
                         </div>
 
                         {/* Lama */}
