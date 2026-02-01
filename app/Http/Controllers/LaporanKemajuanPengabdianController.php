@@ -29,7 +29,7 @@ class LaporanKemajuanPengabdianController extends Controller
                 'judul' => $u->judul,
                 'skema' => $u->kelompok_skema,
                 'tahun_pertama' => $u->tahun_pertama,
-                'dana_disetujui' => $u->dana_disetujui,
+                'dana_disetujui' => (float) ($u->dana_disetujui ?? 0),
                 'report' => LaporanKemajuanPengabdian::where('usulan_id', '=', $u->id, 'and')->first(),
             ]);
 
@@ -55,7 +55,7 @@ class LaporanKemajuanPengabdianController extends Controller
 
         return Inertia::render('dosen/pengabdian/LaporanKemajuan/Detail', [
             'usulan' => $usulan,
-            'report' => $report,
+            'laporan_kemajuan' => $report,
             'outputs' => $usulan->luaranItems
         ]);
     }

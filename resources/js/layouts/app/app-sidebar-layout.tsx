@@ -3,7 +3,7 @@ import { Head, usePage, router } from '@inertiajs/react';
 import { AppContent } from '@/components/app-content';
 import { AppShell } from '@/components/app-shell';
 import { AppSidebar } from '@/components/app-sidebar';
-import { AppSidebarHeader } from '@/components/app-sidebar-header';
+import Header from '@/components/Header';
 import { type BreadcrumbItem } from '@/types';
 import { Toaster } from '@/components/ui/sonner';
 import { toast } from 'sonner';
@@ -12,12 +12,14 @@ interface Props {
   children: React.ReactNode;
   breadcrumbs?: BreadcrumbItem[];
   title?: string;
+  hideSidebar?: boolean;
 }
 
 export default function AppSidebarLayout({
   children,
   breadcrumbs = [],
   title = 'Dashboard',
+  hideSidebar = false,
 }: Props) {
   const { props } = usePage();
 
@@ -85,10 +87,10 @@ export default function AppSidebarLayout({
           ['--color-primary-foreground' as any]: primaryForeground,
         }}
       >
-        <AppShell variant="sidebar">
-          <AppSidebar />
-          <AppContent variant="sidebar">
-            <AppSidebarHeader breadcrumbs={breadcrumbs} />
+        <AppShell variant={hideSidebar ? 'header' : 'sidebar'}>
+          {!hideSidebar && <AppSidebar />}
+          <AppContent variant={hideSidebar ? 'header' : 'sidebar'}>
+            <Header breadcrumbs={breadcrumbs} hideSidebar={hideSidebar} />
             {children}
           </AppContent>
         </AppShell>

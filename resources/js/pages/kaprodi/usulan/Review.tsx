@@ -1,8 +1,13 @@
 import React, { useState } from 'react';
-import { Link, Head, useForm } from '@inertiajs/react'; // Correct import
+import { Link, Head, useForm } from '@inertiajs/react';
 import Header from '@/components/Header';
 import Footer from '@/components/footer';
 import { Home, ChevronRight, FileText, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 
 interface ReviewProps {
     usulan: any; // Type properly if possible
@@ -29,167 +34,225 @@ export default function KaprodiUsulanReview({ usulan, pengusul, anggota, anggota
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 font-sans">
+        <div className="min-h-screen bg-gray-50/50 font-sans">
             <Head title={`Review Usulan: ${usulan.judul}`} />
             <Header />
 
             <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
                 {/* Breadcrumbs */}
-                <div className="flex items-center text-sm text-gray-500 mb-6">
-                    <Link href="/kaprodi/dashboard" className="hover:text-blue-600 flex items-center">
+                <div className="flex items-center text-sm text-gray-500 mb-8">
+                    <Link href="/kaprodi/dashboard" className="hover:text-primary flex items-center transition-colors">
                         <Home className="w-4 h-4 mr-1" /> Dashboard
                     </Link>
                     <ChevronRight className="w-4 h-4 mx-2" />
-                    <Link href="/kaprodi/usulan" className="hover:text-blue-600">
+                    <Link href="/kaprodi/usulan" className="hover:text-primary transition-colors">
                         Daftar Usulan
                     </Link>
                     <ChevronRight className="w-4 h-4 mx-2" />
-                    <span className="font-semibold text-gray-700">Review Usulan</span>
+                    <span className="font-semibold text-foreground">Review Usulan</span>
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     {/* LEFT COLUMN: Proposal Details */}
                     <div className="lg:col-span-2 space-y-6">
-                        {/* 1. Identitas */}
-                        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                            <h2 className="text-lg font-bold text-gray-800 mb-4 border-b pb-2">Identitas Usulan</h2>
-                            <div className="space-y-4">
-                                <div>
-                                    <label className="block text-xs text-gray-500 uppercase font-semibold">Judul</label>
-                                    <p className="text-gray-900 font-medium">{usulan.judul}</p>
-                                </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="block text-xs text-gray-500 uppercase font-semibold">Skema</label>
-                                        <p className="text-gray-900">{usulan.kelompok_skema}</p>
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs text-gray-500 uppercase font-semibold">Tahun Pelaksanaan</label>
-                                        <p className="text-gray-900">{usulan.tahun_pertama} (Lama: {usulan.lama_kegiatan} tahun)</p>
-                                    </div>
-                                </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="block text-xs text-gray-500 uppercase font-semibold">Total Anggaran</label>
-                                        <p className="text-gray-900 font-mono">Rp {new Intl.NumberFormat('id-ID').format(rabTotal)}</p>
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs text-gray-500 uppercase font-semibold">Status Saat Ini</label>
-                                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                            {usulan.status}
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
 
-                        {/* 2. Pengusul & Anggota */}
-                        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                            <h2 className="text-lg font-bold text-gray-800 mb-4 border-b pb-2">Tim Peneliti</h2>
-                            <div className="space-y-4">
+                        {/* 1. Identitas Usulan */}
+                        <Card className="shadow-sm border border-gray-200 overflow-hidden">
+                            <CardHeader className="bg-white border-b border-gray-100 pb-4">
+                                <CardTitle className="text-lg font-bold flex items-center justify-between text-gray-800">
+                                    <span>Identitas Usulan</span>
+                                    <Badge variant="outline" className="text-xs font-normal text-gray-500 border-gray-300">
+                                        ID: {usulan.id}
+                                    </Badge>
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent className="pt-6 space-y-6">
                                 <div>
-                                    <h3 className="text-sm font-semibold text-gray-700 mb-2">Ketua Pengusul</h3>
-                                    <div className="bg-gray-50 p-3 rounded border border-gray-200">
-                                        <p className="font-medium text-gray-900">{pengusul.nama} ({pengusul.nidn})</p>
-                                        <p className="text-sm text-gray-500">{pengusul.prodi} - {pengusul.email}</p>
+                                    <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1 block">Judul Penelitian</label>
+                                    <p className="text-lg font-medium text-gray-900 leading-snug">{usulan.judul}</p>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1 block">Skema</label>
+                                        <div className="flex items-center gap-2">
+                                            <Badge variant="secondary" className="px-2 py-0.5 font-normal bg-gray-100 text-gray-700 hover:bg-gray-200">{usulan.kelompok_skema}</Badge>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1 block">Tahun Pelaksanaan</label>
+                                        <p className="font-medium text-gray-800">{usulan.tahun_pertama} <span className="text-gray-500 text-sm font-normal">(Lama: {usulan.lama_kegiatan} tahun)</span></p>
+                                    </div>
+                                    <div>
+                                        <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1 block">Total Anggaran</label>
+                                        <p className="font-mono font-medium text-blue-600 text-lg">Rp {new Intl.NumberFormat('id-ID').format(rabTotal)}</p>
+                                    </div>
+                                    <div>
+                                        <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1 block">Status</label>
+                                        <Badge variant={usulan.status === 'approved_prodi' ? 'default' : usulan.status === 'ditolak_akhir' ? 'destructive' : 'outline'} className="capitalize font-normal">
+                                            {usulan.status.replace(/_/g, ' ')}
+                                        </Badge>
                                     </div>
                                 </div>
+                            </CardContent>
+                        </Card>
+
+                        {/* 2. Tim Peneliti */}
+                        <Card className="shadow-sm border border-gray-200 overflow-hidden">
+                            <CardHeader className="bg-white border-b border-gray-100 pb-4">
+                                <CardTitle className="text-lg font-bold text-gray-800">Tim Peneliti</CardTitle>
+                            </CardHeader>
+                            <CardContent className="pt-6 space-y-6">
+                                {/* Ketua */}
+                                <div className="relative pl-4 border-l-4 border-blue-500/20">
+                                    <h3 className="text-sm font-semibold text-gray-800 mb-2">Ketua Pengusul</h3>
+                                    <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+                                        <div className="flex items-center gap-3 mb-1">
+                                            <div className="h-8 w-8 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 text-xs font-bold ring-1 ring-blue-100">
+                                                {pengusul.nama.charAt(0)}
+                                            </div>
+                                            <div>
+                                                <p className="font-semibold text-sm text-gray-900">{pengusul.nama}</p>
+                                                <p className="text-xs text-gray-500">NIDN: {pengusul.nidn}</p>
+                                            </div>
+                                        </div>
+                                        <div className="mt-2 text-xs text-gray-500 pl-11">
+                                            {pengusul.prodi} &bull; {pengusul.email}
+                                        </div>
+                                    </div>
+                                </div>
+                                <Separator className="bg-gray-100" />
+                                {/* Anggota Dosen */}
                                 <div>
-                                    <h3 className="text-sm font-semibold text-gray-700 mb-2">Anggota</h3>
+                                    <h3 className="text-sm font-semibold text-gray-800 mb-3">Anggota Dosen</h3>
                                     {anggota.length === 0 ? (
-                                        <p className="text-sm text-gray-500 italic">Tidak ada anggota dosen.</p>
+                                        <div className="text-sm text-gray-500 italic bg-gray-50 p-3 rounded-md text-center border border-dashed border-gray-300">Tidak ada anggota dosen.</div>
                                     ) : (
-                                        <ul className="space-y-2">
+                                        <div className="grid gap-3">
                                             {anggota.map((ang: any) => (
-                                                <li key={ang.id} className="bg-gray-50 p-3 rounded border border-gray-200 text-sm">
-                                                    <span className="font-medium">{ang.nama}</span> ({ang.peran})
-                                                    <span className="block text-gray-500 text-xs">{ang.prodi}</span>
-                                                </li>
+                                                <div key={ang.id} className="flex items-start justify-between bg-white p-3 rounded-md border border-gray-200 shadow-sm">
+                                                    <div>
+                                                        <p className="text-sm font-medium text-gray-900">{ang.nama}</p>
+                                                        <p className="text-xs text-gray-500">NIDN: {ang.nidn ? ang.nidn : '-'} &bull; {ang.prodi}</p>
+                                                        {ang.tugas && <p className="text-xs text-gray-500 mt-1"><span className="font-semibold">Tugas:</span> {ang.tugas}</p>}
+                                                    </div>
+                                                    <Badge variant="outline" className="text-xs font-normal text-gray-500 border-gray-200">{ang.peran}</Badge>
+                                                </div>
                                             ))}
-                                        </ul>
+                                        </div>
                                     )}
                                 </div>
-                                <div className="mt-4 border-t pt-4">
-                                    <h3 className="text-sm font-semibold text-gray-700 mb-2">Anggota Mahasiswa / Non-Dosen</h3>
-                                    {anggotaNonDosen && anggotaNonDosen.length > 0 ? (
-                                        <ul className="space-y-2">
-                                            {anggotaNonDosen.map((mhs: any) => (
-                                                <li key={mhs.id} className="bg-gray-50 p-3 rounded border border-gray-200 text-sm">
-                                                    <span className="font-medium">{mhs.nama}</span> ({mhs.no_identitas})
-                                                    <span className="block text-gray-500 text-xs capitalize">{mhs.jenis_anggota} - {mhs.peran}</span>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    ) : (
-                                        <p className="text-sm text-gray-500 italic">Tidak ada anggota mahasiswa.</p>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
+                                {/* Anggota Mahasiswa */}
+                                {anggotaNonDosen && anggotaNonDosen.length > 0 && (
+                                    <>
+                                        <Separator className="bg-gray-100" />
+                                        <div>
+                                            <h3 className="text-sm font-semibold text-gray-800 mb-3">Anggota Mahasiswa / Non-Dosen</h3>
+                                            <div className="grid gap-3">
+                                                {anggotaNonDosen.map((mhs: any) => (
+                                                    <div key={mhs.id} className="flex items-start justify-between bg-white p-3 rounded-md border border-gray-200 shadow-sm">
+                                                        <div>
+                                                            <p className="text-sm font-medium text-gray-900">{mhs.nama}</p>
+                                                            <p className="text-xs text-gray-500">{mhs.no_identitas} &bull; {mhs.peran}</p>
+                                                            {mhs.tugas && <p className="text-xs text-gray-500 mt-1"><span className="font-semibold">Tugas:</span> {mhs.tugas}</p>}
+                                                        </div>
+                                                        <Badge variant="secondary" className="text-xs capitalize bg-gray-100 text-gray-600 border border-gray-200">{mhs.jenis_anggota}</Badge>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </>
+                                )}
+                            </CardContent>
+                        </Card>
 
-                        {/* 3. Substansi & Luaran */}
-                        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                            <h2 className="text-lg font-bold text-gray-800 mb-4 border-b pb-2">Berkas & Luaran</h2>
-                            <div className="space-y-4">
-                                <div>
-                                    <label className="block text-xs text-gray-500 uppercase font-semibold">File Substansi</label>
-                                    {usulan.file_substansi ? (
-                                        <a href={`/storage/${usulan.file_substansi}`} target="_blank" className="text-blue-600 hover:underline flex items-center">
-                                            <FileText className="w-4 h-4 mr-1" /> Download File Substansi
-                                        </a>
-                                    ) : (
-                                        <p className="text-red-500 text-sm italic">Belum diunggah</p>
-                                    )}
+                        {/* 3. Berkas & Luaran */}
+                        <Card className="shadow-sm border-gray-200">
+                            <CardHeader className="bg-gray-50/50 border-b border-gray-100 pb-4">
+                                <CardTitle className="text-lg font-bold">Berkas & Dokumen</CardTitle>
+                            </CardHeader>
+                            <CardContent className="pt-6">
+                                <div className="space-y-4">
+                                    <div className="flex items-center justify-between p-4 bg-blue-50/50 border border-blue-100 rounded-lg group hover:bg-blue-50 transition-colors">
+                                        <div className="flex items-center gap-3">
+                                            <div className="p-2 bg-white rounded shadow-sm text-blue-600">
+                                                <FileText className="w-5 h-5" />
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-medium text-blue-900 group-hover:text-blue-700">File Substansi Proposal</p>
+                                                <p className="text-xs text-blue-600/80">Dokumen utama usulan penelitian</p>
+                                            </div>
+                                        </div>
+                                        {usulan.file_substansi ? (
+                                            <a href={`/storage/${usulan.file_substansi}`} target="_blank" rel="noopener noreferrer">
+                                                <Button size="sm" variant="outline" className="border-blue-200 text-blue-700 hover:bg-blue-100 hover:text-blue-800">
+                                                    Download
+                                                </Button>
+                                            </a>
+                                        ) : (
+                                            <Badge variant="destructive">Belum Upload</Badge>
+                                        )}
+                                    </div>
                                 </div>
-                            </div>
-                        </div>
-
+                            </CardContent>
+                        </Card>
                     </div>
 
                     {/* RIGHT COLUMN: Action & Review */}
                     <div className="lg:col-span-1">
-                        <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6 sticky top-8">
-                            <h2 className="text-lg font-bold text-gray-800 mb-4">Keputusan Kaprodi</h2>
-
-                            {/* Disabled if already reviewed */}
-                            {['approved_prodi', 'rejected_prodi'].includes(usulan.status) ? (
-                                <div className={`p-4 rounded-lg text-center ${usulan.status === 'approved_prodi' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
-                                    {usulan.status === 'approved_prodi' ? (
-                                        <>
-                                            <CheckCircle className="w-12 h-12 mx-auto mb-2" />
-                                            <p className="font-bold">Usulan Disetujui</p>
-                                        </>
+                        <div className="sticky top-24 space-y-6">
+                            <Card className={`shadow-lg border-t-4 ${usulan.status === 'approved_prodi' ? 'border-t-green-500' : usulan.status === 'ditolak_akhir' ? 'border-t-red-500' : 'border-t-primary'}`}>
+                                <CardHeader className="pb-4">
+                                    <CardTitle className="text-lg font-bold">Keputusan Kaprodi</CardTitle>
+                                    {/* <CardDescription>Tinjau dan berikan keputusan</CardDescription> */}
+                                </CardHeader>
+                                <CardContent>
+                                    {['approved_prodi', 'rejected_prodi', 'ditolak_akhir'].includes(usulan.status) ? (
+                                        <div className={`p-6 rounded-lg text-center ${usulan.status === 'approved_prodi' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+                                            {usulan.status === 'approved_prodi' ? (
+                                                <>
+                                                    <div className="mx-auto bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mb-3">
+                                                        <CheckCircle className="w-8 h-8 text-green-600" />
+                                                    </div>
+                                                    <h3 className="font-bold text-lg mb-1">Usulan Disetujui</h3>
+                                                    <p className="text-sm opacity-90">Usulan telah diteruskan ke reviewer.</p>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <div className="mx-auto bg-red-100 w-16 h-16 rounded-full flex items-center justify-center mb-3">
+                                                        <XCircle className="w-8 h-8 text-red-600" />
+                                                    </div>
+                                                    <h3 className="font-bold text-lg mb-1">Usulan Ditolak</h3>
+                                                    <p className="text-sm opacity-90">Pengusul telah diberitahu.</p>
+                                                </>
+                                            )}
+                                        </div>
                                     ) : (
-                                        <>
-                                            <XCircle className="w-12 h-12 mx-auto mb-2" />
-                                            <p className="font-bold">Usulan Ditolak</p>
-                                        </>
+                                        <div className="space-y-6">
+                                            <div className="p-4 bg-blue-50 text-blue-800 rounded-md text-sm leading-relaxed border border-blue-100">
+                                                <p className="font-medium mb-1">Instruksi Review:</p>
+                                                Silakan tinjau kelengkapan berkas dan kesesuaian usulan dengan roadmap penelitian program studi sebelum memberikan persetujuan.
+                                            </div>
+
+                                            <div className="grid gap-3">
+                                                <Button
+                                                    onClick={() => { setData('decision', 'approve'); setConfirmModal('approve'); }}
+                                                    className="w-full bg-green-600 hover:bg-green-700 text-white shadow-md transition-all hover:shadow-lg h-12 text-base"
+                                                >
+                                                    <CheckCircle className="w-5 h-5 mr-2" /> Setujui Usulan
+                                                </Button>
+
+                                                <Button
+                                                    onClick={() => { setData('decision', 'reject'); setConfirmModal('reject'); }}
+                                                    variant="destructive"
+                                                    className="w-full bg-red-600 hover:bg-red-700 shadow-md transition-all hover:shadow-lg h-12 text-base"
+                                                >
+                                                    <XCircle className="w-5 h-5 mr-2" /> Tolak Usulan
+                                                </Button>
+                                            </div>
+                                        </div>
                                     )}
-                                    <p className="text-sm mt-2">Usulan ini telah Anda review.</p>
-                                </div>
-                            ) : (
-                                <>
-                                    <p className="text-sm text-gray-600 mb-6">
-                                        Silakan tinjau kelengkapan dan kesesuaian usulan dengan roadmap penelitian program studi.
-                                    </p>
-
-                                    <div className="space-y-3">
-                                        <button
-                                            onClick={() => { setData('decision', 'approve'); setConfirmModal('approve'); }}
-                                            className="w-full flex items-center justify-center px-4 py-3 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 shadow-sm transition"
-                                        >
-                                            <CheckCircle className="w-4 h-4 mr-2" /> Setujui Usulan
-                                        </button>
-
-                                        <button
-                                            onClick={() => { setData('decision', 'reject'); setConfirmModal('reject'); }}
-                                            className="w-full flex items-center justify-center px-4 py-3 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 shadow-sm transition"
-                                        >
-                                            <XCircle className="w-4 h-4 mr-2" /> Tolak Usulan
-                                        </button>
-                                    </div>
-                                </>
-                            )}
+                                </CardContent>
+                            </Card>
                         </div>
                     </div>
                 </div>
@@ -198,63 +261,63 @@ export default function KaprodiUsulanReview({ usulan, pengusul, anggota, anggota
 
             {/* CONFIRMATION MODAL */}
             {confirmModal && (
-                <div className="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-                    <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-                        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onClick={() => setConfirmModal(null)}></div>
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
+                    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity" onClick={() => setConfirmModal(null)} />
 
-                        <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-
-                        <div className="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
-                            <div className="sm:flex sm:items-start">
-                                <div className={`mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full sm:mx-0 sm:h-10 sm:w-10 ${confirmModal === 'approve' ? 'bg-green-100' : 'bg-red-100'}`}>
-                                    {confirmModal === 'approve' ? <CheckCircle className="h-6 w-6 text-green-600" /> : <AlertTriangle className="h-6 w-6 text-red-600" />}
+                    <Card className="w-full max-w-lg relative z-10 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+                        <CardHeader className={`${confirmModal === 'approve' ? 'bg-green-50' : 'bg-red-50'} rounded-t-xl border-b pb-6`}>
+                            <div className="flex items-center gap-4">
+                                <div className={`p-3 rounded-full ${confirmModal === 'approve' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}>
+                                    {confirmModal === 'approve' ? <CheckCircle className="w-6 h-6" /> : <AlertTriangle className="w-6 h-6" />}
                                 </div>
-                                <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
-                                    <h3 className="text-lg leading-6 font-medium text-gray-900" id="modal-title">
-                                        {confirmModal === 'approve' ? 'Setujui Usulan' : 'Tolak Usulan'}
-                                    </h3>
-                                    <div className="mt-2">
-                                        <p className="text-sm text-gray-500">
-                                            {confirmModal === 'approve'
-                                                ? 'Apakah Anda yakin ingin menyetujui usulan ini? Usulan akan diteruskan ke proses selanjutnya.'
-                                                : 'Apakah Anda yakin ingin menolak usulan ini? Ketua pengusul akan menerima notifikasi penolakan.'}
-                                        </p>
-
-                                        {/* Optional Notes */}
-                                        <div className="mt-4">
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">Catatan (Opsional)</label>
-                                            <textarea
-                                                className="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                                                rows={3}
-                                                placeholder="Tambahkan catatan untuk pengusul..."
-                                                value={data.notes}
-                                                onChange={(e) => setData('notes', e.target.value)}
-                                            ></textarea>
-                                        </div>
-                                    </div>
+                                <div>
+                                    <CardTitle className="text-xl">
+                                        {confirmModal === 'approve' ? 'Konfirmasi Persetujuan' : 'Konfirmasi Penolakan'}
+                                    </CardTitle>
+                                    <p className="text-sm text-muted-foreground mt-1">
+                                        {confirmModal === 'approve'
+                                            ? 'Tindakan ini tidak dapat dibatalkan.'
+                                            : 'Pengusul akan menerima notifikasi penolakan ini.'}
+                                    </p>
                                 </div>
                             </div>
-                            <div className="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
-                                <button
-                                    type="button"
+                        </CardHeader>
+                        <CardContent className="pt-6 space-y-4">
+                            <p className="text-gray-700">
+                                {confirmModal === 'approve'
+                                    ? 'Apakah Anda yakin ingin menyetujui usulan ini? Usulan akan diteruskan ke proses review selanjutnya.'
+                                    : 'Apakah Anda yakin ingin menolak usulan ini? Mohon berikan alasan penolakan di bawah ini.'}
+                            </p>
+
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium text-gray-700">
+                                    Catatan / Alasan {confirmModal === 'reject' && <span className="text-red-500">*</span>} (Opsional)
+                                </label>
+                                <textarea
+                                    className="flex min-h-[100px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                                    placeholder="Tuliskan catatan untuk pengusul..."
+                                    value={data.notes}
+                                    onChange={(e) => setData('notes', e.target.value)}
+                                ></textarea>
+                            </div>
+
+                            <div className="flex flex-col sm:flex-row gap-3 pt-4 justify-end">
+                                <Button variant="outline" onClick={() => setConfirmModal(null)} className="sm:w-auto w-full">
+                                    Batal
+                                </Button>
+                                <Button
                                     onClick={handleSubmit}
                                     disabled={processing}
-                                    className={`w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 text-base font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm ${confirmModal === 'approve' ? 'bg-green-600 hover:bg-green-700 focus:ring-green-500' : 'bg-red-600 hover:bg-red-700 focus:ring-red-500'}`}
+                                    className={`sm:w-auto w-full ${confirmModal === 'approve' ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'}`}
                                 >
                                     {processing ? 'Memproses...' : (confirmModal === 'approve' ? 'Ya, Setujui' : 'Ya, Tolak')}
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => setConfirmModal(null)}
-                                    className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm"
-                                >
-                                    Batal
-                                </button>
+                                </Button>
                             </div>
-                        </div>
-                    </div>
+                        </CardContent>
+                    </Card>
                 </div>
             )}
         </div>
     );
 }
+

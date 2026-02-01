@@ -18,7 +18,6 @@ class AnggotaPenelitianController extends Controller
                     'id' => $item->id,
                     'nidn' => $item->nidn,
                     'nama' => $item->nama,
-                    'status_approval' => $item->status_approval,
                 ];
             });
 
@@ -53,8 +52,12 @@ class AnggotaPenelitianController extends Controller
             ], 422);
         }
 
+        // Lookup Dosen ID based on NIDN
+        $dosen = Dosen::where('nidn', $request->nidn)->first();
+
         $anggota = AnggotaPenelitian::create([
             'usulan_id' => $usulanId,
+            'dosen_id' => $dosen ? $dosen->id : null,
             'nidn' => $request->nidn,
             'nama' => $request->nama,
             'peran' => $request->peran,

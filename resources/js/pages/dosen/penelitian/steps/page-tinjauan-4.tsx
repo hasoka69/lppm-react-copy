@@ -1,19 +1,38 @@
 import React from 'react';
 import { usePage, router } from '@inertiajs/react';
 import styles from '../../../../../css/pengajuan.module.css';
+import {
+    ClipboardCheck,
+    FileText,
+    Users,
+    Layers,
+    Wallet,
+    History,
+    ShieldCheck,
+    Printer,
+    Send,
+    ArrowLeft,
+    X,
+    ExternalLink,
+    CheckCircle2,
+    Clock
+} from 'lucide-react';
 
 interface PageTinjauanProps {
     onKembali?: () => void;
     onKonfirmasi?: () => void;
     onTutupForm?: () => void;
     usulanId?: number;
+    isReadOnly?: boolean;
 }
 
 const PageTinjauan: React.FC<PageTinjauanProps> = ({
     onKembali,
     onKonfirmasi,
     onTutupForm,
-    usulanId: propUsulanId
+
+    usulanId: propUsulanId,
+    isReadOnly = false
 }) => {
     const { props } = usePage<{ usulan?: any }>();
     const usulan = props.usulan;
@@ -22,27 +41,33 @@ const PageTinjauan: React.FC<PageTinjauanProps> = ({
     const [isChecked, setIsChecked] = React.useState(false);
     const [isSubmitting, setIsSubmitting] = React.useState(false);
 
-    // Helper untuk format rupiah
-    const formatRupiah = (number: number) => {
+    const formatCurrency = (amount: number) => {
         return new Intl.NumberFormat('id-ID', {
             style: 'currency',
             currency: 'IDR',
-            minimumFractionDigits: 0
-        }).format(number);
+            minimumFractionDigits: 0,
+        }).format(amount);
     };
 
-    const handlePrintPDF = () => {
-        window.print();
-    };
+    const handlePrintPDF = () => window.print();
 
     const handleSubmit = () => {
         if (!usulanId) {
-            alert('Usulan ID tidak ditemukan. Tidak dapat submit.');
+            alert('Usulan ID tidak ditemukan.');
             return;
         }
 
         if (!['draft', 'revision_dosen'].includes(usulan.status)) {
-            alert('Status usulan tidak memungkinkan untuk pengiriman (Sudah diajukan atau diproses).');
+            alert('Status usulan tidak memungkinkan untuk pengiriman.');
+            return;
+        }
+
+        const rabItems = usulan.rab_items || usulan.rabItems || [];
+        const totalAnggaran = rabItems.reduce((acc: number, item: any) => acc + (Number(item.total) || 0), 0);
+
+        // Validation for Budget Cap logic
+        if (usulan.dana_disetujui > 0 && totalAnggaran > Number(usulan.dana_disetujui)) {
+            alert(`Gagal Kirim: Total RAB (Rp ${formatCurrency(totalAnggaran)}) melebihi pagu dana yang disetujui (Rp ${formatCurrency(usulan.dana_disetujui)}). Silakan revisi RAB Anda.`);
             return;
         }
 
@@ -52,208 +77,210 @@ const PageTinjauan: React.FC<PageTinjauanProps> = ({
                 onSuccess: () => {
                     alert('Usulan berhasil dikirim!');
                     onKonfirmasi?.();
-                    setIsSubmitting(false);
                 },
-                onError: (errors) => {
-                    console.error(errors);
-                    alert('Gagal mengirim usulan. Silakan cek kembali kelengkapan data.');
-                    setIsSubmitting(false);
-                }
+                onError: () => alert('Gagal mengirim usulan. Silakan cek kembali kelengkapan data.'),
+                onFinish: () => setIsSubmitting(false)
             });
         }
     };
 
-    if (!usulan) return <div>Loading...</div>;
+    if (!usulan) return <div className="flex justify-center p-12 text-gray-500">Memuat data usulan...</div>;
 
-    // Calculate Total RAB from Relationship
     const rabItems = usulan.rab_items || usulan.rabItems || [];
     const totalAnggaran = rabItems.reduce((acc: number, item: any) => acc + (Number(item.total) || 0), 0);
 
-    // Group items for display
-    const rabBahan = rabItems.filter((item: any) => item.tipe === 'bahan');
-    const rabPerjalanan = rabItems.filter((item: any) => item.tipe === 'perjalanan');
-    const rabPublikasi = rabItems.filter((item: any) => item.tipe === 'publikasi');
-    const rabData = rabItems.filter((item: any) => item.tipe === 'pengumpulan_data');
-    const rabSewa = rabItems.filter((item: any) => item.tipe === 'sewa_peralatan');
+    const renderReviewItem = (label: string, value: string | number) => (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            <span style={{
+                fontSize: '0.75rem',
+                fontWeight: 700,
+                color: '#64748b',
+                textTransform: 'uppercase',
+                letterSpacing: '0.025em'
+            }}>
+                {label}
+            </span>
+            <div style={{
+                padding: '0.75rem 1rem',
+                background: 'white',
+                borderRadius: '10px',
+                border: '1px solid #e2e8f0',
+                color: 'var(--secondary)',
+                fontWeight: 600,
+                fontSize: '0.9375rem',
+                minHeight: '44px',
+                display: 'flex',
+                alignItems: 'center'
+            }}>
+                {value || '-'}
+            </div>
+        </div>
+    );
 
     return (
-        <>
-            {!usulanId && (
-                <div className={styles.alertWarning}>
-                    ⚠️ <strong>Warning:</strong> Usulan ID tidak ditemukan.
-                </div>
-            )}
-
-            <div className={styles.formSection}>
-                <h2 className={styles.sectionTitle}>Judul</h2>
-                <div className={styles.reviewGrid}>
-                    <div className={styles.reviewItem}>
-                        <span className={styles.reviewLabel}>Judul Penelitian</span>
-                        <span className={styles.reviewValue}>{usulan.judul || '-'}</span>
-                    </div>
-                    <div className={styles.reviewItem}>
-                        <span className={styles.reviewLabel}>Lama Kegiatan</span>
-                        <span className={styles.reviewValue}>{usulan.lama_kegiatan ? `${usulan.lama_kegiatan} Tahun` : '-'}</span>
-                    </div>
-                    <div className={styles.reviewItem}>
-                        <span className={styles.reviewLabel}>Kelompok Skema</span>
-                        <span className={styles.reviewValue}>{usulan.kelompok_skema || '-'}</span>
-                    </div>
-                    <div className={styles.reviewItem}>
-                        <span className={styles.reviewLabel}>Ruang Lingkup</span>
-                        <span className={styles.reviewValue}>{usulan.ruang_lingkup || '-'}</span>
-                    </div>
-                    <div className={styles.reviewItem}>
-                        <span className={styles.reviewLabel}>Tema Penelitian</span>
-                        <span className={styles.reviewValue}>{usulan.tema_penelitian || '-'}</span>
-                    </div>
-                    <div className={styles.reviewItem}>
-                        <span className={styles.reviewLabel}>Topik Penelitian</span>
-                        <span className={styles.reviewValue}>{usulan.topik_penelitian || '-'}</span>
-                    </div>
-                    <div className={styles.reviewItem}>
-                        <span className={styles.reviewLabel}>Bidang Fokus</span>
-                        <span className={styles.reviewValue}>{usulan.bidang_fokus || '-'}</span>
-                    </div>
-                    <div className={styles.reviewItem}>
-                        <span className={styles.reviewLabel}>Tahun Usulan</span>
-                        <span className={styles.reviewValue}>{new Date().getFullYear()}</span>
-                    </div>
-                    <div className={styles.reviewItem}>
-                        <span className={styles.reviewLabel}>Tahun Pelaksanaan</span>
-                        <span className={styles.reviewValue}>{usulan.tahun_pertama || '-'}</span>
-                    </div>
-                    <div className={styles.reviewItem}>
-                        <span className={styles.reviewLabel}>Target TKT</span>
-                        <span className={styles.reviewValue}>{usulan.target_akhir_tkt || '-'}</span>
+        <div className={styles.container}>
+            {/* Header Document */}
+            <div className={styles.pageSection}>
+                <div className={styles.formSection} style={{ borderBottom: '4px solid var(--primary)', borderRadius: '12px 12px 0 0' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                            <div style={{ background: 'var(--primary-light)', padding: '12px', borderRadius: '12px', color: 'var(--primary)' }}>
+                                <ClipboardCheck size={32} />
+                            </div>
+                            <div>
+                                <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--secondary)', margin: 0 }}>Review Usulan Penelitian</h2>
+                                <p style={{ margin: 0, color: '#64748b', fontSize: '0.875rem' }}>ID Usulan: #{usulanId}</p>
+                            </div>
+                        </div>
+                        <div style={{ textAlign: 'right' }}>
+                            <span className={styles.badge} style={{
+                                background: usulan.status === 'draft' ? '#f1f5f9' : '#dcfce7',
+                                color: usulan.status === 'draft' ? '#475569' : '#166534',
+                                fontSize: '0.875rem',
+                                padding: '6px 16px'
+                            }}>
+                                {usulan.status.toUpperCase().replace('_', ' ')}
+                            </span>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            {/* Identitas Anggota Dosen */}
-            <div className={styles.formSection}>
-                <h2 className={styles.sectionTitle}>Identitas Anggota Dosen</h2>
-                <div className={styles.tableContainer}>
-                    <table className={styles.table}>
-                        <thead>
-                            <tr>
-                                <th>No</th>
-                                <th>NIDN</th>
-                                <th>Nama</th>
-                                <th>Peran</th>
-                                <th>Tugas</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {(usulan.anggota_dosen || usulan.anggotaDosen) && (usulan.anggota_dosen || usulan.anggotaDosen).length > 0 ? (
-                                (usulan.anggota_dosen || usulan.anggotaDosen).map((anggota: any, index: number) => (
-                                    <tr key={anggota.id}>
-                                        <td>{index + 1}</td>
-                                        <td>{anggota.nidn}</td>
-                                        <td>{anggota.nama}</td>
-                                        <td>{anggota.peran}</td>
-                                        <td>{anggota.tugas || '-'}</td>
-                                        <td>
-                                            <span className={anggota.status_approval === 'approved' ? styles.statusApproved : styles.statusPending}>
-                                                {anggota.status_approval === 'approved' ? 'Menyetujui' : 'Menunggu'}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                ))
-                            ) : (
-                                <tr>
-                                    <td colSpan={6} className={styles.emptyState}>Belum ada anggota dosen</td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
+            {/* 1. Informasi Dasar */}
+            <div className={styles.pageSection}>
+                <div className={styles.formSection} style={{ background: 'transparent', padding: 0, border: 'none', boxShadow: 'none' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '1.5rem' }}>
+                        <FileText size={20} className="text-blue-600" />
+                        <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 700, color: 'var(--secondary)' }}>Identitas & Judul Usulan</h3>
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                        {/* Title Card */}
+                        <div style={{
+                            background: 'white',
+                            padding: '2rem',
+                            borderRadius: '16px',
+                            border: '1px solid #e2e8f0',
+                            boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+                            position: 'relative',
+                            overflow: 'hidden'
+                        }}>
+                            <div style={{
+                                position: 'absolute',
+                                top: 0,
+                                left: 0,
+                                width: '4px',
+                                height: '100%',
+                                background: 'linear-gradient(to bottom, var(--primary), #3b82f6)'
+                            }} />
+                            <span style={{
+                                fontSize: '0.75rem',
+                                fontWeight: 700,
+                                color: 'var(--primary)',
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.05em',
+                                display: 'block',
+                                marginBottom: '0.5rem'
+                            }}>
+                                Judul Penelitian
+                            </span>
+                            <h1 style={{
+                                fontSize: '1.5rem',
+                                fontWeight: 800,
+                                color: 'var(--secondary)',
+                                lineHeight: 1.4,
+                                margin: 0
+                            }}>
+                                {usulan.judul}
+                            </h1>
+                        </div>
+
+                        {/* Metadata Grid */}
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.25rem' }}>
+                            {/* Group: Skema & Waktu */}
+                            <div style={{
+                                background: '#f8fafc',
+                                padding: '1.5rem',
+                                borderRadius: '12px',
+                                border: '1px solid #e2e8f0',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: '1rem'
+                            }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', borderBottom: '1px solid #e2e8f0', paddingBottom: '0.75rem', marginBottom: '0.25rem' }}>
+                                    <Layers size={16} className="text-blue-500" />
+                                    <span style={{ fontWeight: 700, fontSize: '0.875rem', color: '#475569' }}>Skema & Durasi</span>
+                                </div>
+                                {renderReviewItem('Kelompok Skema', usulan.kelompok_skema)}
+                                {renderReviewItem('Lama Kegiatan', `${usulan.lama_kegiatan} Tahun`)}
+                                {renderReviewItem('Tahun Pertama', usulan.tahun_pertama)}
+                            </div>
+
+                            {/* Group: Fokus & Bidang */}
+                            <div style={{
+                                background: '#f8fafc',
+                                padding: '1.5rem',
+                                borderRadius: '12px',
+                                border: '1px solid #e2e8f0',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: '1rem'
+                            }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', borderBottom: '1px solid #e2e8f0', paddingBottom: '0.75rem', marginBottom: '0.25rem' }}>
+                                    <ShieldCheck size={16} className="text-blue-500" />
+                                    <span style={{ fontWeight: 700, fontSize: '0.875rem', color: '#475569' }}>Fokus & Spesifikasi</span>
+                                </div>
+                                {renderReviewItem('Bidang Fokus', usulan.bidang_fokus)}
+                                {renderReviewItem('Target Akhir TKT', `Level ${usulan.target_akhir_tkt}`)}
+                                {renderReviewItem('Tema Penelitian', usulan.tema_penelitian)}
+                                {renderReviewItem('Topik Penelitian', usulan.topik_penelitian)}
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            {/* Identitas Anggota Non Dosen */}
-            <div className={styles.formSection}>
-                <h2 className={styles.sectionTitle}>Identitas Anggota Non Dosen (Mahasiswa)</h2>
-                <div className={styles.tableContainer}>
-                    <table className={styles.table}>
-                        <thead>
-                            <tr>
-                                <th>No</th>
-                                <th>NIM</th>
-                                <th>Nama</th>
-                                <th>Peran</th>
-                                <th>Tugas</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {(usulan.anggota_non_dosen || usulan.anggotaNonDosen) && (usulan.anggota_non_dosen || usulan.anggotaNonDosen).length > 0 ? (
-                                (usulan.anggota_non_dosen || usulan.anggotaNonDosen).map((anggota: any, index: number) => (
-                                    <tr key={anggota.id}>
-                                        <td>{index + 1}</td>
-                                        <td>{anggota.no_identitas}</td>
-                                        <td>{anggota.nama}</td>
-                                        <td>{anggota.jenis_anggota}</td>
-                                        <td>{anggota.tugas || '-'}</td>
-                                        <td>
-                                            <span className={anggota.status_approval === 'approved' ? styles.statusApproved : styles.statusPending}>
-                                                {anggota.status_approval === 'approved' ? 'Menyetujui' : 'Menunggu'}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                ))
-                            ) : (
-                                <tr>
-                                    <td colSpan={6} className={styles.emptyState}>Belum ada anggota mahasiswa</td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            {/* Substansi dan Luaran */}
-            <div className={styles.formSection}>
-                <h2 className={styles.sectionTitle}>Substansi dan Luaran</h2>
-
-                <div className={styles.reviewSection}>
-                    <h3 className={styles.subTitle}>Makro Riset</h3>
-                    <p className={styles.reviewText}>{usulan.kelompok_makro_riset || '-'}</p>
-                </div>
-
-                <div className={styles.reviewSection}>
-                    <h3 className={styles.subTitle}>File Substansi</h3>
-                    {usulan.file_substansi ? (
-                        <a href={`/storage/${usulan.file_substansi}`} target="_blank" rel="noopener noreferrer" className={styles.link}>Lihat File Substansi</a>
-                    ) : (
-                        <span className={styles.reviewValue}>Belum diupload</span>
-                    )}
-                </div>
-
-                <div className={styles.reviewSection}>
-                    <div className={styles.tableContainer}>
-                        <h3 className={styles.subTitle}>Target Luaran</h3>
+            {/* 2. Personil */}
+            <div className={styles.pageSection}>
+                <div className={styles.formSection}>
+                    <h3 className={styles.sectionTitle}>
+                        <Users size={20} className="text-blue-600" />
+                        Anggota Tim Peneliti
+                    </h3>
+                    <div style={{ overflowX: 'auto' }}>
                         <table className={styles.table}>
                             <thead>
                                 <tr>
-                                    <th>Tahun</th>
-                                    <th>Kategori</th>
-                                    <th>Deskripsi</th>
-                                    <th>Status</th>
+                                    <th>Nama / NIDN</th>
+                                    <th>Peran</th>
+                                    <th>Tugas dlm Penelitian</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {(usulan.luaran_list || usulan.luaranList)?.length > 0 ? (
-                                    (usulan.luaran_list || usulan.luaranList).map((luaran: any, idx: number) => (
-                                        <tr key={idx}>
-                                            <td>Tahun {luaran.tahun}</td>
-                                            <td>{luaran.kategori}</td>
-                                            <td>{luaran.deskripsi}</td>
-                                            <td>{luaran.status}</td>
-                                        </tr>
-                                    ))
-                                ) : (
-                                    <tr><td colSpan={4} className={styles.emptyState}>Belum ada luaran</td></tr>
+                                {(usulan.anggota_dosen || usulan.anggotaDosen || []).map((m: any) => (
+                                    <tr key={m.id}>
+                                        <td>
+                                            <div style={{ fontWeight: 600 }}>{m.nama}</div>
+                                            <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{m.nidn}</div>
+                                        </td>
+                                        <td><span className={styles.badge} style={{ background: '#dcfce7', color: '#166534' }}>{m.peran}</span></td>
+                                        <td style={{ fontSize: '0.875rem' }}>{m.tugas || '-'}</td>
+                                    </tr>
+                                ))}
+                                {(usulan.anggota_non_dosen || usulan.anggotaNonDosen || []).map((m: any) => (
+                                    <tr key={m.id || `nd-${m.no_identitas}`}>
+                                        <td>
+                                            <div style={{ fontWeight: 600 }}>{m.nama}</div>
+                                            <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{m.no_identitas} • {m.jurusan}</div>
+                                        </td>
+                                        <td><span className={styles.badge} style={{ background: '#f1f5f9', color: '#475569' }}>{m.jenis_anggota}</span></td>
+                                        <td style={{ fontSize: '0.875rem' }}>{m.tugas || '-'}</td>
+                                    </tr>
+                                ))}
+                                {(usulan.anggota_dosen || usulan.anggotaDosen || []).length === 0 && (usulan.anggota_non_dosen || usulan.anggotaNonDosen || []).length === 0 && (
+                                    <tr>
+                                        <td colSpan={4} style={{ textAlign: 'center', padding: '2rem', color: '#94a3b8' }}>Belum ada anggota tim tambahan</td>
+                                    </tr>
                                 )}
                             </tbody>
                         </table>
@@ -261,182 +288,178 @@ const PageTinjauan: React.FC<PageTinjauanProps> = ({
                 </div>
             </div>
 
-            {/* Rancangan Anggaran Biaya */}
-            <div className={styles.formSection}>
-                <h2 className={styles.sectionTitle}>Rancangan Anggaran Biaya (RAB)</h2>
+            {/* 3. Substansi & Luaran */}
+            <div className={styles.pageSection}>
+                <div className={styles.formSection}>
+                    <h3 className={styles.sectionTitle}>
+                        <Layers size={20} className="text-blue-600" />
+                        Substansi & Target Luaran
+                    </h3>
+                    <div className={styles.reviewGrid}>
+                        {renderReviewItem('Kelompok Makro Riset', usulan.kelompok_makro_riset)}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                            <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.025em' }}>
+                                Dokumen Proposal
+                            </span>
+                            <div style={{ padding: '0.75rem 1rem', background: 'white', borderRadius: '10px', border: '1px solid #e2e8f0', minHeight: '44px', display: 'flex', alignItems: 'center' }}>
+                                {usulan.file_substansi ? (
+                                    <a href={`/storage/${usulan.file_substansi}`} target="_blank" rel="noopener noreferrer" className={styles.link} style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 600 }}>
+                                        <ExternalLink size={16} /> Lihat Dokumen Laporan
+                                    </a>
+                                ) : <span className="text-red-500" style={{ fontWeight: 600 }}>Belum diunggah</span>}
+                            </div>
+                        </div>
+                    </div>
 
-                <div className={styles.rabInfo}>
-                    <p><strong>Total Anggaran:</strong> {formatRupiah(totalAnggaran)}</p>
-                </div>
-
-                <div className={styles.tableContainer}>
-                    <table className={styles.table}>
-                        <thead>
-                            <tr>
-                                <th>Kelompok</th>
-                                <th>Komponen</th>
-                                <th>Item</th>
-                                <th>Satuan</th>
-                                <th>Harga Satuan</th>
-                                <th>Volume</th>
-                                <th>Total</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {rabBahan.map((item: any) => (
-                                <tr key={`bahan-${item.id}`}>
-                                    <td>Bahan</td>
-                                    <td>{item.kategori}</td>
-                                    <td>{item.item}</td>
-                                    <td>{item.satuan}</td>
-                                    <td>{formatRupiah(item.harga_satuan)}</td>
-                                    <td>{item.volume}</td>
-                                    <td>{formatRupiah(item.total)}</td>
-                                </tr>
-                            ))}
-                            {rabPerjalanan.map((item: any) => (
-                                <tr key={`perj-${item.id}`}>
-                                    <td>Perjalanan</td>
-                                    <td>{item.kategori}</td>
-                                    <td>{item.item}</td>
-                                    <td>{item.satuan}</td>
-                                    <td>{formatRupiah(item.harga_satuan)}</td>
-                                    <td>{item.volume}</td>
-                                    <td>{formatRupiah(item.total)}</td>
-                                </tr>
-                            ))}
-                            {rabPublikasi.map((item: any) => (
-                                <tr key={`publ-${item.id}`}>
-                                    <td>Publikasi</td>
-                                    <td>{item.kategori}</td>
-                                    <td>{item.item}</td>
-                                    <td>{item.satuan}</td>
-                                    <td>{formatRupiah(item.harga_satuan)}</td>
-                                    <td>{item.volume}</td>
-                                    <td>{formatRupiah(item.total)}</td>
-                                </tr>
-                            ))}
-                            {rabData.map((item: any) => (
-                                <tr key={`data-${item.id}`}>
-                                    <td>Pengumpulan Data</td>
-                                    <td>{item.kategori}</td>
-                                    <td>{item.item}</td>
-                                    <td>{item.satuan}</td>
-                                    <td>{formatRupiah(item.harga_satuan)}</td>
-                                    <td>{item.volume}</td>
-                                    <td>{formatRupiah(item.total)}</td>
-                                </tr>
-                            ))}
-                            {rabSewa.map((item: any) => (
-                                <tr key={`sewa-${item.id}`}>
-                                    <td>Sewa Peralatan</td>
-                                    <td>{item.kategori}</td>
-                                    <td>{item.item}</td>
-                                    <td>{item.satuan}</td>
-                                    <td>{formatRupiah(item.harga_satuan)}</td>
-                                    <td>{item.volume}</td>
-                                    <td>{formatRupiah(item.total)}</td>
-                                </tr>
-                            ))}
-                            {rabItems.length === 0 && (
+                    <div style={{ marginTop: '1.5rem' }}>
+                        <p style={{ fontSize: '0.875rem', fontWeight: 600, color: '#64748b', marginBottom: '0.75rem' }}>Target Luaran Capaian:</p>
+                        <table className={styles.table}>
+                            <thead>
                                 <tr>
-                                    <td colSpan={7} className={styles.emptyState}>Belum ada data RAB</td>
+                                    <th>Tahun</th>
+                                    <th>Kategori</th>
+                                    <th>Deskripsi Luaran</th>
+                                    <th>Status</th>
                                 </tr>
-                            )}
-                            <tr className={styles.totalRow}>
-                                <td colSpan={6}><strong>Total Anggaran</strong></td>
-                                <td><strong>{formatRupiah(totalAnggaran)}</strong></td>
-                            </tr>
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                {(usulan.luaran_list || usulan.luaranList || []).map((l: any, idx: number) => (
+                                    <tr key={idx}>
+                                        <td>Tahun {l.tahun}</td>
+                                        <td style={{ fontWeight: 600 }}>{l.kategori}</td>
+                                        <td style={{ fontSize: '0.875rem' }}>{l.deskripsi}</td>
+                                        <td>{l.status}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
 
-            {/* Riwayat Usulan & Catatan */}
-            {(usulan.review_histories || usulan.reviewHistories) && (usulan.review_histories || usulan.reviewHistories).length > 0 && (
+            {/* 4. RAB Summary */}
+            <div className={styles.pageSection}>
                 <div className={styles.formSection}>
-                    <h2 className={styles.sectionTitle}>Riwayat Usulan & Catatan</h2>
-                    <div className="space-y-4 pt-2">
-                        {(usulan.review_histories || usulan.reviewHistories).map((h: any, i: number) => (
-                            <div key={i} className="flex gap-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                                <div className="min-w-[120px]">
-                                    <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">
-                                        {new Date(h.reviewed_at || h.created_at).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                        <h3 className={styles.sectionTitle} style={{ marginBottom: 0 }}>
+                            <Wallet size={20} className="text-blue-600" />
+                            Rerincian Anggaran (RAB)
+                        </h3>
+                        <div style={{ textAlign: 'right' }}>
+                            <span style={{ fontSize: '0.875rem', color: '#64748b' }}>Total Usulan:</span>
+                            <span style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--primary)', marginLeft: '8px' }}>{formatCurrency(totalAnggaran)}</span>
+                        </div>
+                    </div>
+                    {/* Simplified RAB Review */}
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+                        {['bahan', 'perjalanan', 'publikasi', 'pengumpulan_data'].map(tipe => {
+                            const subtot = rabItems.filter((i: any) => i.tipe === tipe).reduce((acc: number, i: any) => acc + (Number(i.total) || 0), 0);
+                            return (
+                                <div key={tipe} style={{ padding: '1rem', background: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                                    <span style={{ fontSize: '0.75rem', color: '#64748b', textTransform: 'uppercase', fontWeight: 700 }}>{tipe.replace('_', ' ')}</span>
+                                    <div style={{ fontWeight: 700, marginTop: '4px' }}>{formatCurrency(subtot)}</div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            </div>
+
+            {/* 5. Riwayat - if exists */}
+            {(usulan.review_histories || usulan.reviewHistories || []).length > 0 && (
+                <div className={styles.pageSection}>
+                    <div className={styles.formSection}>
+                        <h3 className={styles.sectionTitle}>
+                            <History size={20} className="text-blue-600" />
+                            Riwayat Usulan & Catatan Review
+                        </h3>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                            {(usulan.review_histories || usulan.reviewHistories).map((h: any, i: number) => (
+                                <div key={i} style={{ display: 'flex', gap: '1rem', padding: '1rem', background: '#f8fafc', borderRadius: '8px' }}>
+                                    <div style={{ minWidth: '100px', fontSize: '0.75rem', color: '#94a3b8' }}>
+                                        {new Date(h.reviewed_at || h.created_at).toLocaleDateString('id-ID')}
                                     </div>
-                                    <div className="text-[10px] font-bold text-gray-500 tabular-nums">
-                                        {new Date(h.reviewed_at || h.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
+                                    <div>
+                                        <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--secondary)', textTransform: 'uppercase' }}>{h.action}</span>
+                                        <div style={{ fontSize: '0.875rem', color: '#475569', marginTop: '4px', fontStyle: 'italic' }}>"{h.comments}"</div>
                                     </div>
                                 </div>
-                                <div className="flex-1">
-                                    <div className="flex items-center gap-2 mb-1">
-                                        <span className="text-xs font-black text-gray-900 uppercase tracking-tight">
-                                            {h.action.toUpperCase().replace(/_/g, ' ')}
-                                        </span>
-                                        <span className="text-[9px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-black border border-blue-200 uppercase tracking-tighter">
-                                            {h.reviewer_type?.replace(/_/g, ' ')}
-                                        </span>
-                                    </div>
-                                    {h.comments && (
-                                        <div className="text-sm text-gray-600 italic bg-white p-3 rounded border border-gray-100 shadow-sm mt-2 border-l-4 border-l-blue-400">
-                                            "{h.comments}"
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        ))}
+                            ))}
+                        </div>
                     </div>
                 </div>
             )}
 
-            {/* Pernyataan Konfirmasi */}
+            {/* Submission Area */}
             {['draft', 'revision_dosen'].includes(usulan.status) && (
-                <div className={styles.warningBox}>
-                    <h4 style={{ margin: '0 0 10px 0', color: '#856404', fontWeight: 700 }}>Pernyataan Konfirmasi</h4>
-                    <label className="flex items-start gap-3 cursor-pointer">
-                        <input
-                            type="checkbox"
-                            checked={isChecked}
-                            onChange={(e) => setIsChecked(e.target.checked)}
-                            className="mt-1 w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                        />
-                        <span className="text-sm leading-relaxed text-gray-700 font-medium">
-                            Dengan ini saya menyatakan bahwa data yang saya isikan adalah benar dan dapat dipertanggungjawabkan.
-                            Saya bersedia mengikuti segala ketentuan yang berlaku dalam pelaksanaan Penelitian ini.
-                        </span>
-                    </label>
+                <div className={styles.pageSection}>
+                    <div style={{ background: '#ecfdf5', padding: '2rem', borderRadius: '12px', border: '1px solid #10b981' }}>
+                        <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
+                            <ShieldCheck size={28} className="text-emerald-600" />
+                            <div>
+                                <h4 style={{ margin: 0, color: '#065f46', fontWeight: 700 }}>Pernyataan Konfirmasi</h4>
+                                <label style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', cursor: 'pointer', marginTop: '1rem' }}>
+                                    <input
+                                        type="checkbox"
+                                        checked={isChecked}
+                                        onChange={(e) => setIsChecked(e.target.checked)}
+                                        style={{ marginTop: '4px', width: '18px', height: '18px' }}
+                                    />
+                                    <span style={{ fontSize: '0.875rem', lineHeight: 1.6, color: '#064e3b' }}>
+                                        Saya menyatakan bahwa seluruh data usulan ini telah diisi dengan benar dan sesuai dengan panduan yang berlaku.
+                                        Saya bersedia mempertanggungjawabkan data ini dan mengikuti seluruh proses seleksi serta pelaksanaan penelitian
+                                        sesuai aturan LPPM.
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             )}
 
-            {/* Action Buttons */}
+            {/* Action Footer */}
             <div className={styles.actionContainer}>
-                <div className={styles.actionLeft}>
+                <div style={{ display: 'flex', gap: '1rem' }}>
                     <button className={styles.secondaryButton} onClick={onKembali}>
-                        &lt; Kembali
+                        <ArrowLeft size={18} /> Kembali
                     </button>
                     <button className={styles.secondaryButton} onClick={onTutupForm}>
-                        Tutup Form
+                        <X size={18} /> Tutup
                     </button>
                 </div>
-                <div className={styles.actionRight}>
-                    <button className={styles.printButton} onClick={handlePrintPDF}>
-                        Print PDF
+
+                <div style={{ display: 'flex', gap: '1rem' }}>
+                    <button className={styles.secondaryButton} onClick={handlePrintPDF}>
+                        <Printer size={18} /> Print Review
                     </button>
-                    <button
-                        className={styles.primaryButton}
-                        onClick={handleSubmit}
-                        disabled={isSubmitting || !['draft', 'revision_dosen'].includes(usulan.status) || (['draft', 'revision_dosen'].includes(usulan.status) && !isChecked)}
-                        style={{
-                            backgroundColor: (['draft', 'revision_dosen'].includes(usulan.status) && isChecked) ? '#16a34a' : '#9ca3af',
-                            cursor: (['draft', 'revision_dosen'].includes(usulan.status) && isChecked) ? 'pointer' : 'not-allowed',
-                            opacity: (['draft', 'revision_dosen'].includes(usulan.status) && !isChecked) ? 0.7 : 1
-                        }}
-                    >
-                        {isSubmitting ? 'Mengirim...' : (['draft', 'revision_dosen'].includes(usulan.status) ? 'Kirim Usulan' : 'Sudah Dikirim')}
-                    </button>
+                    {!isReadOnly ? (
+                        <button
+                            className={styles.primaryButton}
+                            onClick={handleSubmit}
+                            disabled={isSubmitting || !['draft', 'revision_dosen'].includes(usulan.status) || !isChecked}
+                            style={{
+                                background: isChecked ? '#10b981' : '#94a3b8',
+                                padding: '0.75rem 2rem'
+                            }}
+                        >
+                            {isSubmitting ? 'Memproses...' : (
+                                <>
+                                    <Send size={18} /> Kirim Usulan Sekarang
+                                </>
+                            )}
+                        </button>
+                    ) : (
+                        <button
+                            className={styles.secondaryButton}
+                            disabled
+                            style={{ opacity: 0.7, cursor: 'not-allowed', background: '#f1f5f9' }}
+                        >
+                            <ShieldCheck size={18} /> Mode Tinjauan (Read Only)
+                        </button>
+                    )}
                 </div>
             </div>
-
-        </>
+        </div >
     );
 };
 

@@ -115,6 +115,14 @@ class UsulanPenelitian extends Model
         return $this->morphMany(ReviewHistory::class, 'usulan');
     }
 
+    /**
+     * Relasi ke Reviewer (User)
+     */
+    public function reviewer()
+    {
+        return $this->belongsTo(User::class, 'reviewer_id');
+    }
+
     // ========================================
     // HELPER METHODS
     // ========================================
@@ -142,5 +150,29 @@ class UsulanPenelitian extends Model
     public function isSubmitted()
     {
         return $this->status === 'submitted';
+    }
+
+    /**
+     * Relasi ke Laporan Kemajuan
+     */
+    public function laporanKemajuan()
+    {
+        return $this->hasOne(LaporanKemajuanPenelitian::class, 'usulan_id');
+    }
+
+    /**
+     * Relasi ke Laporan Akhir
+     */
+    public function laporanAkhir()
+    {
+        return $this->hasOne(LaporanAkhirPenelitian::class, 'usulan_id');
+    }
+
+    /**
+     * Relasi ke Catatan Harian
+     */
+    public function catatanHarian()
+    {
+        return $this->hasMany(CatatanHarianPenelitian::class, 'usulan_id');
     }
 }

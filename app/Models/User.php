@@ -43,6 +43,23 @@ class User extends Authenticatable implements HasMedia
     ];
 
     /**
+     * The accessors to append to the model's array form.
+     *
+     * @var array
+     */
+    protected $appends = [
+        'avatar',
+    ];
+
+    /**
+     * Get the user's avatar URL.
+     */
+    public function getAvatarAttribute()
+    {
+        return $this->getFirstMediaUrl('avatars');
+    }
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>

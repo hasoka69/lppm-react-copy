@@ -2,390 +2,496 @@ import { Head, Link, useForm, router, usePage } from '@inertiajs/react';
 import React, { useState, useEffect, useRef } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/footer';
-import styles from '../../../../../css/pengajuan.module.css';
+import {
+    Calendar,
+    ArrowLeft,
+    Plus,
+    FileText,
+    History,
+    CheckCircle2,
+    CalendarDays,
+    Upload,
+    Paperclip,
+    ExternalLink,
+    AlertCircle,
+    Info,
+    Edit,
+    Trash2,
+    X,
+    Save,
+    ChevronLeft,
+    ChevronRight,
+    Search,
+    Percent
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { toast } from 'sonner';
+import { Toaster } from '@/components/ui/sonner';
+
+const containerVariants = {
+    hidden: { opacity: 0, y: 10 },
+    visible: {
+        opacity: 1,
+        transition: { duration: 0.5 }
+    }
+};
 
 interface Props {
     usulan: any;
     logs: any[];
+    months: string[];
+    selectedMonth: string;
+    isAdminView?: boolean;
 }
 
-export default function Show({ usulan, logs }: Props) {
+export default function Show({ usulan, logs, months, selectedMonth, isAdminView = false }: Props) {
     const { flash }: any = usePage().props;
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingLog, setEditingLog] = useState<any>(null);
-    const [selectedMonth, setSelectedMonth] = useState('');
 
     useEffect(() => {
-        if (flash.success) alert(flash.success);
-        if (flash.error) alert(flash.error);
+        if (flash.success) {
+            toast.success(flash.success);
+        }
+        if (flash.error) {
+            toast.error(flash.error);
+        }
     }, [flash]);
 
-    const filteredLogs = selectedMonth
-        ? logs.filter(log => log.tanggal.startsWith(selectedMonth))
-        : logs;
-
-    const openCreateModal = () => {
-        setEditingLog(null);
-        setIsModalOpen(true);
+    const handleMonthChange = (month: string) => {
+        router.visit(route('dosen.pengabdian.catatan-harian.show', {
+            id: usulan.id,
+            month: month
+        }), { preserveState: true });
     };
 
-    const openEditModal = (log: any) => {
-        setEditingLog(log);
-        setIsModalOpen(true);
+    const handleDelete = (id: number) => {
+        if (confirm('Apakah Anda yakin ingin menghapus catatan ini?')) {
+            router.delete(route('dosen.pengabdian.catatan-harian.delete', id), {
+                onSuccess: () => toast.success('Catatan berhasil dihapus')
+            });
+        }
     };
 
     return (
-        <div className={styles.masterContainer}>
+        <div className="min-h-screen bg-[#F8FAFC] font-sans">
             <Head title={`Catatan Harian - ${usulan.judul}`} />
             <Header />
 
-            <div className={styles.tabContainer}>
-                <div className={styles.tabs}>
-                    <button className={styles.tab} onClick={() => router.visit('/dosen/pengabdian')}>Daftar Pengabdian</button>
-                    <button className={styles.tab} onClick={() => router.visit('/dosen/pengabdian/perbaikan')}>Perbaikan Usulan</button>
-                    <button className={styles.tab} onClick={() => router.visit(route('dosen.pengabdian.laporan-kemajuan.index'))}>Laporan Kemajuan</button>
-                    <button className={`${styles.tab} ${styles.active}`} onClick={() => router.visit(route('dosen.pengabdian.catatan-harian.index'))}>Catatan Harian</button>
-                    <button className={styles.tab} onClick={() => { }}>Laporan Akhir</button>
-                    <button className={styles.tab} onClick={() => { }}>Pengkinian Capaian Luaran</button>
+            {/* Professional Tab Navigation */}
+            <div className="bg-white border-b border-gray-100 sticky top-0 z-30">
+                <div className="max-w-7xl mx-auto px-6">
+                    <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
+                        {[
+                            { label: 'Daftar Pengabdian', route: isAdminView ? route('lppm.pengabdian.index') : route('dosen.pengabdian.index') },
+                            { label: 'Perbaikan Usulan', route: isAdminView ? route('lppm.pengabdian.perbaikan') : route('dosen.pengabdian.perbaikan') },
+                            { label: 'Laporan Kemajuan', route: isAdminView ? route('lppm.pengabdian.laporan-kemajuan') : route('dosen.pengabdian.laporan-kemajuan.index') },
+                            { label: 'Catatan Harian', active: true, route: isAdminView ? route('lppm.pengabdian.catatan-harian') : route('dosen.pengabdian.catatan-harian.index') },
+                            { label: 'Laporan Akhir', route: isAdminView ? route('lppm.pengabdian.laporan-akhir') : route('dosen.pengabdian.laporan-akhir.index') },
+                            { label: 'Pengkinian Capaian Luaran', route: isAdminView ? route('lppm.pengabdian.pengkinian-luaran') : route('dosen.pengabdian.pengkinian-luaran.index') }
+                        ].map((tab, idx) => (
+                            <button
+                                key={idx}
+                                onClick={() => tab.route !== '#' && router.visit(tab.route)}
+                                className={`px-5 py-4 text-[13px] font-semibold transition-all whitespace-nowrap relative ${tab.active ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
+                            >
+                                {tab.label}
+                                {tab.active && (
+                                    <motion.div
+                                        layoutId="activeTab"
+                                        className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 rounded-full"
+                                    />
+                                )}
+                            </button>
+                        ))}
+                    </div>
                 </div>
+            </div>
 
-                <main className="flex-1 p-6 space-y-6">
-                    {/* Header Info */}
-                    <div className="bg-white p-6 rounded-xl border border-emerald-100 shadow-sm space-y-3">
-                        <p className="text-sm font-bold text-gray-900 leading-relaxed uppercase tracking-tight">
-                            {usulan.judul}
-                        </p>
-                        <div className="flex flex-wrap gap-2">
-                            <span className="text-[10px] bg-emerald-600 text-white px-2 py-0.5 rounded font-bold uppercase">{usulan.kelompok_skema}</span>
-                            <span className="text-[10px] bg-amber-500 text-white px-2 py-0.5 rounded font-bold uppercase">Tahun Pelaksanaan {usulan.tahun_pertama}</span>
+            <main className="max-w-7xl mx-auto px-6 py-10">
+                <motion.div
+                    initial="hidden"
+                    animate="visible"
+                    variants={containerVariants}
+                    className="space-y-8"
+                >
+                    {/* Header Section */}
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                        <div className="space-y-1">
+                            <Link
+                                href={isAdminView ? route('lppm.pengabdian.catatan-harian') : route('dosen.pengabdian.catatan-harian.index')}
+                                className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 hover:text-blue-700 transition-colors mb-2"
+                            >
+                                <ArrowLeft className="w-3.5 h-3.5" /> Kembali ke Daftar
+                            </Link>
+                            <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
+                                Catatan <span className="text-blue-600 font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">Harian</span>
+                            </h1>
+                            <p className="text-gray-500 text-[13px] font-medium">Log Aktivitas Pengabdian & Perkembangan Program</p>
                         </div>
+
+                        {!isAdminView && (
+                            <motion.button
+                                whileHover={{ y: -2 }}
+                                whileTap={{ scale: 0.98 }}
+                                onClick={() => { setEditingLog(null); setIsModalOpen(true); }}
+                                className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl text-sm font-bold shadow-md shadow-blue-200 hover:bg-blue-700 transition-all border border-blue-500/10"
+                            >
+                                <Plus className="w-4 h-4" /> Tambah Aktivitas
+                            </motion.button>
+                        )}
                     </div>
 
-                    {/* Toolbar */}
-                    <div className="flex items-center justify-between">
-                        <div className="flex gap-3">
-                            <button
-                                onClick={() => router.visit(route('dosen.pengabdian.catatan-harian.index'))}
-                                className="px-4 py-2 bg-gray-100 text-gray-600 rounded-lg text-xs font-bold hover:bg-gray-200 transition flex items-center gap-2 shadow-sm"
-                            >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
-                                Kembali
-                            </button>
-                            <button
-                                onClick={openCreateModal}
-                                className="px-4 py-2 bg-blue-700 text-white rounded-lg text-xs font-bold hover:bg-blue-800 transition flex items-center gap-2 shadow-md"
-                            >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" /></svg>
-                                Tambah
-                            </button>
+                    {/* Proposal Summary Card */}
+                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 overflow-hidden relative group">
+                        <div className="absolute top-0 left-0 w-1.5 h-full bg-blue-600" />
+                        <div className="flex-1 space-y-3">
+                            <div className="flex items-center gap-3">
+                                <span className="px-2.5 py-0.5 bg-amber-50 text-amber-600 text-[11px] font-bold rounded-md border border-amber-100">Pengabdian</span>
+                                <span className="text-gray-300">|</span>
+                                <span className="text-gray-400 text-[11px] font-bold uppercase tracking-wider">{usulan.kelompok_skema}</span>
+                            </div>
+                            <h2 className="text-xl font-bold text-gray-900 leading-snug max-w-4xl">
+                                {usulan.judul}
+                            </h2>
                         </div>
-
-                        <div className="flex items-center gap-3">
-                            <div className="flex items-center bg-white border border-gray-200 rounded-lg overflow-hidden px-3 shadow-sm">
-                                <svg className="w-4 h-4 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" /></svg>
-                                <input
-                                    type="month"
-                                    className="border-none text-xs text-gray-700 py-2 focus:ring-0"
-                                    value={selectedMonth}
-                                    onChange={(e) => setSelectedMonth(e.target.value)}
-                                />
+                        <div className="flex flex-col items-end gap-2 shrink-0">
+                            <div className="flex items-center gap-2 text-[11px] font-bold text-gray-400 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-100">
+                                <Calendar className="w-3.5 h-3.5" />
+                                TAHUN PELAKSANAAN: {usulan.tahun_pertama}
+                            </div>
+                            <div className="flex items-center gap-2 text-[11px] font-bold text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-100">
+                                <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />
+                                DANA DISETUJUI: Rp {new Intl.NumberFormat('id-ID').format(usulan.dana_disetujui || 0)}
                             </div>
                         </div>
                     </div>
 
-                    {/* Content Table */}
-                    <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left border-collapse">
-                                <thead className="bg-gray-50/80 text-[10px] font-bold text-gray-500 uppercase tracking-widest border-b border-gray-100">
-                                    <tr>
-                                        <th className="px-6 py-4 w-16 text-center">No</th>
-                                        <th className="px-6 py-4 w-32">Tanggal</th>
-                                        <th className="px-6 py-4">Kegiatan</th>
-                                        <th className="px-6 py-4 w-24 text-center">Persentase</th>
-                                        <th className="px-6 py-4 w-28 text-center">Total Berkas</th>
-                                        <th className="px-6 py-4 w-32 text-center">Aksi</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-100">
-                                    {filteredLogs.length > 0 ? (
-                                        filteredLogs.map((log, index) => (
-                                            <tr key={log.id} className="hover:bg-emerald-50/30 transition group align-top">
-                                                <td className="px-6 py-5 text-xs text-gray-500 font-medium text-center">{index + 1}</td>
-                                                <td className="px-6 py-5 text-xs text-emerald-700 font-bold">
-                                                    {new Date(log.tanggal).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })}
-                                                </td>
-                                                <td className="px-6 py-5">
-                                                    <p className="text-xs text-gray-800 leading-relaxed font-medium">
-                                                        {log.kegiatan}
-                                                    </p>
-                                                    {log.files && log.files.length > 0 && (
-                                                        <div className="mt-3 flex flex-wrap gap-2">
-                                                            {log.files.map((f: any) => (
-                                                                <a
-                                                                    key={f.id}
-                                                                    href={`/storage/${f.file_path}`}
-                                                                    target="_blank"
-                                                                    className="inline-flex items-center gap-1.5 px-2 py-1 bg-gray-50 border border-gray-100 rounded text-[9px] font-bold text-gray-600 hover:bg-emerald-50 hover:text-emerald-600 transition truncate max-w-[150px]"
-                                                                    title={f.file_name}
-                                                                >
-                                                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-                                                                    {f.file_name}
-                                                                </a>
-                                                            ))}
-                                                        </div>
-                                                    )}
-                                                </td>
-                                                <td className="px-6 py-5 text-center">
-                                                    <span className="text-sm font-black text-gray-900">{log.persentase}</span>
-                                                    <span className="text-[10px] text-gray-400 font-bold ml-1">%</span>
-                                                </td>
-                                                <td className="px-6 py-5 text-center">
-                                                    <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full text-[10px] font-black">
-                                                        {log.files ? log.files.length : 0}
-                                                    </span>
-                                                </td>
-                                                <td className="px-6 py-5 text-center">
-                                                    <div className="flex justify-center gap-2">
-                                                        <button
-                                                            onClick={() => openEditModal(log)}
-                                                            className="p-1.5 bg-white border border-gray-200 text-amber-500 rounded hover:bg-amber-50 hover:border-amber-200 transition shadow-sm"
-                                                        >
-                                                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2.5 2.5 0 113.536 3.536L12.000 21H8v-4l9.586-9.586z" /></svg>
-                                                        </button>
-                                                        <button
-                                                            onClick={() => {
-                                                                if (confirm('Hapus catatan ini?')) {
-                                                                    router.delete(route('dosen.pengabdian.catatan-harian.destroy', log.id));
-                                                                }
-                                                            }}
-                                                            className="p-1.5 bg-white border border-gray-200 text-red-500 rounded hover:bg-red-50 hover:border-red-200 transition shadow-sm"
-                                                        >
-                                                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                                                        </button>
+                    {/* Timeline & Filter Section */}
+                    <div className="flex flex-col md:flex-row gap-8 items-start">
+                        {/* Month Sidebar */}
+                        <div className="w-full md:w-64 space-y-3">
+                            <div className="flex items-center gap-2 px-2 text-gray-400 mb-4">
+                                <History className="w-4 h-4" />
+                                <span className="text-xs font-bold uppercase tracking-widest">Periode Log</span>
+                            </div>
+                            <div className="space-y-1">
+                                {months.map((month) => (
+                                    <button
+                                        key={month}
+                                        onClick={() => handleMonthChange(month)}
+                                        className={`w-full text-left px-4 py-3 rounded-xl text-[13px] font-semibold transition-all flex items-center justify-between group
+                                            ${selectedMonth === month
+                                                ? 'bg-white text-blue-600 shadow-sm border border-gray-100'
+                                                : 'text-gray-500 hover:bg-gray-100/50 hover:text-gray-700'
+                                            }`}
+                                    >
+                                        <span>{month}</span>
+                                        <ChevronRight className={`w-4 h-4 transition-transform ${selectedMonth === month ? 'translate-x-0' : '-translate-x-2 opacity-0 group-hover:translate-x-0 group-hover:opacity-100'}`} />
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Logs Table */}
+                        <div className="flex-1 w-full bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                            <div className="p-6 border-b border-gray-50 bg-gray-50/30 flex items-center justify-between">
+                                <h3 className="text-sm font-bold text-gray-700 flex items-center gap-2">
+                                    <FileText className="w-4 h-4 text-blue-500" />
+                                    Daftar Aktivitas {selectedMonth}
+                                </h3>
+                                <span className="text-[11px] font-bold text-gray-400 bg-white px-3 py-1 rounded-full border border-gray-100 shadow-sm">
+                                    {logs.length} Catatan Ditemukan
+                                </span>
+                            </div>
+
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-left">
+                                    <thead>
+                                        <tr className="bg-white">
+                                            <th className="px-6 py-4 text-[11px] font-bold text-gray-400 uppercase tracking-wider">Tanggal</th>
+                                            <th className="px-6 py-4 text-[11px] font-bold text-gray-400 uppercase tracking-wider">Aktivitas & Perkembangan</th>
+                                            <th className="px-6 py-4 text-center text-[11px] font-bold text-gray-400 uppercase tracking-wider">% Progress</th>
+                                            <th className="px-6 py-4 text-right text-[11px] font-bold text-gray-400 uppercase tracking-wider">Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-100">
+                                        {logs.length === 0 ? (
+                                            <tr>
+                                                <td colSpan={4} className="px-6 py-16 text-center">
+                                                    <div className="flex flex-col items-center justify-center space-y-3 grayscale opacity-40">
+                                                        <FileText className="w-12 h-12 text-gray-300" />
+                                                        <p className="text-sm font-semibold text-gray-400">Belum ada aktivitas tercatat di bulan ini</p>
                                                     </div>
                                                 </td>
                                             </tr>
-                                        ))
-                                    ) : (
-                                        <tr>
-                                            <td colSpan={6} className="px-6 py-16 text-center text-gray-400 italic text-sm">
-                                                Belum ada catatan harian untuk {selectedMonth ? 'bulan ini' : 'proyek ini'}.
-                                            </td>
-                                        </tr>
-                                    )}
-                                </tbody>
-                            </table>
+                                        ) : (
+                                            logs.map((log) => (
+                                                <motion.tr
+                                                    key={log.id}
+                                                    initial={{ opacity: 0 }}
+                                                    animate={{ opacity: 1 }}
+                                                    className="hover:bg-blue-50/10 transition-colors group"
+                                                >
+                                                    <td className="px-6 py-6 align-top">
+                                                        <div className="flex flex-col">
+                                                            <span className="text-sm font-bold text-gray-900">{new Date(log.tanggal).getDate()}</span>
+                                                            <span className="text-[11px] font-semibold text-gray-400 uppercase">{new Date(log.tanggal).toLocaleDateString('id-ID', { month: 'short' })}</span>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-6 py-6 align-top">
+                                                        <div className="space-y-4 max-w-2xl">
+                                                            <p className="text-sm text-gray-700 font-medium leading-relaxed">{log.uraian_kegiatan}</p>
+                                                            {log.supporting_docs && log.supporting_docs.length > 0 && (
+                                                                <div className="flex flex-wrap gap-2 pt-2">
+                                                                    {log.supporting_docs.map((doc: any, idx: number) => (
+                                                                        <a
+                                                                            key={idx}
+                                                                            href={`/storage/${doc.path}`}
+                                                                            target="_blank"
+                                                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 border border-gray-100 rounded-lg text-[10px] font-bold text-gray-500 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-100 transition-all shadow-sm"
+                                                                        >
+                                                                            <Paperclip className="w-3 h-3" /> {doc.name.substring(0, 20)}...
+                                                                        </a>
+                                                                    ))}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-6 py-6 align-top text-center">
+                                                        <div className="flex flex-col items-center gap-2">
+                                                            <div className="text-[13px] font-extrabold text-blue-600 bg-blue-50 px-3 py-1 rounded-full border border-blue-100">
+                                                                {log.persentase_capaian}%
+                                                            </div>
+                                                            <div className="w-16 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                                                                <div className="h-full bg-blue-500 rounded-full" style={{ width: `${log.persentase_capaian}%` }} />
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-6 py-6 align-top text-right">
+                                                        {!isAdminView && (
+                                                            <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                                <button
+                                                                    onClick={() => { setEditingLog(log); setIsModalOpen(true); }}
+                                                                    className="p-2.5 text-blue-600 hover:bg-blue-600 hover:text-white rounded-xl transition-all shadow-sm border border-blue-50"
+                                                                >
+                                                                    <Edit className="w-4 h-4" />
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => handleDelete(log.id)}
+                                                                    className="p-2.5 text-red-600 hover:bg-red-600 hover:text-white rounded-xl transition-all shadow-sm border border-red-50"
+                                                                >
+                                                                    <Trash2 className="w-4 h-4" />
+                                                                </button>
+                                                            </div>
+                                                        )}
+                                                    </td>
+                                                </motion.tr>
+                                            ))
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
-                </main>
-            </div>
+                    <Toaster />
+                </motion.div>
+            </main>
 
-            {/* Modal Form */}
-            {isModalOpen && (
-                <CatatanModal
-                    usulanId={usulan.id}
-                    log={editingLog}
-                    onClose={() => setIsModalOpen(false)}
-                />
-            )}
+            <CatatanModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                usulanId={usulan.id}
+                log={editingLog}
+            />
 
             <Footer />
         </div>
     );
 }
 
-function CatatanModal({ usulanId, log, onClose }: { usulanId: number, log?: any, onClose: () => void }) {
+function CatatanModal({ isOpen, onClose, usulanId, log }: { isOpen: boolean, onClose: () => void, usulanId: number, log?: any }) {
     const { data, setData, post, processing, errors, reset } = useForm({
-        usulan_id: usulanId,
         tanggal: log?.tanggal || new Date().toISOString().split('T')[0],
-        kegiatan: log?.kegiatan || '',
-        persentase: log?.persentase || 0,
+        uraian_kegiatan: log?.uraian_kegiatan || '',
+        persentase_capaian: log?.persentase_capaian || 0,
         files: [] as File[],
+        usulan_id: usulanId // Added to ensure valid submission
     });
 
-    const fileInputRef = useRef<HTMLInputElement>(null);
+    useEffect(() => {
+        if (log) {
+            setData({
+                tanggal: log.tanggal,
+                uraian_kegiatan: log.uraian_kegiatan,
+                persentase_capaian: log.persentase_capaian,
+                files: [],
+                usulan_id: usulanId
+            });
+        } else {
+            reset();
+        }
+    }, [log, isOpen, usulanId]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (log) {
-            post(route('dosen.pengabdian.catatan-harian.update', log.id), {
-                onSuccess: () => {
-                    onClose();
-                    reset();
-                },
-                forceFormData: true
-            });
-        } else {
-            post(route('dosen.pengabdian.catatan-harian.store'), {
-                onSuccess: () => {
-                    onClose();
-                    reset();
-                },
-                forceFormData: true
-            });
-        }
-    };
+        const url = log
+            ? route('dosen.pengabdian.catatan-harian.update', log.id)
+            : route('dosen.pengabdian.catatan-harian.store', usulanId);
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files) {
-            setData('files', Array.from(e.target.files));
-        }
-    };
-
-    const deleteFile = (fileId: number) => {
-        if (confirm('Hapus file ini?')) {
-            router.delete(route('dosen.pengabdian.catatan-harian.file.destroy', fileId), {
-                preserveScroll: true
-            });
-        }
+        post(url, {
+            onSuccess: () => {
+                onClose();
+                reset();
+                toast.success('Catatan harian pengabdian berhasil disimpan.');
+            },
+        });
     };
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm animate-fadeIn">
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col scale-in">
-                <div className="px-6 py-4 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
-                    <h3 className="text-sm font-bold text-emerald-900 uppercase tracking-tight">
-                        Catatan Harian - Form
-                    </h3>
-                    <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
-                    </button>
-                </div>
-
-                <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-5">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                        <div className="space-y-1.5">
-                            <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider">Tanggal</label>
-                            <input
-                                type="date"
-                                className="w-full text-sm border-gray-200 rounded-lg focus:ring-emerald-500 focus:border-emerald-500 shadow-sm"
-                                value={data.tanggal}
-                                onChange={e => setData('tanggal', e.target.value)}
-                                required
-                            />
-                            {errors.tanggal && <p className="text-red-500 text-[10px] mt-1 font-bold">{errors.tanggal}</p>}
+        <AnimatePresence>
+            {isOpen && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={onClose}
+                        className="absolute inset-0 bg-gray-900/40 backdrop-blur-md"
+                    />
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                        className="bg-white rounded-[2rem] shadow-2xl w-full max-w-2xl overflow-hidden relative z-10 border border-gray-100 max-h-[90vh] flex flex-col"
+                    >
+                        <div className="px-8 py-6 bg-gradient-to-r from-gray-900 to-blue-900 flex items-center justify-between shrink-0">
+                            <div className="flex items-center gap-4">
+                                <div className="p-2.5 bg-white/10 rounded-xl backdrop-blur-md border border-white/10">
+                                    {log ? <Edit className="w-5 h-5 text-white" /> : <Plus className="w-5 h-5 text-white" />}
+                                </div>
+                                <div>
+                                    <h3 className="text-lg font-bold text-white leading-tight">{log ? 'Edit Aktivitas' : 'Aktivitas Baru'}</h3>
+                                    <p className="text-blue-100/60 text-[10px] font-bold uppercase tracking-widest mt-0.5">Catatan Harian Pengabdian</p>
+                                </div>
+                            </div>
+                            <button onClick={onClose} className="p-2 bg-white/10 text-white rounded-xl hover:bg-white/20 transition-all">
+                                <X className="w-5 h-5" />
+                            </button>
                         </div>
-                        <div className="space-y-1.5">
-                            <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider text-right">Persentase (%)</label>
-                            <div className="relative">
-                                <input
-                                    type="number"
-                                    min="0" max="100"
-                                    className="w-full text-sm border-gray-200 rounded-lg focus:ring-emerald-500 focus:border-emerald-500 shadow-sm pr-10 text-right font-black"
-                                    value={data.persentase}
-                                    onChange={e => setData('persentase', parseInt(e.target.value) || 0)}
+
+                        <form onSubmit={handleSubmit} className="p-8 space-y-6 overflow-y-auto custom-scrollbar">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="space-y-2">
+                                    <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">Tanggal Kegiatan</label>
+                                    <div className="relative">
+                                        <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" />
+                                        <input
+                                            type="date"
+                                            className="w-full bg-gray-50 border-gray-100 rounded-xl py-3.5 pl-12 pr-4 text-sm font-semibold focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500 transition-all"
+                                            value={data.tanggal}
+                                            onChange={e => setData('tanggal', e.target.value)}
+                                            required
+                                        />
+                                    </div>
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">Persentase Capaian</label>
+                                    <div className="relative">
+                                        <Percent className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" />
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            max="100"
+                                            className="w-full bg-gray-50 border-gray-100 rounded-xl py-3.5 pl-12 pr-4 text-sm font-semibold focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500 transition-all"
+                                            value={data.persentase_capaian}
+                                            onChange={e => setData('persentase_capaian', e.target.value === '' ? '' : (parseInt(e.target.value) || 0))}
+                                            required
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">Uraian Aktivitas & Hasil</label>
+                                <textarea
+                                    className="w-full bg-gray-50 border-gray-100 rounded-2xl py-4 px-6 text-sm font-medium focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500 transition-all min-h-[120px] leading-relaxed"
+                                    placeholder="Jelaskan secara detail kemajuan pengabdian hari ini..."
+                                    value={data.uraian_kegiatan}
+                                    onChange={e => setData('uraian_kegiatan', e.target.value)}
                                     required
                                 />
-                                <span className="absolute right-3 inset-y-0 flex items-center text-gray-400 font-bold text-xs">%</span>
                             </div>
-                            {errors.persentase && <p className="text-red-500 text-[10px] mt-1 font-bold text-right">{errors.persentase}</p>}
-                        </div>
-                    </div>
 
-                    <div className="space-y-1.5">
-                        <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider">Uraian Kegiatan</label>
-                        <textarea
-                            className="w-full text-sm border-gray-200 rounded-lg focus:ring-emerald-500 focus:border-emerald-500 shadow-sm min-h-[120px]"
-                            placeholder="Deskripsikan kegiatan yang telah dilakukan..."
-                            value={data.kegiatan}
-                            onChange={e => setData('kegiatan', e.target.value)}
-                            required
-                        />
-                        {errors.kegiatan && <p className="text-red-500 text-[10px] mt-1 font-bold">{errors.kegiatan}</p>}
-                    </div>
-
-                    <div className="space-y-3 pt-2 border-t border-gray-100">
-                        <div className="flex items-center justify-between">
-                            <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider">Unggah Dokumen</label>
-                            <button
-                                type="button"
-                                onClick={() => fileInputRef.current?.click()}
-                                className="text-emerald-600 hover:text-emerald-800 transition"
-                            >
-                                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clipRule="evenodd" />
-                                </svg>
-                            </button>
-                            <input
-                                type="file"
-                                multiple
-                                hidden
-                                ref={fileInputRef}
-                                onChange={handleFileChange}
-                            />
-                        </div>
-
-                        {/* Existing Files for Edit */}
-                        {log?.files && log.files.length > 0 && (
-                            <div className="space-y-2 mb-3">
-                                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-tight">Berkas Tersimpan:</p>
-                                {log.files.map((f: any) => (
-                                    <div key={f.id} className="flex items-center justify-between bg-gray-50 p-2 rounded-lg border border-gray-100 group">
-                                        <div className="flex items-center gap-2 overflow-hidden">
-                                            <svg className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-                                            <span className="text-[11px] text-gray-600 truncate font-medium">{f.file_name}</span>
-                                        </div>
-                                        <button
-                                            type="button"
-                                            onClick={() => deleteFile(f.id)}
-                                            className="text-red-400 hover:text-red-600 p-1 opacity-0 group-hover:opacity-100 transition"
-                                        >
-                                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
-                                        </button>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-
-                        {/* Newly Selected Files */}
-                        {data.files.length > 0 && (
                             <div className="space-y-2">
-                                <p className="text-[10px] text-emerald-600 font-bold uppercase tracking-tight">Berkas Baru:</p>
-                                {data.files.map((file, i) => (
-                                    <div key={i} className="flex items-center justify-between bg-emerald-50/50 p-2 rounded-lg border border-emerald-100">
-                                        <div className="flex items-center gap-2 overflow-hidden">
-                                            <svg className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path d="M5.5 13a3.5 3.5 0 01-.369-6.98 4 4 0 117.753-1.977A4.5 4.5 0 1113.5 13H11V9.413l1.293 1.293a1 1 0 001.414-1.414l-3-3a1 1 0 00-1.414 0l-3 3a1 1 0 00-1.414 0l-3 3a1 1 0 001.414 1.414l1.293-1.293V13H5.5z" /><path d="M9 13h2v5a1 1 0 11-2 0v-5z" /></svg>
-                                            <span className="text-[11px] text-emerald-700 truncate font-black">{file.name}</span>
-                                            <span className="text-[9px] text-gray-400">({(file.size / 1024).toFixed(0)} KB)</span>
-                                        </div>
-                                        <button
-                                            type="button"
-                                            onClick={() => setData('files', data.files.filter((_, idx) => idx !== i))}
-                                            className="text-red-400 hover:text-red-600 p-1"
-                                        >
-                                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
-                                        </button>
+                                <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">Dokumen Pendukung (PDF/Images)</label>
+                                <div className="bg-gray-50 border-2 border-dashed border-gray-200 rounded-2xl p-6 flex flex-col items-center justify-center text-center space-y-4 hover:bg-white hover:border-blue-400 transition-all group/up">
+                                    <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center text-gray-300 shadow-sm border border-gray-100 group-hover/up:text-blue-600 transition-colors">
+                                        <Upload className="w-6 h-6" />
                                     </div>
-                                ))}
-                            </div>
-                        )}
+                                    <div className="space-y-1">
+                                        <p className="text-[13px] font-bold text-gray-700">Pilih berkas pendukung</p>
+                                        <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-wider">Multiple files allowed • Max 5MB per file</p>
+                                    </div>
+                                    <input
+                                        type="file"
+                                        multiple
+                                        className="hidden"
+                                        id="catatan-files"
+                                        onChange={e => {
+                                            const newFiles = Array.from(e.target.files || []);
+                                            setData('files', [...data.files, ...newFiles]);
+                                        }}
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => document.getElementById('catatan-files')?.click()}
+                                        className="px-6 py-2.5 bg-white border border-gray-200 text-gray-600 rounded-xl text-[11px] font-bold hover:bg-gray-900 hover:text-white hover:border-gray-900 transition-all shadow-sm"
+                                    >
+                                        Browse Files
+                                    </button>
+                                </div>
 
-                        {data.files.length === 0 && (!log?.files || log.files.length === 0) && (
-                            <div className="text-center py-6 bg-gray-50 border border-dashed border-gray-200 rounded-xl">
-                                <p className="text-[11px] text-gray-400 font-medium">Belum ada berkas pendamping terpilih</p>
+                                {data.files.length > 0 && (
+                                    <div className="flex flex-wrap gap-2 pt-2">
+                                        {data.files.map((file, idx) => (
+                                            <div key={idx} className="flex items-center gap-2 px-3 py-2 bg-blue-50 text-blue-700 rounded-lg text-[10px] font-bold border border-blue-100 shadow-sm">
+                                                <Paperclip className="w-3.5 h-3.5" />
+                                                <span className="truncate max-w-[120px]">{file.name}</span>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setData('files', data.files.filter((_, i) => i !== idx))}
+                                                    className="p-1 hover:bg-blue-100 rounded-full transition-colors"
+                                                >
+                                                    <X className="w-3 h-3" />
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
-                        )}
-                    </div>
 
-                    <div className="pt-6 flex justify-end gap-3">
-                        <button
-                            type="button"
-                            onClick={onClose}
-                            className="px-6 py-2 bg-gray-400 text-white rounded-lg text-sm font-bold hover:bg-gray-500 transition shadow-sm"
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            type="submit"
-                            disabled={processing}
-                            className="px-10 py-2 bg-blue-700 text-white rounded-lg text-sm font-bold hover:bg-blue-800 transition shadow-lg disabled:opacity-50"
-                        >
-                            {processing ? 'Menyimpan...' : 'Simpan'}
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
+                            <div className="pt-6 border-t border-gray-50 flex justify-end gap-3">
+                                <button
+                                    type="button"
+                                    onClick={onClose}
+                                    className="px-6 py-3 text-[13px] font-bold text-gray-400 hover:text-gray-700 transition-colors"
+                                >
+                                    Batalkan
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={processing}
+                                    className="px-10 py-3 bg-blue-600 text-white rounded-xl text-[13px] font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all flex items-center gap-2 disabled:opacity-50"
+                                >
+                                    {processing ? '...' : <Save className="w-4 h-4" />}
+                                    {log ? 'Update Log' : 'Simpan Log'}
+                                </button>
+                            </div>
+                        </form>
+                    </motion.div>
+                </div>
+            )}
+        </AnimatePresence>
     );
 }

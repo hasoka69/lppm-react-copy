@@ -2,7 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { usePage } from '@inertiajs/react';
 import axios from 'axios';
 import SearchableDosenSelect from './SearchableDosenSelect';
-// Removed SearchableMahasiswaSelect for manual input
+import styles from '../../../css/pengajuan.module.css';
+import {
+    User,
+    Users,
+    Plus,
+    Edit,
+    Trash,
+    CheckCircle,
+    Clock,
+    Info,
+    GraduationCap,
+    School
+} from 'lucide-react';
 
 const api = axios.create({
     baseURL: '/',
@@ -46,7 +58,8 @@ const IdentityAnggota = ({ usulanId, onCreateDraft, isPengabdian = false }) => {
             const response = await api.get(`${apiPrefix}/${usulanId}/anggota-dosen`);
             let data = response.data.data || [];
             if (isPengabdian) {
-                data = data.map(item => ({ ...item, status_approval: item.status_persetujuan || 'menunggu' }));
+                // No longer mapping status since it's removed
+                data = data.map(item => ({ ...item }));
             }
             setAnggotaDosen(data);
         } catch (error) { console.error('Error loading dosen:', error); } finally { setLoadingDosen(false); }
@@ -99,7 +112,7 @@ const IdentityAnggota = ({ usulanId, onCreateDraft, isPengabdian = false }) => {
     };
 
     const handleDeleteDosen = async (id) => {
-        if (!confirm('Delete this member?')) return;
+        if (!confirm('Hapus anggota ini?')) return;
         try {
             const endpoint = isPengabdian ? `${apiPrefix}/anggota-pengabdian` : `${apiPrefix}/anggota-penelitian`;
             await api.delete(`${endpoint}/${id}`);
@@ -139,7 +152,7 @@ const IdentityAnggota = ({ usulanId, onCreateDraft, isPengabdian = false }) => {
     };
 
     const handleDeleteNonDosen = async (id) => {
-        if (!confirm('Delete this member?')) return;
+        if (!confirm('Hapus anggota ini?')) return;
         try {
             await api.delete(`${apiPrefix}/anggota-non-dosen/${id}`);
             loadAnggotaNonDosen();
@@ -147,168 +160,211 @@ const IdentityAnggota = ({ usulanId, onCreateDraft, isPengabdian = false }) => {
     };
 
     return (
-        <div className="w-full bg-white p-6 shadow-sm rounded-lg border border-gray-200">
-            <div className="mb-8">
-                <div className="bg-[#1e4275] text-white px-4 py-2 rounded-t-md font-semibold text-lg">
-                    Identitas Pengusul - Ketua {isPengabdian ? 'Pengabdian' : 'Peneliti'}
-                </div>
-                <div className="border border-t-0 border-gray-200 p-6 rounded-b-md bg-gray-50">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="flex flex-col gap-2">
-                            <label className="text-sm font-semibold text-gray-700">Nama Ketua</label>
-                            <input type="text" value={userKetua.name} disabled className="w-full p-2.5 border border-gray-300 rounded bg-gray-200 text-gray-600 cursor-not-allowed" />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+            {/* Ketua Section */}
+            <div>
+                <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '1.125rem', fontWeight: 700, color: 'var(--secondary)', marginBottom: '1rem' }}>
+                    <div style={{ background: 'var(--primary-light)', padding: '0.5rem', borderRadius: '8px' }}>
+                        <User size={20} color="var(--primary)" />
+                    </div>
+                    Ketua {isPengabdian ? 'Pengabdian' : 'Penelitian'}
+                </h3>
+                <div style={{ background: '#f8fafc', padding: '1.5rem', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                    <div className={styles.formGrid}>
+                        <div className={styles.formGroup}>
+                            <label className={styles.label}>Nama Ketua</label>
+                            <input type="text" value={userKetua.name} disabled className={styles.input} style={{ background: '#f1f5f9' }} />
                         </div>
-                        <div className="flex flex-col gap-2">
-                            <label className="text-sm font-semibold text-gray-700">Uraian Tugas Dalam {isPengabdian ? 'Pengabdian' : 'Penelitian'}</label>
-                            <textarea rows={3} placeholder="Deskripsikan tugas Anda sebagai ketua..." value={tugasKetua} onChange={(e) => setTugasKetua(e.target.value)} className="w-full p-2.5 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+                        <div className={styles.formGroup}>
+                            <label className={styles.label}>Tugas Sebagai Ketua</label>
+                            <textarea rows={2} placeholder="Deskripsikan tanggung jawab anda..." value={tugasKetua} onChange={(e) => setTugasKetua(e.target.value)} className={styles.textarea} />
                         </div>
                     </div>
                 </div>
             </div>
-            <div className="mb-8">
-                <div className="bg-[#1e4275] text-white px-4 py-2 rounded-t-md font-semibold text-lg flex justify-between items-center">
-                    <span>Identitas Pengusul - Anggota {isPengabdian ? 'Pengabdian' : 'Penelitian'} (Dosen)</span>
+
+            {/* Anggota Dosen Section */}
+            <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                    <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '1.125rem', fontWeight: 700, color: 'var(--secondary)' }}>
+                        <div style={{ background: 'var(--primary-light)', padding: '0.5rem', borderRadius: '8px' }}>
+                            <Users size={20} color="var(--primary)" />
+                        </div>
+                        Anggota Tim (Dosen)
+                    </h3>
+                    <button onClick={handleTambahDosen} type="button" className={styles.primaryButton} style={{ padding: '0.5rem 1rem', fontSize: '0.875rem' }}>
+                        <Plus size={16} /> Tambah Dosen
+                    </button>
                 </div>
-                <div className="border border-t-0 border-gray-200 p-4 rounded-b-md">
-                    <button onClick={handleTambahDosen} type="button" className="mb-4 bg-[#1e4275] hover:bg-blue-800 text-white px-4 py-2 rounded text-sm font-medium flex items-center gap-2"><span>+ Tambah</span></button>
-                    <div className="overflow-x-auto">
-                        <table className="w-full border-collapse border border-gray-200 text-sm">
-                            <thead className="bg-gray-50 text-gray-700">
+
+                <div className={styles.tableContainer}>
+                    <table className={styles.table}>
+                        <thead>
+                            <tr>
+                                <th style={{ width: '50px' }}>No</th>
+                                <th>Informasi Dosen</th>
+                                <th>Peran</th>
+                                <th>Tugas</th>
+                                <th style={{ textAlign: 'center', width: '100px' }}>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {anggotaDosen.length === 0 ? (
                                 <tr>
-                                    <th className="border border-gray-200 px-4 py-3 text-left w-12">No</th>
-                                    <th className="border border-gray-200 px-4 py-3 text-left">NIDN</th>
-                                    <th className="border border-gray-200 px-4 py-3 text-left">Nama</th>
-                                    <th className="border border-gray-200 px-4 py-3 text-left">Peran</th>
-                                    <th className="border border-gray-200 px-4 py-3 text-left">Tugas</th>
-                                    <th className="border border-gray-200 px-4 py-3 text-center w-24">Aksi</th>
+                                    <td colSpan={5} style={{ textAlign: 'center', padding: '2rem', color: '#94a3b8' }}>
+                                        Belum ada anggota dosen yang ditambahkan
+                                    </td>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                {anggotaDosen.map((item, idx) => (
-                                    <tr key={item.id} className="hover:bg-gray-50">
-                                        <td className="border border-gray-200 px-4 py-2 text-center">{idx + 1}</td>
-                                        <td className="border border-gray-200 px-4 py-2">{item.nidn}</td>
-                                        <td className="border border-gray-200 px-4 py-2 font-medium">{item.nama}</td>
-                                        <td className="border border-gray-200 px-4 py-2">{item.peran}</td>
-                                        <td className="border border-gray-200 px-4 py-2">{item.tugas}</td>
-                                        <td className="border border-gray-200 px-4 py-2 text-center">
-                                            <div className="flex justify-center gap-2">
-                                                <button onClick={() => handleEditDosen(item)} className="text-yellow-500 hover:text-yellow-600" title="Edit" type="button">✏️</button>
-                                                <button onClick={() => handleDeleteDosen(item.id)} className="text-red-500 hover:text-red-600" title="Hapus" type="button">🗑️</button>
+                            ) : (
+                                anggotaDosen.map((item, idx) => (
+                                    <tr key={item.id}>
+                                        <td style={{ fontWeight: 600 }}>{idx + 1}</td>
+                                        <td>
+                                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                                <span style={{ fontWeight: 700, color: 'var(--secondary)' }}>{item.nama}</span>
+                                                <span style={{ fontSize: '0.75rem', color: '#64748b' }}>NIDN: {item.nidn}</span>
+                                            </div>
+                                        </td>
+                                        <td><span className={`${styles.badge}`}>{item.peran}</span></td>
+                                        <td style={{ fontSize: '0.875rem' }}>{item.tugas || '-'}</td>
+                                        <td style={{ textAlign: 'center' }}>
+                                            <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
+                                                <button onClick={() => handleEditDosen(item)} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded" type="button"><Edit size={16} /></button>
+                                                <button onClick={() => handleDeleteDosen(item.id)} className="p-1.5 text-red-600 hover:bg-red-50 rounded" type="button"><Trash size={16} /></button>
                                             </div>
                                         </td>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+                                ))
+                            )}
+                        </tbody>
+                    </table>
                 </div>
             </div>
-            {/* Modal Form Dosen */}
-            {formDosenVisible && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
-                        <h2 className="text-xl font-bold mb-4">{editingDosenId ? 'Edit Anggota Dosen' : 'Tambah Anggota Dosen'}</h2>
-                        <div className="space-y-4">
-                            <SearchableDosenSelect onChange={(selected) => setFormDosenData({ ...formDosenData, nidn: selected?.dosen.nidn || '', nama: selected?.dosen.nama || '' })} />
-                            <select value={formDosenData.peran} onChange={(e) => setFormDosenData({ ...formDosenData, peran: e.target.value })} className="w-full px-3 py-2 border rounded">
-                                <option value="anggota">Anggota</option>
-                                <option value="ketua">Ketua</option>
-                            </select>
-                            <textarea placeholder="Uraian Tugas" value={formDosenData.tugas} onChange={(e) => setFormDosenData({ ...formDosenData, tugas: e.target.value })} className="w-full px-3 py-2 border rounded" />
-                        </div>
-                        <div className="mt-6 flex justify-end gap-2">
-                            <button onClick={() => setFormDosenVisible(false)} className="px-4 py-2 border rounded">Batal</button>
-                            <button onClick={handleSaveDosenSubmit} className="px-4 py-2 bg-blue-600 text-white rounded">Simpan</button>
-                        </div>
-                    </div>
-                </div>
-            )}
 
             {/* Anggota Non-Dosen Section */}
-            <div className="mb-8">
-                <div className="bg-[#1e4275] text-white px-4 py-2 rounded-t-md font-semibold text-lg flex justify-between items-center">
-                    <span>Identitas Pengusul - Anggota {isPengabdian ? 'Pengabdian' : 'Penelitian'} (Mahasiswa / Alumni / Eksternal)</span>
+            <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                    <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '1.125rem', fontWeight: 700, color: 'var(--secondary)' }}>
+                        <div style={{ background: 'var(--primary-light)', padding: '0.5rem', borderRadius: '8px' }}>
+                            <School size={20} color="var(--primary)" />
+                        </div>
+                        Anggota Tim (Mahasiswa/Eksternal)
+                    </h3>
+                    <button onClick={handleTambahNonDosen} type="button" className={styles.primaryButton} style={{ padding: '0.5rem 1rem', fontSize: '0.875rem' }}>
+                        <Plus size={16} /> Tambah Anggota
+                    </button>
                 </div>
-                <div className="border border-t-0 border-gray-200 p-4 rounded-b-md">
-                    <button onClick={handleTambahNonDosen} type="button" className="mb-4 bg-[#1e4275] hover:bg-blue-800 text-white px-4 py-2 rounded text-sm font-medium flex items-center gap-2"><span>+ Tambah</span></button>
-                    <div className="overflow-x-auto">
-                        <table className="w-full border-collapse border border-gray-200 text-sm">
-                            <thead className="bg-gray-50 text-gray-700">
+
+                <div className={styles.tableContainer}>
+                    <table className={styles.table}>
+                        <thead>
+                            <tr>
+                                <th style={{ width: '50px' }}>No</th>
+                                <th>Informasi Anggota</th>
+                                <th>Jenis</th>
+                                <th>Tugas</th>
+                                <th style={{ textAlign: 'center', width: '100px' }}>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {anggotaNonDosen.length === 0 ? (
                                 <tr>
-                                    <th className="border border-gray-200 px-4 py-3 text-left w-12">No</th>
-                                    <th className="border border-gray-200 px-4 py-3 text-left">Jenis</th>
-                                    <th className="border border-gray-200 px-4 py-3 text-left">NIM / ID</th>
-                                    <th className="border border-gray-200 px-4 py-3 text-left">Nama</th>
-                                    <th className="border border-gray-200 px-4 py-3 text-left">Prodi/Unit</th>
-                                    <th className="border border-gray-200 px-4 py-3 text-left">Tugas</th>
-                                    <th className="border border-gray-200 px-4 py-3 text-center w-24">Aksi</th>
+                                    <td colSpan={5} style={{ textAlign: 'center', padding: '2rem', color: '#94a3b8' }}>
+                                        Belum ada anggota non-dosen yang ditambahkan
+                                    </td>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                {anggotaNonDosen.length === 0 ? (
-                                    <tr><td colSpan={7} className="border border-gray-200 px-4 py-4 text-center text-gray-500 italic">Belum ada anggota non-dosen</td></tr>
-                                ) : (
-                                    anggotaNonDosen.map((item, idx) => (
-                                        <tr key={item.id} className="hover:bg-gray-50">
-                                            <td className="border border-gray-200 px-4 py-2 text-center">{idx + 1}</td>
-                                            <td className="border border-gray-200 px-4 py-2 capitalize">{item.jenis_anggota}</td>
-                                            <td className="border border-gray-200 px-4 py-2">{item.no_identitas}</td>
-                                            <td className="border border-gray-200 px-4 py-2 font-medium">{item.nama}</td>
-                                            <td className="border border-gray-200 px-4 py-2">{item.jurusan}</td>
-                                            <td className="border border-gray-200 px-4 py-2">{item.tugas}</td>
-                                            <td className="border border-gray-200 px-4 py-2 text-center">
-                                                <div className="flex justify-center gap-2">
-                                                    <button onClick={() => handleEditNonDosen(item)} className="text-yellow-500 hover:text-yellow-600" title="Edit" type="button">✏️</button>
-                                                    <button onClick={() => handleDeleteNonDosen(item.id)} className="text-red-500 hover:text-red-600" title="Hapus" type="button">🗑️</button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
+                            ) : (
+                                anggotaNonDosen.map((item, idx) => (
+                                    <tr key={item.id}>
+                                        <td style={{ fontWeight: 600 }}>{idx + 1}</td>
+                                        <td>
+                                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                                <span style={{ fontWeight: 700, color: 'var(--secondary)' }}>{item.nama}</span>
+                                                <span style={{ fontSize: '0.75rem', color: '#64748b' }}>{item.no_identitas} • {item.jurusan}</span>
+                                            </div>
+                                        </td>
+                                        <td><span className={`${styles.badge}`}>{item.jenis_anggota}</span></td>
+                                        <td style={{ fontSize: '0.875rem' }}>{item.tugas || '-'}</td>
+                                        <td style={{ textAlign: 'center' }}>
+                                            <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
+                                                <button onClick={() => handleEditNonDosen(item)} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded" type="button"><Edit size={16} /></button>
+                                                <button onClick={() => handleDeleteNonDosen(item.id)} className="p-1.5 text-red-600 hover:bg-red-50 rounded" type="button"><Trash size={16} /></button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
+                        </tbody>
+                    </table>
                 </div>
             </div>
 
-            {/* Modal Form Non-Dosen */}
-            {formNonDosenVisible && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md">
-                        <h2 className="text-xl font-bold mb-4">{editingNonDosenId ? 'Edit Anggota Non-Dosen' : 'Tambah Anggota Non-Dosen'}</h2>
-                        <div className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Jenis Anggota</label>
-                                <select value={formNonDosenData.jenis_anggota} onChange={(e) => setFormNonDosenData({ ...formNonDosenData, jenis_anggota: e.target.value })} className="w-full px-3 py-2 border rounded">
-                                    <option value="">Pilih Jenis</option>
-                                    <option value="mahasiswa">Mahasiswa</option>
-                                    <option value="alumni">Alumni</option>
-                                    <option value="eksternal">Eksternal / Umum</option>
-                                </select>
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">No Identitas (NIM/NIK/Lainnya)</label>
-                                <input type="text" value={formNonDosenData.no_identitas} onChange={(e) => setFormNonDosenData({ ...formNonDosenData, no_identitas: e.target.value })} className="w-full px-3 py-2 border rounded" placeholder="Masukkan nomor identitas" />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap</label>
-                                <input type="text" value={formNonDosenData.nama} onChange={(e) => setFormNonDosenData({ ...formNonDosenData, nama: e.target.value })} className="w-full px-3 py-2 border rounded" placeholder="Masukkan nama lengkap" />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Prodi / Unit / Instansi</label>
-                                <input type="text" value={formNonDosenData.jurusan} onChange={(e) => setFormNonDosenData({ ...formNonDosenData, jurusan: e.target.value })} className="w-full px-3 py-2 border rounded" placeholder="Contoh: Teknik Informatika / PT. ABC" />
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Uraian Tugas</label>
-                                <textarea rows={3} placeholder="Apa tugas anggota ini?" value={formNonDosenData.tugas} onChange={(e) => setFormNonDosenData({ ...formNonDosenData, tugas: e.target.value })} className="w-full px-3 py-2 border rounded" />
-                            </div>
+            {/* Modal Forms (Common Style) */}
+            {(formDosenVisible || formNonDosenVisible) && (
+                <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(15, 23, 42, 0.75)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: '1rem' }}>
+                    <div style={{ backgroundColor: '#ffffff', borderRadius: '16px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)', width: '100%', maxWidth: '500px', overflow: 'hidden' }}>
+                        <div style={{ padding: '1.5rem', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--secondary)' }}>
+                                {formDosenVisible ? (editingDosenId ? 'Edit Anggota Dosen' : 'Tambah Anggota Dosen') : (editingNonDosenId ? 'Edit Anggota Non-Dosen' : 'Tambah Anggota Non-Dosen')}
+                            </h2>
+                            <button onClick={() => { setFormDosenVisible(false); setFormNonDosenVisible(false); }} className="p-2 hover:bg-gray-100 rounded-full text-gray-400"><X size={20} /></button>
                         </div>
-                        <div className="mt-6 flex justify-end gap-2">
-                            <button onClick={() => setFormNonDosenVisible(false)} className="px-4 py-2 border rounded text-gray-700 hover:bg-gray-50">Batal</button>
-                            <button onClick={handleSaveNonDosenSubmit} className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Simpan</button>
+
+                        <div style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                            {formDosenVisible ? (
+                                <>
+                                    <div className={styles.formGroup}>
+                                        <label className={styles.label}>Cari & Pilih Dosen</label>
+                                        <SearchableDosenSelect onChange={(selected) => setFormDosenData({ ...formDosenData, nidn: selected?.dosen.nidn || '', nama: selected?.dosen.nama || '' })} />
+                                    </div>
+                                    <div className={styles.formGroup}>
+                                        <label className={styles.label}>Peran Anggota</label>
+                                        <select value={formDosenData.peran} onChange={(e) => setFormDosenData({ ...formDosenData, peran: e.target.value })} className={styles.select}>
+                                            <option value="anggota">Anggota</option>
+                                            <option value="ketua">Ketua</option>
+                                        </select>
+                                    </div>
+                                    <div className={styles.formGroup}>
+                                        <label className={styles.label}>Uraian Tugas</label>
+                                        <textarea rows={2} placeholder="Tuliskan pembagian tugas..." value={formDosenData.tugas} onChange={(e) => setFormDosenData({ ...formDosenData, tugas: e.target.value })} className={styles.textarea} />
+                                    </div>
+                                </>
+                            ) : (
+                                <>
+                                    <div className={styles.formGroup}>
+                                        <label className={styles.label}>Jenis Anggota</label>
+                                        <select value={formNonDosenData.jenis_anggota} onChange={(e) => setFormNonDosenData({ ...formNonDosenData, jenis_anggota: e.target.value })} className={styles.select}>
+                                            <option value="">Pilih Jenis</option>
+                                            <option value="mahasiswa">Mahasiswa</option>
+                                            <option value="alumni">Alumni</option>
+                                            <option value="eksternal">Eksternal / Umum</option>
+                                        </select>
+                                    </div>
+                                    <div className={styles.formGrid}>
+                                        <div className={styles.formGroup}>
+                                            <label className={styles.label}>NIM / NIK / ID</label>
+                                            <input type="text" value={formNonDosenData.no_identitas} onChange={(e) => setFormNonDosenData({ ...formNonDosenData, no_identitas: e.target.value })} className={styles.input} />
+                                        </div>
+                                        <div className={styles.formGroup}>
+                                            <label className={styles.label}>Nama Lengkap</label>
+                                            <input type="text" value={formNonDosenData.nama} onChange={(e) => setFormNonDosenData({ ...formNonDosenData, nama: e.target.value })} className={styles.input} />
+                                        </div>
+                                    </div>
+                                    <div className={styles.formGroup}>
+                                        <label className={styles.label}>Prodi / Unit / Instansi</label>
+                                        <input type="text" value={formNonDosenData.jurusan} onChange={(e) => setFormNonDosenData({ ...formNonDosenData, jurusan: e.target.value })} className={styles.input} />
+                                    </div>
+                                    <div className={styles.formGroup}>
+                                        <label className={styles.label}>Uraian Tugas</label>
+                                        <textarea rows={2} placeholder="Tuliskan pembagian tugas..." value={formNonDosenData.tugas} onChange={(e) => setFormNonDosenData({ ...formNonDosenData, tugas: e.target.value })} className={styles.textarea} />
+                                    </div>
+                                </>
+                            )}
+                        </div>
+
+                        <div style={{ padding: '1.25rem 1.5rem', backgroundColor: '#f8fafc', borderTop: '1px solid #f1f5f9', display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
+                            <button onClick={() => { setFormDosenVisible(false); setFormNonDosenVisible(false); }} className={styles.secondaryButton}>Batal</button>
+                            <button onClick={formDosenVisible ? handleSaveDosenSubmit : handleSaveNonDosenSubmit} className={styles.primaryButton}>Simpan Anggota</button>
                         </div>
                     </div>
                 </div>
@@ -316,5 +372,12 @@ const IdentityAnggota = ({ usulanId, onCreateDraft, isPengabdian = false }) => {
         </div>
     );
 };
+
+const X = ({ size }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+    </svg>
+);
 
 export default IdentityAnggota;

@@ -30,7 +30,7 @@ class CatatanHarianPenelitianController extends Controller
                     'judul' => $u->judul,
                     'skema' => $u->kelompok_skema,
                     'tahun' => $u->tahun_pertama,
-                    'dana_disetujui' => $u->dana_disetujui,
+                    'dana_disetujui' => (float) ($u->dana_disetujui ?? 0),
                     'last_percentage' => $logs->max('persentase') ?? 0,
                     'total_logs' => $logs->count(),
                 ];
@@ -44,20 +44,59 @@ class CatatanHarianPenelitianController extends Controller
     /**
      * Tampilkan detail catatan harian untuk usulan tertentu
      */
-    public function show($usulanId)
+    public function show(Request $request, $usulanId)
     {
         $usulan = UsulanPenelitian::where('user_id', '=', Auth::id(), 'and')
             ->where('status', '=', 'didanai', 'and')
             ->findOrFail($usulanId);
 
-        $logs = CatatanHarianPenelitian::with('files')
+        $months = [
+            'Januari',
+            'Februari',
+            'Maret',
+            'April',
+            'Mei',
+            'Juni',
+            'Juli',
+            'Agustus',
+            'September',
+            'Oktober',
+            'November',
+            'Desember'
+        ];
+
+        $selectedMonth = $request->query('month', $months[date('n') - 1]);
+
+        $logsQuery = CatatanHarianPenelitian::with('files')
             ->where('usulan_id', '=', $usulan->id, 'and')
-            ->orderBy('tanggal', 'desc')
-            ->get();
+            ->orderBy('tanggal', 'desc');
+
+        if ($selectedMonth) {
+            $monthIndex = array_search($selectedMonth, $months) + 1;
+            $logsQuery->whereMonth('tanggal', '=', $monthIndex);
+        }
+
+        $logs = $logsQuery->get()->map(function ($log) {
+            return [
+                'id' => $log->id,
+                'tanggal' => $log->tanggal,
+                'uraian_kegiatan' => $log->kegiatan,
+                'persentase_capaian' => $log->persentase,
+                'supporting_docs' => $log->files->map(function ($f) {
+                    return [
+                        'id' => $f->id,
+                        'path' => $f->file_path,
+                        'name' => $f->file_name
+                    ];
+                })
+            ];
+        });
 
         return Inertia::render('dosen/penelitian/CatatanHarian/Show', [
             'usulan' => $usulan,
-            'logs' => $logs
+            'logs' => $logs,
+            'months' => $months,
+            'selectedMonth' => $selectedMonth
         ]);
     }
 
@@ -69,8 +108,8 @@ class CatatanHarianPenelitianController extends Controller
         $request->validate([
             'usulan_id' => 'required|exists:usulan_penelitian,id',
             'tanggal' => 'required|date',
-            'kegiatan' => 'required|string',
-            'persentase' => 'required|integer|min:0|max:100',
+            'uraian_kegiatan' => 'required|string',
+            'persentase_capaian' => 'required|integer|min:0|max:100',
             'files.*' => 'nullable|file|max:10240', // 10MB limit per file
         ]);
 
@@ -78,8 +117,8 @@ class CatatanHarianPenelitianController extends Controller
             'usulan_id' => $request->usulan_id,
             'user_id' => Auth::id(),
             'tanggal' => $request->tanggal,
-            'kegiatan' => $request->kegiatan,
-            'persentase' => $request->persentase,
+            'kegiatan' => $request->uraian_kegiatan,
+            'persentase' => $request->persentase_capaian,
         ]);
 
         if ($request->hasFile('files')) {
@@ -103,8 +142,8 @@ class CatatanHarianPenelitianController extends Controller
     {
         $request->validate([
             'tanggal' => 'required|date',
-            'kegiatan' => 'required|string',
-            'persentase' => 'required|integer|min:0|max:100',
+            'uraian_kegiatan' => 'required|string',
+            'persentase_capaian' => 'required|integer|min:0|max:100',
             'files.*' => 'nullable|file|max:10240',
         ]);
 
@@ -112,8 +151,8 @@ class CatatanHarianPenelitianController extends Controller
 
         $log->update([
             'tanggal' => $request->tanggal,
-            'kegiatan' => $request->kegiatan,
-            'persentase' => $request->persentase,
+            'kegiatan' => $request->uraian_kegiatan,
+            'persentase' => $request->persentase_capaian,
         ]);
 
         if ($request->hasFile('files')) {

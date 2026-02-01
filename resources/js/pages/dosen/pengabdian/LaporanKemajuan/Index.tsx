@@ -3,6 +3,30 @@ import { Head, Link, router } from '@inertiajs/react';
 import Header from '@/components/Header';
 import Footer from '@/components/footer';
 import styles from '../../../../../css/pengajuan.module.css';
+import { formatAcademicYear, getAcademicYearOptions, getCurrentAcademicYearCode } from '@/utils/academicYear';
+import { motion } from 'framer-motion';
+import {
+    FileText,
+    Edit,
+    Download,
+    Filter,
+    Search,
+    Clock,
+    CheckCircle2,
+    AlertCircle
+} from 'lucide-react';
+
+const containerVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+        opacity: 1,
+        y: 0,
+        transition: {
+            duration: 0.5,
+            staggerChildren: 0.1
+        }
+    }
+};
 
 interface FundedUsulan {
     id: number;
@@ -21,117 +45,199 @@ interface Props {
     fundedUsulan: FundedUsulan[];
 }
 
+const itemVariants = {
+    hidden: { opacity: 0, x: -20 },
+    visible: { opacity: 1, x: 0 }
+};
+
 export default function Index({ fundedUsulan }: Props) {
+    const [selectedYear, setSelectedYear] = React.useState<number>(getCurrentAcademicYearCode());
+    const yearOptions = getAcademicYearOptions();
+
+    const filteredList = fundedUsulan.filter(u => u.tahun_pertama === selectedYear);
+
     return (
         <div className={styles.masterContainer}>
             <Header />
-            <div className={styles.tabContainer}>
-                <div className={styles.tabs}>
-                    <button className={styles.tab} onClick={() => router.visit('/dosen/pengabdian')}>Daftar Pengabdian</button>
-                    <button className={styles.tab} onClick={() => router.visit('/dosen/pengabdian/perbaikan')}>Perbaikan Usulan</button>
-                    <button className={`${styles.tab} ${styles.active}`} onClick={() => router.visit(route('dosen.pengabdian.laporan-kemajuan.index'))}>Laporan Kemajuan</button>
-                    <button className={styles.tab} onClick={() => router.visit(route('dosen.pengabdian.catatan-harian.index'))}>Catatan Harian</button>
-                    <button className={styles.tab} onClick={() => { }}>Laporan Akhir</button>
-                    <button className={styles.tab} onClick={() => { }}>Pengkinian Capaian Luaran</button>
+            <div className="bg-white border-b border-gray-100 sticky top-[4.5rem] z-30">
+                <div className="max-w-7xl mx-auto px-6">
+                    <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
+                        {[
+                            { label: 'Daftar Pengabdian', route: route('dosen.pengabdian.index') },
+                            { label: 'Perbaikan Usulan', route: route('dosen.pengabdian.perbaikan') },
+                            { label: 'Laporan Kemajuan', active: true, route: route('dosen.pengabdian.laporan-kemajuan.index') },
+                            { label: 'Catatan Harian', route: route('dosen.pengabdian.catatan-harian.index') },
+                            { label: 'Laporan Akhir', route: route('dosen.pengabdian.laporan-akhir.index') },
+                            { label: 'Pengkinian Capaian Luaran', route: route('dosen.pengabdian.pengkinian-luaran.index') }
+                        ].map((tab, idx) => (
+                            <button
+                                key={idx}
+                                onClick={() => !tab.active && router.visit(tab.route)}
+                                className={`px-5 py-4 text-[13px] font-semibold transition-all whitespace-nowrap relative ${tab.active ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
+                            >
+                                {tab.label}
+                                {tab.active && (
+                                    <motion.div
+                                        layoutId="activeTab"
+                                        className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 rounded-full"
+                                    />
+                                )}
+                            </button>
+                        ))}
+                    </div>
                 </div>
             </div>
             <Head title="Laporan Kemajuan Pengabdian" />
 
-            <main className={styles.contentArea}>
-                <div className="mb-6">
-                    <h1 className="text-2xl font-bold text-gray-800 uppercase tracking-tight">LAPORAN KEMAJUAN PENGABDIAN</h1>
-                </div>
-
-                <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                    <div className="p-4 bg-gray-50/50 border-b border-gray-100 flex justify-end">
-                        <div className="flex items-center gap-2">
-                            <div className="bg-blue-600 p-2 rounded text-white">
-                                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z" clipRule="evenodd" /></svg>
+            <motion.main
+                className={styles.contentArea}
+                initial="hidden"
+                animate="visible"
+                variants={containerVariants}
+            >
+                <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
+                    <div className="space-y-1">
+                        <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight flex items-center gap-3 uppercase">
+                            <div className="p-2 bg-blue-600 rounded-xl shadow-lg shadow-blue-200">
+                                <FileText className="w-6 h-6 text-white" />
                             </div>
-                            <select className="border-gray-200 rounded text-sm py-1.5 focus:ring-blue-500">
-                                <option>2026</option>
-                                <option>2025</option>
+                            Laporan <span className="text-blue-600">Kemajuan</span>
+                        </h1>
+                        <p className="text-gray-500 text-[13px] font-medium uppercase tracking-[0.1em] ml-14">Manajemen dan pengumpulan laporan kemajuan pengabdian</p>
+                    </div>
+
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div className="relative group">
+                            <Search className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
+                            <input
+                                type="text"
+                                placeholder="Cari judul pengabdian..."
+                                className="bg-white border-2 border-gray-100 rounded-2xl py-3 pl-12 pr-6 text-[13px] font-semibold text-gray-700 w-80 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/5 transition-all outline-none shadow-sm"
+                            />
+                        </div>
+
+                        <div className="flex items-center gap-3 bg-white px-6 py-2 rounded-2xl shadow-sm border border-gray-100">
+                            <Filter className="w-4 h-4 text-blue-600" />
+                            <select
+                                className="bg-transparent border-none text-[13px] font-bold text-gray-700 pr-10 focus:ring-0 cursor-pointer outline-none"
+                                value={selectedYear}
+                                onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+                            >
+                                {yearOptions.map((opt) => (
+                                    <option key={opt.value} value={opt.value}>
+                                        {opt.label}
+                                    </option>
+                                ))}
                             </select>
                         </div>
                     </div>
-
+                </div>
+                <div className="bg-white rounded-[2.5rem] shadow-2xl shadow-blue-900/5 border border-gray-100 overflow-hidden">
                     <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse">
                             <thead>
-                                <tr className="bg-white border-b border-gray-100">
-                                    <th className="px-6 py-4 text-[11px] font-bold text-gray-500 uppercase tracking-wider w-16">No</th>
-                                    <th className="px-6 py-4 text-[11px] font-bold text-gray-500 uppercase tracking-wider">Program</th>
-                                    <th className="px-6 py-4 text-[11px] font-bold text-gray-500 uppercase tracking-wider">Judul</th>
-                                    <th className="px-6 py-4 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center w-32">Status</th>
-                                    <th className="px-6 py-4 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center w-24">Berkas</th>
-                                    <th className="px-6 py-4 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center w-24">Aksi</th>
+                                <tr className="bg-gray-50/50 border-b border-gray-100">
+                                    <th className="px-6 py-5 text-[11px] font-bold text-gray-500 uppercase tracking-wider w-16 text-center">No</th>
+                                    <th className="px-6 py-5 text-[11px] font-bold text-gray-500 uppercase tracking-wider">Informasi Program</th>
+                                    <th className="px-6 py-5 text-[11px] font-bold text-gray-500 uppercase tracking-wider">Judul Pengabdian</th>
+                                    <th className="px-6 py-5 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center">Status Laporan</th>
+                                    <th className="px-6 py-5 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center">Berkas</th>
+                                    <th className="px-6 py-5 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-50">
-                                {fundedUsulan.length === 0 ? (
+                                {filteredList.length === 0 ? (
                                     <tr>
-                                        <td colSpan={5} className="px-6 py-12 text-center text-gray-500 italic text-sm">
-                                            Tidak ada usulan pengabdian yang sedang didanai atau memerlukan laporan kemajuan.
+                                        <td colSpan={6} className="px-6 py-20 text-center">
+                                            <div className="flex flex-col items-center gap-3 text-gray-400">
+                                                <AlertCircle className="w-12 h-12 stroke-1" />
+                                                <p className="italic text-sm">Tidak ada usulan pengabdian yang memerlukan laporan kemajuan.</p>
+                                            </div>
                                         </td>
                                     </tr>
                                 ) : (
-                                    fundedUsulan.map((usulan, index) => (
-                                        <tr key={usulan.id} className="hover:bg-blue-50/20 transition group">
-                                            <td className="px-6 py-6 text-sm text-gray-600 font-medium">{index + 1}</td>
-                                            <td className="px-6 py-6">
-                                                <div className="space-y-1">
-                                                    <p className="text-[11px] font-bold text-green-600 leading-tight uppercase mb-1">{usulan.skema}</p>
-                                                    <p className="text-[10px] text-gray-600 font-medium">Pengabdian Kepada Masyarakat</p>
-                                                    <p className="text-[10px] text-gray-800 font-bold">Tahun Pelaksanaan : {usulan.tahun_pertama}</p>
+                                    filteredList.map((usulan, index) => (
+                                        <motion.tr
+                                            key={usulan.id}
+                                            variants={itemVariants}
+                                            className="hover:bg-blue-50/30 transition-colors group cursor-default"
+                                        >
+                                            <td className="px-6 py-8 text-sm text-gray-400 font-medium text-center">{index + 1}</td>
+                                            <td className="px-6 py-8">
+                                                <div className="flex flex-col gap-1.5">
+                                                    <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-50 text-amber-600 w-fit uppercase border border-amber-100">
+                                                        {usulan.skema}
+                                                    </span>
+                                                    <p className="text-[12px] text-gray-900 font-bold leading-tight">Pengabdian Kepada Masyarakat</p>
+                                                    <div className="flex items-center gap-1.5 text-gray-500">
+                                                        <Clock className="w-3 h-3" />
+                                                        <span className="text-[11px] font-medium">{formatAcademicYear(usulan.tahun_pertama)}</span>
+                                                    </div>
                                                 </div>
                                             </td>
-                                            <td className="px-6 py-6">
-                                                <p className="text-sm text-gray-800 leading-snug max-w-xl font-medium">{usulan.judul}</p>
+                                            <td className="px-6 py-8">
+                                                <div className="flex flex-col gap-2">
+                                                    <p className="text-sm text-gray-800 font-semibold leading-relaxed max-w-lg group-hover:text-blue-700 transition-colors uppercase">
+                                                        {usulan.judul}
+                                                    </p>
+                                                    <div className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-blue-50 text-blue-700 rounded-md text-[10px] font-bold border border-blue-100/50 w-fit">
+                                                        <div className="w-1 h-1 bg-blue-400 rounded-full animate-pulse" />
+                                                        DANA DISETUJUI: Rp {new Intl.NumberFormat('id-ID').format(usulan.dana_disetujui || 0)}
+                                                    </div>
+                                                </div>
                                             </td>
-                                            <td className="px-6 py-6 text-center">
-                                                {!usulan.report ? (
-                                                    <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-gray-100 text-gray-500 uppercase">
-                                                        Belum Mengisi
-                                                    </span>
-                                                ) : usulan.report.status === 'Draft' ? (
-                                                    <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-700 uppercase">
-                                                        Draft
-                                                    </span>
-                                                ) : (
-                                                    <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-green-100 text-green-700 uppercase">
-                                                        Submitted
-                                                    </span>
-                                                )}
+                                            <td className="px-6 py-8">
+                                                <div className="flex justify-center">
+                                                    {!usulan.report ? (
+                                                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold bg-gray-100 text-gray-500 uppercase border border-gray-200">
+                                                            <div className="w-1.5 h-1.5 rounded-full bg-gray-400" />
+                                                            Belum Mengisi
+                                                        </span>
+                                                    ) : usulan.report.status === 'Draft' ? (
+                                                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 uppercase border border-amber-100 shadow-sm shadow-amber-500/10">
+                                                            <div className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                                                            Draft
+                                                        </span>
+                                                    ) : (
+                                                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 uppercase border border-emerald-100 shadow-sm shadow-emerald-500/10">
+                                                            <CheckCircle2 className="w-3 h-3" />
+                                                            Submitted
+                                                        </span>
+                                                    )}
+                                                </div>
                                             </td>
-                                            <td className="px-6 py-6 text-center">
+                                            <td className="px-6 py-8 text-center">
                                                 {usulan.report?.file_laporan ? (
                                                     <a
                                                         href={`/storage/${usulan.report.file_laporan}`}
                                                         target="_blank"
-                                                        className="inline-flex items-center justify-center w-8 h-8 bg-blue-800 text-white rounded hover:bg-blue-900 transition shadow-sm"
+                                                        className="inline-flex items-center justify-center w-10 h-10 bg-white border border-gray-100 text-blue-600 rounded-xl hover:bg-blue-600 hover:text-white transition-all duration-300 shadow-sm hover:shadow-blue-500/20 group/btn"
+                                                        title="Unduh Laporan"
                                                     >
-                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                                                        <Download className="w-5 h-5 group-hover/btn:scale-110 transition-transform" />
                                                     </a>
                                                 ) : (
-                                                    <span className="text-gray-300">-</span>
+                                                    <div className="w-10 h-10 mx-auto flex items-center justify-center text-gray-200">
+                                                        <FileText className="w-5 h-5 opacity-20" />
+                                                    </div>
                                                 )}
                                             </td>
-                                            <td className="px-6 py-6 text-center">
+                                            <td className="px-6 py-8 text-center">
                                                 <Link
                                                     href={route('dosen.pengabdian.laporan-kemajuan.show', usulan.id)}
-                                                    className="inline-flex items-center justify-center w-8 h-8 border border-gray-300 bg-white text-gray-600 rounded hover:bg-gray-50 transition shadow-sm"
+                                                    className="inline-flex items-center justify-center w-10 h-10 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-600 hover:text-white transition-all duration-300 shadow-sm hover:shadow-blue-500/30 group/edit"
                                                 >
-                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                                                    <Edit className="w-5 h-5 group-hover/edit:scale-110 transition-transform" />
                                                 </Link>
                                             </td>
-                                        </tr>
+                                        </motion.tr>
                                     ))
                                 )}
                             </tbody>
                         </table>
                     </div>
                 </div>
-            </main>
+            </motion.main>
             <Footer />
         </div>
     );

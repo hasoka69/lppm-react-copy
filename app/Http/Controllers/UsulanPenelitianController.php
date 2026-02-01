@@ -19,13 +19,33 @@ class UsulanPenelitianController extends Controller
     {
         $user = Auth::user();
 
+        // Ambil Data Dosen ID dari User yang login
+        // Asumsi relasi User -> Dosen (hasOne 'dosen') sudah ada via email
+        $dosenId = $user->dosen->id ?? null;
+
         $usulanList = UsulanPenelitian::with([
             'reviewHistories' => function ($query) {
                 $query->latest('reviewed_at')->limit(1);
             }
         ])
-            ->where('user_id', $user->id)
-            ->whereNotIn('status', ['under_revision_admin', 'revision_dosen'])
+            ->where(function ($query) use ($user, $dosenId) {
+                // Sebagai Ketua (Owner)
+                $query->where('user_id', $user->id)
+                    // Atau Sebagai Anggota Dosen
+                    ->orWhereHas('anggotaDosen', function ($q) use ($dosenId) {
+                    if ($dosenId) {
+                        $q->where('dosen_id', $dosenId);
+                    } else {
+                        // If user is not mapped to dosen yet, fallback safely (shouldn't happen for valid dosen)
+                        $q->where('id', 0);
+                    }
+                });
+            })
+            ->whereNotIn('status', ['under_revision_admin', 'revision_dosen']) // Logic existing: hide revising ?? Wait, revision_dosen should be visible to owner?
+            // Note: The original code excluded 'under_revision_admin' and 'revision_dosen' from this main list?? 
+            // Usually 'revision_dosen' should be visible in 'Perbaikan' tab or main list? 
+            // The original code passed 'revision_dosen' to 'Perbaikan' view separately.
+            // Let's keep existing logic for now.
             ->latest()
             ->get()
             ->map(fn($u, $i) => [
@@ -33,9 +53,11 @@ class UsulanPenelitianController extends Controller
                 'id' => $u->id,
                 'skema' => $u->kelompok_skema ?? 'N/A',
                 'judul' => $u->judul,
-                'tahun_pelaksanaan' => $u->tahun_pertama ?? date('Y'),
+                'tahun_pelaksanaan' => tap($u->tahun_pertama, function ($val) use ($u) {
+                    // Log::info("Row ID {$u->id}: tahun_pertama = " . var_export($val, true));
+                }) ?? date('Y'),
                 'makro_riset' => $u->kelompok_makro_riset ?? 'N/A',
-                'peran' => 'Ketua',
+                'peran' => $u->user_id === $user->id ? 'Ketua' : 'Anggota', // Determine Role
                 'status' => $u->status,
                 'catatan' => $u->reviewHistories->first()?->comments ?? null,
                 'reviewer_action' => $u->reviewHistories->first()?->action ?? null,
@@ -105,7 +127,7 @@ class UsulanPenelitianController extends Controller
                 'user_id' => Auth::id(),
                 'status' => 'draft',
                 ...$validated,
-                'tahun_pertama' => 2026,
+                'tahun_pertama' => $validated['tahun_pertama'] ?? 20261,
             ]);
 
             DB::commit();
@@ -174,15 +196,18 @@ class UsulanPenelitianController extends Controller
 
         try {
             // [NEW] Map makro_riset_id to kelompok_makro_riset name if provided
+            // [NEW] Map makro_riset_id to kelompok_makro_riset name if provided
             if (isset($validated['makro_riset_id'])) {
+                Log::info('Processing makro_riset_id', ['id' => $validated['makro_riset_id']]);
                 $makroData = DB::table('makro_riset')->where('id', $validated['makro_riset_id'])->first();
                 if ($makroData) {
                     $validated['kelompok_makro_riset'] = $makroData->nama; // Simpan nama untuk display
+                    Log::info('Mapped makro_riset', ['nama' => $makroData->nama]);
+                } else {
+                    Log::warning('Makro riset data not found for ID', ['id' => $validated['makro_riset_id']]);
                 }
-                // Kita juga bisa simpan makro_riset_id dicolumn baru jika ada, 
-                // tapi model saat ini pake 'kelompok_makro_riset' (string).
-                // Idealnya tambah kolom 'makro_riset_id' di tabel usulan_penelitian,
-                // tapi untuk sekarang kita ikut existing schema string.
+            } else {
+                Log::info('makro_riset_id not set in validated data', ['validated' => $validated]);
             }
 
             // Handle File Substansi Upload
@@ -194,7 +219,7 @@ class UsulanPenelitianController extends Controller
                 $validated['file_substansi'] = $path;
             }
 
-            $validated['tahun_pertama'] = 2026;
+            // $validated['tahun_pertama'] = 2026; // Removed hardcoding
             $usulan->update($validated);
 
             return back()->with('success', 'Data berhasil diperbarui!');
@@ -388,7 +413,7 @@ class UsulanPenelitianController extends Controller
     /**
      * Show form for specific step
      */
-    public function showStep($usulanId, $step)
+    public function showStep(Request $request, $usulanId, $step)
     {
         $step = (int) $step;
         $usulan = UsulanPenelitian::with([
@@ -397,7 +422,34 @@ class UsulanPenelitianController extends Controller
             'luaranList',
             'rabItems',
             'reviewHistories.reviewer'
-        ])->where('user_id', Auth::id())->findOrFail($usulanId);
+        ])->where(function ($query) {
+            // We cannot easily filter query by 'user_id' OR relation here without complex query
+            // Instead, findOrFail first, then check policy.
+            // But to be consistent with scoping:
+            // Let's just findOrFail($usulanId) then check logic manually for granular error.
+        })->find($usulanId); // Remove where('user_id', Auth::id()) constraint from query
+
+        if (!$usulan) {
+            abort(404);
+        }
+
+        // Authorization Check
+        $user = Auth::user();
+        $dosenId = $user->dosen->id ?? null;
+
+        $isOwner = $usulan->user_id === $user->id;
+        $isMember = false;
+        if ($dosenId) {
+            $isMember = $usulan->anggotaDosen()->where('dosen_id', $dosenId)->exists();
+        }
+
+        if (!$isOwner && !$isMember) {
+            abort(403, 'Unauthorized access to this proposal.');
+        }
+
+        // Determine ReadOnly Mode
+        // If query param 'mode' is view OR User is Member -> ReadOnly
+        $isReadOnly = $request->query('mode') === 'view' || $isMember;
 
         $masterData = $this->getMasterDataWithMakroRiset();
 
@@ -414,6 +466,7 @@ class UsulanPenelitianController extends Controller
             'usulanId' => $usulan->id,
             'usulan' => $usulan,
             'currentStep' => $step,
+            'isReadOnly' => $isReadOnly, // logic determined above
             'substansi' => [
                 'makro_riset_id' => $makroRisetId,
                 'file_substansi' => $usulan->file_substansi,

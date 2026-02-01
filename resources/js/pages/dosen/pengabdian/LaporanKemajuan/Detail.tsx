@@ -2,394 +2,385 @@ import { Head, Link, useForm, router, usePage } from '@inertiajs/react';
 import React, { useState, useEffect, useRef } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/footer';
-import styles from '../../../../../css/pengajuan.module.css';
+import {
+    FileText,
+    Upload,
+    Download,
+    CheckCircle2,
+    Layout,
+    History,
+    ArrowLeft,
+    Plus,
+    Edit,
+    ExternalLink,
+    Paperclip,
+    Calendar,
+    BadgeCheck,
+    Info,
+    X,
+    Save,
+    ArrowRight,
+    Search,
+    AlertCircle,
+    ChevronDown,
+    ChevronUp,
+    Briefcase,
+    Globe,
+    FileSearch,
+    FileCheck
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { toast } from 'sonner';
+import { Toaster } from '@/components/ui/sonner';
+
+const containerVariants = {
+    hidden: { opacity: 0, y: 10 },
+    visible: {
+        opacity: 1,
+        y: 0,
+        transition: { duration: 0.5 }
+    },
+    exit: {
+        opacity: 0,
+        y: -10,
+        transition: { duration: 0.3 }
+    }
+};
 
 interface Props {
     usulan: any;
-    report: any;
+    laporan_kemajuan: any;
     outputs: any[];
+    isAdminView?: boolean;
 }
 
-export default function Detail({ usulan, report, outputs }: Props) {
+export default function Detail({ usulan, laporan_kemajuan, outputs, isAdminView = false }: Props) {
     const { flash }: any = usePage().props;
-    const [activeStep, setActiveStep] = useState(1);
-    const sptbInputRef = useRef<HTMLInputElement>(null);
-    const reportInputRef = useRef<HTMLInputElement>(null);
+    const [step, setStep] = useState(1);
+    const fileLaporanRef = useRef<HTMLInputElement>(null);
+    const fileSptbRef = useRef<HTMLInputElement>(null);
 
-    useEffect(() => {
-        if (flash.success) {
-            alert(flash.success);
-        }
-        if (flash.error) {
-            alert(flash.error);
-        }
-    }, [flash]);
-
-    const mandatoryOutputs = outputs.filter(o => o.is_wajib);
-    const additionalOutputs = outputs.filter(o => !o.is_wajib);
-
-    const { data: reportData, setData: setReportData, post: postReport, processing: reportProcessing } = useForm({
-        ringkasan: report.ringkasan || '',
-        keyword: report.keyword || '',
+    const { data, setData, post, processing, errors } = useForm({
+        ringkasan: laporan_kemajuan?.ringkasan || '',
+        keyword: laporan_kemajuan?.keyword || '',
         file_laporan: null as File | null,
         file_sptb: null as File | null,
     });
 
     useEffect(() => {
-        setReportData(d => ({
-            ...d,
-            ringkasan: report.ringkasan || '',
-            keyword: report.keyword || '',
-        }));
-    }, [report.ringkasan, report.keyword]);
+        if (flash.success) toast.success(flash.success);
+        if (flash.error) toast.error(flash.error);
+    }, [flash]);
 
-    const handleSaveReportMetadata = (e: React.FormEvent) => {
+    const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        postReport(route('dosen.pengabdian.laporan-kemajuan.update', report.id), {
+        post(route('dosen.pengabdian.laporan-kemajuan.update', usulan.id), {
+            onSuccess: () => toast.success('Draft laporan kemajuan pengabdian berhasil disimpan.'),
             forceFormData: true,
-            onSuccess: () => alert('Data laporan pengabdian berhasil disimpan.'),
-        });
-    };
-
-    const handleSaveSPTB = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!reportData.file_sptb) {
-            alert('Silakan pilih file SPTB terlebih dahulu.');
-            return;
-        }
-        postReport(route('dosen.pengabdian.laporan-kemajuan.sptb.update', report.id), {
-            forceFormData: true,
-            onSuccess: () => {
-                setReportData('file_sptb', null);
-                alert('File SPTB berhasil disimpan.');
-            },
         });
     };
 
     return (
-        <div className={styles.masterContainer}>
+        <div className="min-h-screen bg-[#F8FAFC] font-sans">
+            <Head title={`Laporan Kemajuan - ${usulan.judul}`} />
             <Header />
-            <div className={styles.tabContainer}>
-                <div className={styles.tabs}>
-                    <button className={styles.tab} onClick={() => router.visit('/dosen/pengabdian')}>Daftar Pengabdian</button>
-                    <button className={styles.tab} onClick={() => router.visit('/dosen/pengabdian/perbaikan')}>Perbaikan Usulan</button>
-                    <button className={`${styles.tab} ${styles.active}`} onClick={() => router.visit(route('dosen.pengabdian.laporan-kemajuan.index'))}>Laporan Kemajuan</button>
-                    <button className={styles.tab} onClick={() => { }}>Catatan Harian</button>
-                    <button className={styles.tab} onClick={() => { }}>Laporan Akhir</button>
-                    <button className={styles.tab} onClick={() => { }}>Pengkinian Capaian Luaran</button>
+
+            {/* Professional Tab Navigation */}
+            <div className="bg-white border-b border-gray-100 sticky top-0 z-30">
+                <div className="max-w-7xl mx-auto px-6">
+                    <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
+                        {[
+                            { label: 'Daftar Pengabdian', route: isAdminView ? route('lppm.pengabdian.index') : '/dosen/pengabdian' },
+                            { label: 'Perbaikan Usulan', route: isAdminView ? route('lppm.pengabdian.perbaikan') : '/dosen/pengabdian/perbaikan' },
+                            { label: 'Laporan Kemajuan', active: true, route: isAdminView ? route('lppm.pengabdian.laporan-kemajuan') : route('dosen.pengabdian.laporan-kemajuan.index') },
+                            { label: 'Catatan Harian', route: isAdminView ? route('lppm.pengabdian.catatan-harian') : route('dosen.pengabdian.catatan-harian.index') },
+                            { label: 'Laporan Akhir', route: isAdminView ? route('lppm.pengabdian.laporan-akhir') : route('dosen.pengabdian.laporan-akhir.index') },
+                            { label: 'Pengkinian Capaian Luaran', route: isAdminView ? route('lppm.pengabdian.pengkinian-luaran') : route('dosen.pengabdian.pengkinian-luaran.index') }
+                        ].map((tab, idx) => (
+                            <button
+                                key={idx}
+                                onClick={() => tab.route !== '#' && router.visit(tab.route)}
+                                className={`px-5 py-4 text-[13px] font-semibold transition-all whitespace-nowrap relative ${tab.active ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
+                            >
+                                {tab.label}
+                                {tab.active && (
+                                    <motion.div
+                                        layoutId="activeTab"
+                                        className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 rounded-full"
+                                    />
+                                )}
+                            </button>
+                        ))}
+                    </div>
                 </div>
             </div>
-            <Head title="Laporan Kemajuan Pengabdian" />
 
-            <main className={styles.contentArea}>
-                {/* BIMA Breadcrumb/Title */}
-                <div className="mb-6">
-                    <h1 className="text-2xl font-bold text-gray-800 uppercase tracking-tight">LAPORAN KEMAJUAN PENGABDIAN</h1>
-                </div>
-
-                {/* Step Indicator */}
-                <div className="flex items-center justify-center mb-10 relative">
-                    <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-gray-200 -z-10"></div>
-                    <div className="flex justify-between w-full max-w-2xl px-4 bg-white">
-                        <div className="flex flex-col items-center gap-2 cursor-pointer group" onClick={() => setActiveStep(1)}>
-                            <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold border-2 transition ${activeStep === 1 ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white border-gray-300 text-gray-400 group-hover:border-blue-400'}`}>1</div>
-                            <span className={`text-sm font-semibold transition ${activeStep === 1 ? 'text-blue-600' : 'text-gray-600'}`}>Laporan Kemajuan</span>
+            <main className="max-w-7xl mx-auto px-6 py-10">
+                <motion.div
+                    initial="hidden"
+                    animate="visible"
+                    variants={containerVariants}
+                    className="space-y-8"
+                >
+                    {/* Header Section */}
+                    <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                        <div className="space-y-1">
+                            <Link
+                                href={isAdminView ? route('lppm.pengabdian.laporan-kemajuan') : route('dosen.pengabdian.laporan-kemajuan.index')}
+                                className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 hover:text-blue-700 transition-colors mb-2"
+                            >
+                                <ArrowLeft className="w-3.5 h-3.5" /> Kembali ke Daftar
+                            </Link>
+                            <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
+                                Laporan <span className="text-blue-600 font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">Kemajuan</span>
+                            </h1>
+                            <p className="text-gray-500 text-[13px] font-medium uppercase tracking-[0.05em]">Modul Pengabdian</p>
                         </div>
-                        <div className="flex flex-col items-center gap-2 cursor-pointer group" onClick={() => setActiveStep(2)}>
-                            <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold border-2 transition ${activeStep === 2 ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white border-gray-300 text-gray-400 group-hover:border-blue-400'}`}>2</div>
-                            <span className={`text-sm font-semibold transition ${activeStep === 2 ? 'text-blue-600' : 'text-gray-600'}`}>SPTB</span>
-                        </div>
-                    </div>
-                </div>
 
-                {/* Proposal Info Header Box */}
-                <div className="bg-blue-50/50 border border-blue-100 rounded-xl p-6 mb-8 relative overflow-hidden">
-                    <div className="absolute top-0 right-0 p-4 flex gap-2">
-                        {report.file_laporan && report.file_sptb ? (
-                            <span className="bg-green-500 text-white text-[10px] px-2 py-0.5 rounded font-bold uppercase tracking-wider">Sudah Unggah ✓</span>
-                        ) : (
-                            <span className="bg-orange-500 text-white text-[10px] px-2 py-0.5 rounded font-bold uppercase tracking-wider">Belum Unggah</span>
-                        )}
-                        <span className="bg-blue-800 text-white text-[10px] px-2 py-0.5 rounded font-bold">Tgl Update: {new Date(report.updated_at).toLocaleString('id-ID')}</span>
-                    </div>
-                    <div className="space-y-2">
-                        <p className="text-blue-700 text-sm font-medium">Pengabdian | Tahun Pelaksanaan {usulan.tahun_pertama}</p>
-                        <h2 className="text-xl font-bold text-gray-900 leading-tight">{usulan.judul}</h2>
-                        <div className="flex gap-2 mt-2">
-                            <span className="bg-green-500 text-white text-[10px] px-2 py-1 rounded-full font-bold uppercase">{usulan.kelompok_skema}</span>
-                            <span className="bg-orange-400 text-white text-[10px] px-2 py-1 rounded-full font-bold uppercase">Tahun ke 1 dari 1</span>
-                        </div>
-                    </div>
-                </div>
-
-                {activeStep === 1 && (
-                    <div className="space-y-8 animate-fadeIn">
-                        {/* Ringkasan & Keyword Form */}
-                        <form onSubmit={handleSaveReportMetadata} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                            <div className="p-6 space-y-6">
-                                <div>
-                                    <label className="block text-sm font-bold text-gray-700 mb-2">Ringkasan</label>
-                                    <p className="text-xs text-gray-500 mb-2 italic">Tuliskan secara ringkas latar belakang pengabdian, tujuan dan tahapan metode, luaran yang ditargetkan, dan hasil yang diperoleh sesuai dengan tahun pelaksanaan</p>
-                                    <textarea
-                                        className="w-full border-gray-200 rounded-lg focus:ring-blue-500 focus:border-blue-500 min-h-[150px] text-sm"
-                                        value={reportData.ringkasan}
-                                        onChange={e => setReportData('ringkasan', e.target.value)}
-                                        placeholder="Ketik ringkasan di sini..."
-                                        disabled={report.status !== 'Draft'}
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-bold text-gray-700 mb-2">Keyword</label>
-                                    <p className="text-xs text-gray-500 mb-2 italic">Maksimal 5 kata kunci. Gunakan tanda baca titik koma (;) sebagai pemisah</p>
-                                    <input
-                                        type="text"
-                                        className="w-full border-gray-200 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
-                                        value={reportData.keyword}
-                                        onChange={e => setReportData('keyword', e.target.value)}
-                                        placeholder="Contoh: Pengabdian; Masyarakat; Desa Binaan"
-                                        disabled={report.status !== 'Draft'}
-                                    />
-                                </div>
-
-                                <div className="pt-4 border-t border-gray-50 flex flex-col md:flex-row gap-6">
-                                    <div className="flex-1">
-                                        <label className="block text-sm font-bold text-gray-700 mb-2">Substansi Laporan</label>
-                                        <div className="flex flex-wrap gap-2">
-                                            {report.file_laporan && (
-                                                <a
-                                                    href={`/storage/${report.file_laporan}`}
-                                                    target="_blank"
-                                                    className="inline-flex items-center gap-2 px-4 py-2 bg-blue-700 text-white rounded text-xs font-bold hover:bg-blue-800 transition"
-                                                >
-                                                    ⬇ Download
-                                                </a>
-                                            )}
-                                            {report.status === 'Draft' && (
-                                                <div className="relative">
-                                                    <input
-                                                        type="file"
-                                                        className="hidden"
-                                                        ref={reportInputRef}
-                                                        onChange={e => setReportData('file_laporan', e.target.files?.[0] || null)}
-                                                        accept=".pdf"
-                                                    />
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => reportInputRef.current?.click()}
-                                                        className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-red-200 text-red-600 rounded text-xs font-bold hover:bg-red-50 cursor-pointer transition"
-                                                    >
-                                                        {reportData.file_laporan ? '✓ Terpilih' : '↑ Unggah Ulang'}
-                                                    </button>
-                                                </div>
-                                            )}
-                                            <button type="button" className="inline-flex items-center gap-2 px-4 py-2 bg-blue-700 text-white rounded text-xs font-bold hover:bg-blue-800 transition">
-                                                ⎙ Unduh Template
-                                            </button>
+                        {/* Step Indicator */}
+                        <div className="flex items-center gap-3 bg-white px-6 py-2.5 rounded-2xl shadow-sm border border-gray-100">
+                            {[
+                                { id: 1, label: 'Laporan % Ringkasan' },
+                                { id: 2, label: 'SPTB % Unggah' }
+                            ].map((s) => (
+                                <React.Fragment key={s.id}>
+                                    <div className="flex items-center gap-2">
+                                        <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-[11px] font-bold transition-all ${step >= s.id ? 'bg-blue-600 text-white shadow-md shadow-blue-100' : 'bg-gray-100 text-gray-400'}`}>
+                                            {s.id}
                                         </div>
+                                        <span className={`text-[11px] font-bold uppercase tracking-wider ${step >= s.id ? 'text-blue-600' : 'text-gray-400'}`}>{s.label}</span>
                                     </div>
-                                    <div className="flex items-end">
-                                        {report.status === 'Draft' && (
-                                            <button
-                                                type="submit"
-                                                disabled={reportProcessing}
-                                                className="bg-blue-700 text-white px-6 py-2 rounded font-bold text-sm hover:bg-blue-800 transition shadow-sm disabled:opacity-50"
-                                            >
-                                                {reportProcessing ? 'Menyimpan...' : 'Simpan Perubahan'}
-                                            </button>
-                                        )}
-                                    </div>
-                                </div>
+                                    {s.id === 1 && <div className={`w-8 h-px ${step > 1 ? 'bg-blue-600' : 'bg-gray-200'}`} />}
+                                </React.Fragment>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Proposal Summary Card */}
+                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 flex flex-col md:flex-row items-center justify-between gap-6 relative group overflow-hidden">
+                        <div className="absolute top-0 left-0 w-1.5 h-full bg-blue-600" />
+                        <div className="flex-1 space-y-3">
+                            <div className="flex items-center gap-3">
+                                <span className="px-2.5 py-0.5 bg-amber-50 text-amber-600 text-[11px] font-bold rounded-md border border-amber-100">Pengabdian</span>
+                                <span className="text-gray-300">|</span>
+                                <span className="text-gray-400 text-[11px] font-medium tracking-wide uppercase">{usulan.kelompok_skema}</span>
                             </div>
-                        </form>
-
-                        {/* Luaran Wajib Section */}
-                        <section className="mt-12">
-                            <h3 className="text-lg font-bold text-blue-900 mb-4 flex items-center gap-2 uppercase tracking-tight">LUARAN WAJIB</h3>
-                            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-x-auto">
-                                <table className="w-full text-left border-collapse">
-                                    <thead>
-                                        <tr className="bg-gray-50 border-b border-gray-100">
-                                            <th className="px-6 py-4 text-[10px] font-bold text-gray-500 uppercase">No</th>
-                                            <th className="px-6 py-4 text-[10px] font-bold text-gray-500 uppercase">Target Luaran</th>
-                                            <th className="px-6 py-4 text-[10px] font-bold text-gray-500 uppercase">Realisasi & Bukti</th>
-                                            <th className="px-6 py-4 text-center text-[10px] font-bold text-gray-500 uppercase">Aksi</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-gray-50">
-                                        {mandatoryOutputs.map((output, idx) => (
-                                            <OutputRow key={output.id} output={output} index={idx + 1} isReadOnly={report.status !== 'Draft'} />
-                                        ))}
-                                    </tbody>
-                                </table>
+                            <h2 className="text-xl font-bold text-gray-900 leading-snug">
+                                {usulan.judul}
+                            </h2>
+                            <div className="flex items-center gap-2 text-[11px] font-bold text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-100 w-fit">
+                                <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />
+                                DANA DISETUJUI: Rp {new Intl.NumberFormat('id-ID').format(usulan.dana_disetujui || 0)}
                             </div>
-                        </section>
-
-                        {/* Luaran Tambahan Section */}
-                        {additionalOutputs.length > 0 && (
-                            <section className="mt-12">
-                                <h3 className="text-lg font-bold text-gray-700 mb-4 flex items-center gap-2 uppercase tracking-tight">LUARAN TAMBAHAN</h3>
-                                <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-x-auto">
-                                    <table className="w-full text-left border-collapse">
-                                        <thead>
-                                            <tr className="bg-gray-50 border-b border-gray-100">
-                                                <th className="px-6 py-4 text-[10px] font-bold text-gray-500 uppercase">No</th>
-                                                <th className="px-6 py-4 text-[10px] font-bold text-gray-500 uppercase">Judul</th>
-                                                <th className="px-6 py-4 text-center text-[10px] font-bold text-gray-500 uppercase">Aksi</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-gray-50">
-                                            {additionalOutputs.map((output, idx) => (
-                                                <OutputRow key={output.id} output={output} index={idx + 1} isReadOnly={report.status !== 'Draft'} />
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </section>
-                        )}
-
-                        {/* Bottom Controls */}
-                        <div className="flex justify-between items-center pt-8">
-                            <button className="bg-white border border-red-200 text-red-600 px-4 py-2 rounded text-xs font-bold hover:bg-red-50 transition">
-                                Tutup form
-                            </button>
-                            <div className="flex gap-2">
-                                <button
-                                    onClick={() => {
-                                        if (report.status === 'Draft' && (reportData.ringkasan || reportData.keyword || reportData.file_laporan)) {
-                                            handleSaveReportMetadata(new Event('submit') as any);
-                                        }
-                                        setActiveStep(2);
-                                        window.scrollTo(0, 0);
-                                    }}
-                                    className="bg-blue-700 text-white px-6 py-2 rounded font-bold text-sm hover:bg-blue-800 transition flex items-center gap-2"
-                                >
-                                    Selanjutnya →
-                                </button>
+                        </div>
+                        <div className="flex flex-col items-end gap-2 shrink-0">
+                            <div className={`px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest ${laporan_kemajuan?.status === 'Submitted' ? 'bg-emerald-500 text-white border-emerald-600' : 'bg-amber-50 text-amber-600 border border-amber-100'}`}>
+                                Status: {laporan_kemajuan?.status === 'Submitted' ? 'Sudah Final' : 'Draft / Belum Final'}
+                            </div>
+                            <div className="text-[11px] font-bold text-gray-400 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-100">
+                                Tahun: {usulan.tahun_pertama}
                             </div>
                         </div>
                     </div>
-                )}
 
-                {activeStep === 2 && (
-                    <div className="space-y-8 animate-fadeIn">
-                        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                            <div className="p-10 space-y-10">
-                                {/* Instruction Box */}
-                                <div className="bg-cyan-50 border border-cyan-100 rounded-lg p-5">
-                                    <h4 className="text-sm font-bold text-cyan-900 mb-1">Panduan Mengunggah SPTB</h4>
-                                    <p className="text-sm text-cyan-800">Silakan isi form SPTB terlebih dahulu untuk mengunggah file</p>
-                                </div>
-
-                                {/* File Upload/Download Area */}
-                                <div className="space-y-4">
-                                    <h5 className="text-sm font-bold text-gray-700 uppercase tracking-wider">SPTB</h5>
-                                    <div className="flex flex-col gap-4">
-                                        {report.file_sptb && (
-                                            <div className="flex items-center gap-4">
-                                                <span className="text-sm text-blue-600 font-medium italic underline">{report.file_sptb.split('/').pop()}</span>
+                    <form onSubmit={handleSubmit} className="space-y-10">
+                        {step === 1 && (
+                            <motion.div
+                                initial={{ opacity: 0, x: 20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                className="space-y-8"
+                            >
+                                {/* Metadata Section */}
+                                <section className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                                    <div className="p-6 border-b border-gray-50 bg-gray-50/30">
+                                        <h3 className="text-sm font-bold text-gray-700 flex items-center gap-2">
+                                            <FileSearch className="w-4 h-4 text-blue-500" />
+                                            Data Laporan & Ringkasan
+                                        </h3>
+                                    </div>
+                                    <div className="p-10 space-y-8">
+                                        <div className="space-y-3">
+                                            <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">Ringkasan Pengabdian (Laporan Kemajuan)</label>
+                                            <div className="relative">
+                                                <textarea
+                                                    className="w-full bg-gray-50 border-gray-100 rounded-xl focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500 py-4 px-6 text-sm font-medium min-h-[180px] transition-all leading-relaxed"
+                                                    value={data.ringkasan}
+                                                    onChange={e => setData('ringkasan', e.target.value)}
+                                                    placeholder="Tuliskan ringkasan hasil pengabdian selama periode ini..."
+                                                    required
+                                                />
+                                                <div className="absolute bottom-4 right-4 text-[10px] font-bold text-gray-300">
+                                                    {data.ringkasan.length} Karakter
+                                                </div>
                                             </div>
-                                        )}
-                                        <div className="flex flex-wrap gap-4">
-                                            {report.file_sptb && (
-                                                <a
-                                                    href={`/storage/${report.file_sptb}`}
-                                                    target="_blank"
-                                                    className="inline-flex items-center gap-2 px-10 py-2.5 bg-blue-700 text-white rounded text-xs font-bold hover:bg-blue-800 transition shadow-sm"
-                                                >
-                                                    ⬇ Download
-                                                </a>
-                                            )}
-                                            {report.status === 'Draft' && (
-                                                <div className="flex items-center gap-4">
-                                                    <input
-                                                        type="file"
-                                                        ref={sptbInputRef}
-                                                        className="hidden"
-                                                        onChange={e => setReportData('file_sptb', e.target.files?.[0] || null)}
-                                                        accept=".pdf"
-                                                    />
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => sptbInputRef.current?.click()}
-                                                        className="inline-flex items-center gap-2 px-10 py-2.5 bg-white border border-red-200 text-red-600 rounded text-xs font-bold hover:bg-red-50 cursor-pointer transition shadow-sm"
-                                                    >
-                                                        {reportData.file_sptb ? '✓ Terpilih' : (report.file_sptb ? 'Ganti File' : 'Pilih File SPTB')}
+                                        </div>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                            <div className="space-y-3">
+                                                <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">Kata Kunci (Pisahkan dengan koma)</label>
+                                                <input
+                                                    type="text"
+                                                    className="w-full bg-gray-50 border-gray-100 rounded-xl focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500 py-3.5 px-6 text-sm font-semibold transition-all"
+                                                    value={data.keyword}
+                                                    onChange={e => setData('keyword', e.target.value)}
+                                                    placeholder="Contoh: Pemberdayaan, Desa, Lingkungan"
+                                                    required
+                                                />
+                                            </div>
+
+                                            <div className="space-y-3">
+                                                <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">Unggah Berkas Laporan (PDF)</label>
+                                                <div className="flex gap-2">
+                                                    <input type="file" ref={fileLaporanRef} className="hidden" onChange={e => setData('file_laporan', e.target.files?.[0] || null)} accept=".pdf" />
+                                                    <button type="button" onClick={() => fileLaporanRef.current?.click()} className="flex-1 bg-gray-50 border border-gray-100 rounded-xl px-5 py-3.5 text-sm font-bold text-gray-600 hover:bg-white hover:border-blue-500 hover:text-blue-600 transition-all text-left flex items-center justify-between">
+                                                        <span className="truncate">{data.file_laporan ? data.file_laporan.name : 'Pilih Berkas PDF'}</span>
+                                                        <Upload className="w-4 h-4 opacity-40" />
                                                     </button>
+                                                    {laporan_kemajuan?.file_laporan && (
+                                                        <a href={`/storage/${laporan_kemajuan.file_laporan}`} target="_blank" className="bg-blue-50 text-blue-600 px-4 py-3.5 rounded-xl border border-blue-100 hover:bg-blue-100 transition-all flex items-center">
+                                                            <Download className="w-4 h-4" />
+                                                        </a>
+                                                    )}
                                                 </div>
-                                            )}
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
+                                </section>
 
-                                {/* Form Buttons */}
-                                <div className="flex justify-end gap-3 pt-6 border-t border-gray-50">
+                                {/* Luaran Section */}
+                                <section className="space-y-6">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-1 h-6 bg-blue-600 rounded-full" />
+                                            <h3 className="text-xl font-bold text-gray-900 tracking-tight">Capaian Luaran <span className="text-blue-600">Terjanjikan</span></h3>
+                                        </div>
+                                        <div className="text-[11px] font-bold text-gray-400 uppercase tracking-widest bg-white px-4 py-2 rounded-xl border border-gray-100 shadow-sm">
+                                            Total: {outputs.length} Item
+                                        </div>
+                                    </div>
+
+                                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                                        <div className="overflow-x-auto">
+                                            <table className="w-full text-left">
+                                                <thead>
+                                                    <tr className="bg-gray-50/50 border-b border-gray-50">
+                                                        <th className="px-8 py-5 text-[11px] font-bold text-gray-400 uppercase tracking-wider w-16 text-center">No</th>
+                                                        <th className="px-8 py-5 text-[11px] font-bold text-gray-400 uppercase tracking-wider">Kategori Luaran</th>
+                                                        <th className="px-8 py-5 text-[11px] font-bold text-gray-400 uppercase tracking-wider">Target & Deskripsi</th>
+                                                        <th className="px-8 py-5 text-[11px] font-bold text-gray-400 uppercase tracking-wider w-40 text-center">Aksi</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody className="divide-y divide-gray-50">
+                                                    {outputs.map((output, idx) => (
+                                                        <OutputRow key={output.id} output={output} index={idx + 1} isReadOnly={isAdminView} />
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </section>
+
+                                <div className="flex justify-end pt-4">
                                     <button
                                         type="button"
-                                        className="bg-blue-800 text-white px-6 py-2 rounded text-sm font-bold hover:bg-blue-900 transition flex items-center gap-2"
+                                        onClick={() => setStep(2)}
+                                        className="px-10 py-4 bg-blue-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all flex items-center gap-3"
                                     >
-                                        Form SPTB
+                                        Lanjutkan ke SPTB
+                                        <ArrowRight className="w-4 h-4" />
                                     </button>
-                                    {report.status === 'Draft' && (
-                                        <button
-                                            onClick={handleSaveSPTB}
-                                            disabled={reportProcessing}
-                                            className="bg-blue-800 text-white px-6 py-2 rounded text-sm font-bold hover:bg-blue-900 transition flex items-center gap-2"
-                                        >
-                                            {reportProcessing ? '...' : 'Simpan File'}
-                                        </button>
-                                    )}
                                 </div>
-                            </div>
-                        </div>
+                            </motion.div>
+                        )}
 
-                        {/* Bottom Controls */}
-                        <div className="flex justify-between items-center pt-8">
-                            <div className="flex gap-2">
-                                <button
-                                    onClick={() => setActiveStep(1)}
-                                    className="bg-white border border-blue-600 text-blue-600 px-6 py-2 rounded text-sm font-bold hover:bg-blue-50 transition flex items-center gap-2"
-                                >
-                                    ← Kembali
-                                </button>
-                                <button className="bg-white border border-red-200 text-red-600 px-4 py-2 rounded text-xs font-bold hover:bg-red-50 transition">
-                                    Tutup form
-                                </button>
-                            </div>
-                            <div className="flex gap-2">
-                                {report.status === 'Draft' ? (
-                                    <button
-                                        onClick={() => {
-                                            // Check for Rencana status in mandatory outputs
-                                            const missingMandatory = mandatoryOutputs.find(o => o.status === 'Rencana' || !o.judul_realisasi);
-                                            if (missingMandatory) {
-                                                alert(`Luaran Wajib "${missingMandatory.kategori}" harus diisi realisasinya dan statusnya tidak boleh "Rencana".`);
-                                                setActiveStep(1);
-                                                return;
-                                            }
+                        {step === 2 && (
+                            <motion.div
+                                initial={{ opacity: 0, x: -20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                className="space-y-8"
+                            >
+                                <section className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                                    <div className="p-6 border-b border-gray-50 bg-gray-50/30">
+                                        <h3 className="text-sm font-bold text-gray-700 flex items-center gap-2">
+                                            <Save className="w-4 h-4 text-emerald-500" />
+                                            Surat Pernyataan Tanggung Jawab Belanja (SPTB)
+                                        </h3>
+                                    </div>
 
-                                            if (confirm('Kirim laporan kemajuan sekarang? Data tidak dapat diubah setelah disubmit.')) {
-                                                router.post(route('dosen.pengabdian.laporan-kemajuan.submit', usulan.id));
-                                            }
-                                        }}
-                                        disabled={reportProcessing}
-                                        className="bg-green-600 text-white px-8 py-2 rounded text-sm font-bold hover:bg-green-700 transition flex items-center gap-2 shadow-sm disabled:opacity-50"
-                                    >
-                                        {reportProcessing ? 'Memproses...' : 'Kirim Laporan ✓'}
-                                    </button>
-                                ) : (
+                                    <div className="p-10 space-y-10">
+                                        <div className="bg-emerald-50/50 border border-emerald-100 rounded-2xl p-6 flex items-start gap-5">
+                                            <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center text-emerald-600 shadow-sm border border-emerald-100">
+                                                <Info className="w-6 h-6" />
+                                            </div>
+                                            <div className="space-y-1">
+                                                <h4 className="text-sm font-bold text-emerald-900">Petunjuk Pengunggahan SPTB</h4>
+                                                <p className="text-[13px] text-emerald-700/80 leading-relaxed max-w-2xl font-medium">
+                                                    Unggah berkas SPTB yang telah ditandatangani dan distempel. Pastikan dokumen dalam format PDF dengan ukuran maksimal 10MB. Dokumen ini wajib sebelum melakukan finalisasi laporan.
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div className="max-w-xl space-y-3">
+                                            <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">Unggah Berkas SPTB (PDF)</label>
+                                            <div className="flex gap-2">
+                                                <input type="file" ref={fileSptbRef} className="hidden" onChange={e => setData('file_sptb', e.target.files?.[0] || null)} accept=".pdf" />
+                                                <button type="button" onClick={() => fileSptbRef.current?.click()} className="flex-1 bg-gray-50 border border-gray-100 rounded-xl px-5 py-3.5 text-sm font-bold text-gray-600 hover:bg-white hover:border-emerald-500 hover:text-emerald-600 transition-all text-left flex items-center justify-between">
+                                                    <span className="truncate">{data.file_sptb ? data.file_sptb.name : 'Pilih Berkas SPTB'}</span>
+                                                    <Upload className="w-4 h-4 opacity-40" />
+                                                </button>
+                                                {laporan_kemajuan?.file_sptb && (
+                                                    <a href={`/storage/${laporan_kemajuan.file_sptb}`} target="_blank" className="bg-emerald-50 text-emerald-600 px-4 py-3.5 rounded-xl border border-emerald-100 hover:bg-emerald-100 transition-all flex items-center">
+                                                        <Download className="w-4 h-4" />
+                                                    </a>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </section>
+
+                                <div className="flex justify-between items-center pt-6">
                                     <button
-                                        onClick={() => router.visit(route('dosen.pengabdian.laporan-kemajuan.index'))}
-                                        className="bg-blue-700 text-white px-8 py-2 rounded text-sm font-bold hover:bg-blue-800 transition flex items-center gap-2"
+                                        type="button"
+                                        onClick={() => setStep(1)}
+                                        className="px-8 py-4 bg-white border border-gray-200 text-gray-500 rounded-xl text-sm font-bold hover:bg-gray-50 transition-all flex items-center gap-2"
                                     >
-                                        Selesai →
+                                        <ArrowLeft className="w-4 h-4" />
+                                        Kembali ke Laporan
                                     </button>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                )}
+
+                                    <div className="flex gap-4">
+                                        {!isAdminView && (
+                                            <>
+                                                <button
+                                                    type="submit"
+                                                    disabled={processing}
+                                                    className="px-8 py-4 bg-white border-2 border-blue-600 text-blue-600 rounded-xl text-sm font-bold hover:bg-blue-50 transition-all shadow-sm"
+                                                >
+                                                    {processing ? 'Menyimpan...' : 'Simpan Draft'}
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        if (confirm('Review kembali semua data. Setelah finalisasi, data tidak dapat diubah. Lanjutkan?')) {
+                                                            post(route('dosen.pengabdian.laporan-kemajuan.submit', usulan.id));
+                                                        }
+                                                    }}
+                                                    className="px-12 py-4 bg-blue-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all flex items-center gap-3"
+                                                >
+                                                    Finalisasi Laporan
+                                                    <CheckCircle2 className="w-4 h-4" />
+                                                </button>
+                                            </>
+                                        )}
+                                    </div>
+                                </div>
+                            </motion.div>
+                        )}
+                    </form>
+                    <Toaster />
+                </motion.div>
             </main>
+
             <Footer />
         </div>
     );
@@ -397,8 +388,7 @@ export default function Detail({ usulan, report, outputs }: Props) {
 
 function OutputRow({ output, index, isReadOnly }: { output: any, index: number, isReadOnly: boolean }) {
     const [isEditing, setIsEditing] = useState(false);
-    const buktiInputRef = useRef<HTMLInputElement>(null);
-    const submitInputRef = useRef<HTMLInputElement>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const { data, setData, post, processing, errors } = useForm({
         judul_realisasi: output.judul_realisasi || '',
@@ -407,36 +397,24 @@ function OutputRow({ output, index, isReadOnly }: { output: any, index: number, 
         nama_jurnal: output.nama_jurnal || '',
         issn: output.issn || '',
         pengindek: output.pengindek || '',
+        tahun_realisasi: output.tahun_realisasi || '',
+        volume: output.volume || '',
+        nomor: output.nomor || '',
+        halaman_awal: output.halaman_awal || '',
+        halaman_akhir: output.halaman_akhir || '',
         url_bukti: output.url_bukti || '',
-        file_bukti: null as File | null,
-        file_bukti_submit: null as File | null,
+        url_artikel: output.url_artikel || '',
+        doi: output.doi || '',
         keterangan: output.keterangan || '',
+        file_bukti: null as File | null,
     });
-
-    useEffect(() => {
-        setData(d => ({
-            ...d,
-            judul_realisasi: output.judul_realisasi || '',
-            status: output.status || 'Rencana',
-            peran_penulis: output.peran_penulis || '',
-            nama_jurnal: output.nama_jurnal || '',
-            issn: output.issn || '',
-            pengindek: output.pengindek || '',
-            url_bukti: output.url_bukti || '',
-            keterangan: output.keterangan || '',
-        }));
-    }, [output]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         post(route('dosen.pengabdian.laporan-kemajuan.luaran.update', output.id), {
             onSuccess: () => {
                 setIsEditing(false);
-                alert('Realisasi luaran berhasil disimpan.');
-            },
-            onError: (err) => {
-                const firstError = Object.values(err)[0];
-                alert('Gagal menyimpan: ' + firstError);
+                toast.success('Capaian luaran wajib pengabdian berhasil diperbarui.');
             },
             forceFormData: true,
         });
@@ -444,247 +422,198 @@ function OutputRow({ output, index, isReadOnly }: { output: any, index: number, 
 
     return (
         <>
-            <tr className="hover:bg-gray-50/50 transition align-top">
-                <td className="px-6 py-6 text-sm text-gray-500 font-medium">{index}</td>
-                <td className="px-6 py-6 border-r border-gray-50">
-                    <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                            <p className="text-sm font-semibold text-gray-800 leading-snug">{output.kategori}</p>
-                            <span className="text-[9px] text-blue-600 font-bold bg-blue-50 px-1.5 py-0.5 rounded uppercase tracking-wider">Publikasi_jurnal</span>
+            <motion.tr
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="hover:bg-blue-50/20 transition-all align-top group"
+            >
+                <td className="px-8 py-7 text-sm text-gray-400 font-bold text-center opacity-50">{index.toString().padStart(2, '0')}</td>
+                <td className="px-8 py-7">
+                    <div className="space-y-2">
+                        <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-md uppercase tracking-wider border border-blue-100">
+                            {output.kategori}
+                        </span>
+                        <div className={`mt-2 inline-flex items-center px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest ${output.status === 'Published' || output.status === 'Accepted' ? 'bg-emerald-500 text-white' : output.status === 'Draft' || output.status === 'Rencana' ? 'bg-amber-500 text-white' : 'bg-blue-600 text-white'}`}>
+                            {output.status}
                         </div>
-                        <p className="text-[11px] text-gray-500 bg-gray-50/80 p-2 rounded border border-gray-100 mt-2 italic leading-relaxed">
-                            Target: {output.deskripsi}
-                        </p>
                     </div>
                 </td>
-                <td className="px-6 py-6">
-                    <div className="space-y-3">
-                        {output.judul_realisasi ? (
-                            <div className="space-y-1">
-                                <p className="text-sm text-gray-900 font-bold leading-tight">{output.judul_realisasi}</p>
-                                <div className="flex items-center gap-3">
-                                    <span className={`text-[9px] px-2 py-0.5 rounded font-black uppercase tracking-widest shadow-sm ${output.status === 'Accepted' || output.status === 'Published'
-                                        ? 'bg-green-500 text-white'
-                                        : 'bg-blue-600 text-white'
-                                        }`}>
-                                        {output.status}
-                                    </span>
-                                    {output.nama_jurnal && <span className="text-[10px] text-gray-500 font-medium italic">| {output.nama_jurnal}</span>}
+                <td className="px-8 py-7">
+                    <div className="space-y-4">
+                        <p className="text-sm font-semibold text-gray-800 leading-relaxed line-clamp-2 italic">
+                            {output.deskripsi}
+                        </p>
+                        {output.judul_realisasi && (
+                            <div className="p-4 bg-gray-50 border border-gray-100 rounded-xl group-hover:bg-white transition-colors">
+                                <p className="text-[13px] text-gray-700 font-bold leading-snug">{output.judul_realisasi}</p>
+                                <div className="flex items-center gap-4 mt-3">
+                                    {output.file_bukti && (
+                                        <a href={`/storage/${output.file_bukti}`} target="_blank" className="flex items-center gap-1.5 text-blue-600 hover:text-blue-800 transition-colors">
+                                            <Paperclip className="w-3.5 h-3.5" />
+                                            <span className="text-[10px] font-bold uppercase tracking-wider">Berkas Bukti</span>
+                                        </a>
+                                    )}
+                                    {output.url_bukti && (
+                                        <a href={output.url_bukti} target="_blank" className="flex items-center gap-1.5 text-indigo-600 hover:text-indigo-800 transition-colors">
+                                            <Globe className="w-3.5 h-3.5" />
+                                            <span className="text-[10px] font-bold uppercase tracking-wider">Tautan</span>
+                                        </a>
+                                    )}
                                 </div>
                             </div>
-                        ) : (
-                            <span className="text-xs text-gray-400 italic">Belum ada realisasi</span>
                         )}
                     </div>
                 </td>
-                <td className="px-6 py-6 text-center">
-                    {!isReadOnly && (
+                <td className="px-8 py-7 text-center">
+                    {!isReadOnly ? (
                         <button
                             onClick={() => setIsEditing(true)}
-                            className="bg-white border border-gray-200 p-2.5 rounded-lg hover:bg-blue-50 hover:border-blue-200 hover:text-blue-600 transition shadow-sm group"
+                            className="bg-white border border-gray-100 p-3 rounded-xl hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all shadow-sm shadow-blue-900/5 group"
                         >
-                            <svg className="w-4 h-4 text-gray-400 group-hover:text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                            <Edit className="w-4 h-4 text-gray-400 group-hover:text-white" />
                         </button>
-                    )}
-                    {isReadOnly && <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Locked</span>}
-                </td>
-            </tr>
-
-            {/* MODAL FORM */}
-            {isEditing && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
-                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col scale-in">
-                        {/* Header Modal */}
-                        <div className="px-6 py-4 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
-                            <h3 className="text-sm font-bold text-blue-900 uppercase tracking-tight leading-tight pr-8">
-                                {output.kategori}: {output.deskripsi.substring(0, 100)}{output.deskripsi.length > 100 ? '...' : ''}
-                            </h3>
-                            <button onClick={() => setIsEditing(false)} className="text-gray-400 hover:text-gray-600 transition">
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
-                            </button>
+                    ) : (
+                        <div className="flex justify-center">
+                            <BadgeCheck className="w-6 h-6 text-blue-500" />
                         </div>
+                    )}
+                </td>
+            </motion.tr>
 
-                        {/* Body Modal */}
-                        <div className="flex-1 overflow-y-auto p-6 scrollbar-thin">
-                            <form onSubmit={handleSubmit} className="space-y-6">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                                    <div className="md:col-span-2 space-y-4">
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                                            {/* Status Artikel */}
-                                            <div className="space-y-1.5">
-                                                <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider">Status Artikel</label>
-                                                <select
-                                                    className="w-full text-sm border-gray-200 rounded-lg focus:ring-blue-500 focus:border-blue-500 shadow-sm py-2.5"
-                                                    value={data.status}
-                                                    onChange={e => setData('status', e.target.value)}
-                                                >
+            <AnimatePresence>
+                {isEditing && (
+                    <tr>
+                        <td>
+                            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                                <motion.div
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    onClick={() => setIsEditing(false)}
+                                    className="absolute inset-0 bg-gray-900/40 backdrop-blur-md"
+                                />
+                                <motion.div
+                                    initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                                    exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                                    className="bg-white rounded-[2rem] shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col relative z-10 border border-gray-100"
+                                >
+                                    <div className="px-10 py-6 bg-gradient-to-r from-gray-900 to-blue-900 flex items-center justify-between">
+                                        <div className="flex items-center gap-5">
+                                            <div className="p-2.5 bg-white/10 rounded-xl backdrop-blur-md border border-white/10">
+                                                <FileCheck className="w-5 h-5 text-white" />
+                                            </div>
+                                            <div>
+                                                <h3 className="text-lg font-bold text-white tracking-tight">Realisasi Capaian</h3>
+                                                <p className="text-[10px] text-blue-100/60 font-bold uppercase tracking-widest mt-0.5">Laporan Kemajuan Pengabdian</p>
+                                            </div>
+                                        </div>
+                                        <button onClick={() => setIsEditing(false)} className="p-2 bg-white/10 text-white rounded-xl transition-all">
+                                            <X className="w-5 h-5" />
+                                        </button>
+                                    </div>
+
+                                    <div className="flex-1 overflow-y-auto p-10 space-y-8">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                            <div className="md:col-span-2 space-y-2">
+                                                <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">Judul Realisasi / Artikel / Produk / Kegiatan</label>
+                                                <textarea
+                                                    className="w-full bg-gray-50 border-gray-100 rounded-xl focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500 py-4 px-6 text-sm font-medium min-h-[100px] transition-all"
+                                                    value={data.judul_realisasi}
+                                                    onChange={e => setData('judul_realisasi', e.target.value)}
+                                                    placeholder="Masukkan judul realisasi lengkap..."
+                                                />
+                                            </div>
+
+                                            <div className="space-y-2">
+                                                <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">Status Capaian</label>
+                                                <select className="w-full bg-gray-50 border-gray-100 rounded-xl py-3.5 px-6 text-sm font-bold focus:ring-4 focus:ring-blue-500/5" value={data.status} onChange={e => setData('status', e.target.value)}>
                                                     <option value="Rencana">Rencana</option>
                                                     <option value="Draft">Draft</option>
                                                     <option value="Submitted">Submitted</option>
-                                                    <option value="Review">Review</option>
+                                                    <option value="In Review">In Review</option>
                                                     <option value="Accepted">Accepted</option>
                                                     <option value="Published">Published</option>
                                                 </select>
                                             </div>
 
-                                            {/* Status Penulis */}
-                                            <div className="space-y-1.5">
-                                                <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider">Status Penulis</label>
-                                                <select
-                                                    className="w-full text-sm border-gray-200 rounded-lg focus:ring-blue-500 focus:border-blue-500 shadow-sm py-2.5"
-                                                    value={data.peran_penulis}
-                                                    onChange={e => setData('peran_penulis', e.target.value)}
-                                                >
-                                                    <option value="">Pilih Status Penulis</option>
+                                            <div className="space-y-2">
+                                                <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">Peran Penulis / Pelaksana</label>
+                                                <select className="w-full bg-gray-50 border-gray-100 rounded-xl py-3.5 px-6 text-sm font-bold focus:ring-4 focus:ring-blue-500/5" value={data.peran_penulis} onChange={e => setData('peran_penulis', e.target.value)}>
+                                                    <option value="">-- Pilih Peran --</option>
                                                     <option value="First Author">First Author</option>
                                                     <option value="Corresponding Author">Corresponding Author</option>
                                                     <option value="Co-Author">Co-Author</option>
-                                                    <option value="Single Author">Single Author</option>
+                                                    <option value="Member">Member</option>
+                                                    <option value="Ketua Pelaksana">Ketua Pelaksana</option>
                                                 </select>
                                             </div>
-                                        </div>
 
-                                        {/* Nama Jurnal */}
-                                        <div className="space-y-1.5">
-                                            <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider">Nama Jurnal</label>
-                                            <input
-                                                type="text"
-                                                className="w-full text-sm border-gray-200 rounded-lg focus:ring-blue-500 focus:border-blue-500 shadow-sm py-2.5"
-                                                value={data.nama_jurnal}
-                                                onChange={e => setData('nama_jurnal', e.target.value)}
-                                                placeholder="Contoh: Journal of Information Systems and Informatics (JISI)"
-                                            />
-                                        </div>
-
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                                            {/* ISSN/EISSN */}
-                                            <div className="space-y-1.5">
-                                                <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider">ISSN/EISSN</label>
-                                                <input
-                                                    type="text"
-                                                    className="w-full text-sm border-gray-200 rounded-lg focus:ring-blue-500 focus:border-blue-500 shadow-sm py-2.5"
-                                                    value={data.issn}
-                                                    onChange={e => setData('issn', e.target.value)}
-                                                    placeholder="Contoh: 2656-5935 / 2656-4882"
-                                                />
+                                            <div className="space-y-2">
+                                                <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">Nama Jurnal / Venue / Media / Lokasi</label>
+                                                <input type="text" className="w-full bg-gray-50 border-gray-100 rounded-xl py-3.5 px-6 text-sm font-bold focus:ring-4 focus:ring-blue-500/5" value={data.nama_jurnal} onChange={e => setData('nama_jurnal', e.target.value)} placeholder="Nama Jurnal/Venue/Lokasi..." />
                                             </div>
 
-                                            {/* Lembaga Pengindek */}
-                                            <div className="space-y-1.5">
-                                                <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider">Lembaga Pengindek</label>
-                                                <input
-                                                    type="text"
-                                                    className="w-full text-sm border-gray-200 rounded-lg focus:ring-blue-500 focus:border-blue-500 shadow-sm py-2.5"
-                                                    value={data.pengindek}
-                                                    onChange={e => setData('pengindek', e.target.value)}
-                                                    placeholder="Contoh: Sinta, Scopus, dll"
-                                                />
+                                            <div className="space-y-2">
+                                                <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">ISSN / ISBN</label>
+                                                <input type="text" className="w-full bg-gray-50 border-gray-100 rounded-xl py-3.5 px-6 text-sm font-bold focus:ring-4 focus:ring-blue-500/5" value={data.issn} onChange={e => setData('issn', e.target.value)} placeholder="XXXX-XXXX" />
                                             </div>
-                                        </div>
 
-                                        {/* URL Jurnal */}
-                                        <div className="space-y-1.5">
-                                            <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider">URL Jurnal</label>
-                                            <input
-                                                type="url"
-                                                className="w-full text-sm border-gray-200 rounded-lg focus:ring-blue-500 focus:border-blue-500 shadow-sm py-2.5"
-                                                value={data.url_bukti}
-                                                onChange={e => setData('url_bukti', e.target.value)}
-                                                placeholder="https://journal-isi.org/index.php/jisi"
-                                            />
-                                        </div>
+                                            <div className="space-y-2">
+                                                <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">Lembaga Pengindek</label>
+                                                <input type="text" className="w-full bg-gray-50 border-gray-100 rounded-xl py-3.5 px-6 text-sm font-bold focus:ring-4 focus:ring-blue-500/5" value={data.pengindek} onChange={e => setData('pengindek', e.target.value)} placeholder="Contoh: Scopus, Sinta 2" />
+                                            </div>
 
-                                        {/* Judul Artikel */}
-                                        <div className="space-y-1.5">
-                                            <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-wider">Judul Artikel</label>
-                                            <textarea
-                                                className="w-full text-sm border-gray-200 rounded-lg focus:ring-blue-500 focus:border-blue-500 shadow-sm py-2.5 min-h-[80px]"
-                                                value={data.judul_realisasi}
-                                                onChange={e => setData('judul_realisasi', e.target.value)}
-                                                placeholder="Ketik judul artikel lengkap di sini..."
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
+                                            <div className="space-y-2">
+                                                <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">Tahun Realisasi</label>
+                                                <input type="text" className="w-full bg-gray-50 border-gray-100 rounded-xl py-3.5 px-6 text-sm font-bold focus:ring-4 focus:ring-blue-500/5" value={data.tahun_realisasi} onChange={e => setData('tahun_realisasi', e.target.value)} placeholder="2026" />
+                                            </div>
 
-                                {/* Section Unggah Dokumen */}
-                                <div className="space-y-4 pt-4 border-t border-gray-100">
-                                    <h4 className="text-sm font-bold text-gray-800">Unggah Dokumen</h4>
-
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        {/* Naskah Artikel */}
-                                        <div className="space-y-2">
-                                            <label className="block text-xs font-semibold text-gray-600 tracking-wide">Naskah artikel</label>
-                                            <div className="p-3 border border-dashed border-gray-200 rounded-xl bg-gray-50/50">
-                                                {output.file_bukti && (
-                                                    <div className="mb-3">
-                                                        <p className="text-[11px] text-blue-600 font-medium truncate mb-2">{output.file_bukti.split('/').pop()}</p>
-                                                        <a href={`/storage/${output.file_bukti}`} target="_blank" className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-700 text-white rounded shadow-sm text-[10px] font-bold hover:bg-blue-800 transition">
-                                                            ⬇ Download
-                                                        </a>
+                                            <div className="md:col-span-2 pt-6 border-t border-gray-50">
+                                                <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1 mb-3 block">Unggah Bukti Luaran (PDF)</label>
+                                                <div className="bg-gray-50/50 p-8 rounded-2xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center text-center space-y-4 hover:bg-white hover:border-blue-400 transition-all group/up">
+                                                    <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center text-gray-300 shadow-sm border border-gray-100 group-hover/up:text-blue-600 transition-colors">
+                                                        <Upload className="w-6 h-6" />
                                                     </div>
-                                                )}
-                                                <div className="relative">
-                                                    <input type="file" ref={buktiInputRef} className="hidden" onChange={e => setData('file_bukti', e.target.files?.[0] || null)} />
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => buktiInputRef.current?.click()}
-                                                        className="block w-full text-center py-2 px-3 bg-white border border-red-200 text-red-600 rounded-lg text-[10px] font-bold hover:bg-red-50 cursor-pointer transition"
-                                                    >
-                                                        {data.file_bukti ? '✓ Terpilih' : (output.file_bukti ? 'Unggah Ulang' : 'Pilih File')}
-                                                    </button>
+                                                    <div className="space-y-1">
+                                                        <p className="text-[13px] font-bold text-gray-700">Pilih Dokumen PDF Bukti Luaran</p>
+                                                        <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-wider">Max Size: 10MB</p>
+                                                    </div>
+                                                    <input type="file" ref={fileInputRef} className="hidden" onChange={e => setData('file_bukti', e.target.files?.[0] || null)} accept=".pdf" />
+                                                    <div className="flex gap-3">
+                                                        <button type="button" onClick={() => fileInputRef.current?.click()} className="px-6 py-2.5 bg-white border border-gray-900 text-gray-900 rounded-xl text-[11px] font-bold hover:bg-gray-900 hover:text-white transition-all shadow-sm">
+                                                            {data.file_bukti ? 'Ganti File ✓' : 'Pilih Berkas'}
+                                                        </button>
+                                                        {output.file_bukti && (
+                                                            <a href={`/storage/${output.file_bukti}`} target="_blank" className="px-6 py-2.5 bg-blue-50 text-blue-700 rounded-xl text-[11px] font-bold hover:bg-blue-100 transition-all border border-blue-100 flex items-center gap-2">
+                                                                <Download className="w-3.5 h-3.5" /> Lihat Existing
+                                                            </a>
+                                                        )}
+                                                    </div>
+                                                    {data.file_bukti && <p className="text-[10px] text-emerald-600 font-bold">{data.file_bukti.name}</p>}
                                                 </div>
                                             </div>
-                                        </div>
 
-                                        {/* Bukti Submit */}
-                                        <div className="space-y-2">
-                                            <label className="block text-xs font-semibold text-gray-600 tracking-wide">Bukti submit</label>
-                                            <div className="p-3 border border-dashed border-gray-200 rounded-xl bg-gray-50/50">
-                                                {output.file_bukti_submit && (
-                                                    <div className="mb-3">
-                                                        <p className="text-[11px] text-blue-600 font-medium truncate mb-2">{output.file_bukti_submit.split('/').pop()}</p>
-                                                        <a href={`/storage/${output.file_bukti_submit}`} target="_blank" className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-700 text-white rounded shadow-sm text-[10px] font-bold hover:bg-blue-800 transition">
-                                                            ⬇ Download
-                                                        </a>
-                                                    </div>
-                                                )}
-                                                <div className="relative">
-                                                    <input type="file" ref={submitInputRef} className="hidden" onChange={e => setData('file_bukti_submit', e.target.files?.[0] || null)} />
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => submitInputRef.current?.click()}
-                                                        className="block w-full text-center py-2 px-3 bg-white border border-red-200 text-red-600 rounded-lg text-[10px] font-bold hover:bg-red-50 cursor-pointer transition"
-                                                    >
-                                                        {data.file_bukti_submit ? '✓ Terpilih' : (output.file_bukti_submit ? 'Unggah Ulang' : 'Pilih File')}
-                                                    </button>
-                                                </div>
+                                            <div className="md:col-span-2 pt-6 flex justify-end gap-3">
+                                                <button type="button" onClick={() => setIsEditing(false)} className="px-8 py-3 text-[13px] font-bold text-gray-400 hover:text-gray-700 transition-colors">Batalkan</button>
+                                                <button
+                                                    type="button"
+                                                    onClick={handleSubmit}
+                                                    disabled={processing}
+                                                    className="px-12 py-3 bg-blue-600 text-white rounded-xl text-[13px] font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-100 flex items-center gap-2"
+                                                >
+                                                    {processing ? '...' : <Save className="w-4 h-4" />}
+                                                    Simpan Capaian
+                                                </button>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                            </form>
-                        </div>
-
-                        {/* Footer Modal */}
-                        <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-end gap-3">
-                            <button
-                                onClick={() => setIsEditing(false)}
-                                className="px-6 py-2 bg-gray-400 text-white rounded-lg text-sm font-bold hover:bg-gray-500 transition shadow-sm"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={handleSubmit}
-                                disabled={processing}
-                                className="px-8 py-2 bg-blue-700 text-white rounded-lg text-sm font-bold hover:bg-blue-800 transition shadow-lg disabled:opacity-50"
-                            >
-                                {processing ? 'Menyimpan...' : 'Simpan'}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+                                </motion.div>
+                            </div>
+                        </td>
+                    </tr>
+                )}
+            </AnimatePresence>
         </>
     );
 }

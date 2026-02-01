@@ -26,7 +26,6 @@ class AnggotaNonDosenController extends Controller
             'nama' => $validated['nama'],
             'jurusan' => $validated['jurusan'] ?? null,
             'tugas' => $validated['tugas'] ?? null,
-            'status_approval' => 'pending',
         ]);
 
         return response()->json([

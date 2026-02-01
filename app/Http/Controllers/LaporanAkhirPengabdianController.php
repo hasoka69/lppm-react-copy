@@ -25,7 +25,7 @@ class LaporanAkhirPengabdianController extends Controller
                 'judul' => $u->judul,
                 'skema' => $u->kelompok_skema,
                 'tahun_pertama' => $u->tahun_pertama,
-                'dana_disetujui' => $u->dana_disetujui,
+                'dana_disetujui' => (float) ($u->dana_disetujui ?? 0),
                 'report' => LaporanAkhirPengabdian::where('usulan_id', '=', $u->id, 'and')->first(),
             ]);
 
@@ -48,7 +48,7 @@ class LaporanAkhirPengabdianController extends Controller
 
         return Inertia::render('dosen/pengabdian/LaporanAkhir/Detail', [
             'usulan' => $usulan,
-            'report' => $report,
+            'laporan_akhir' => $report,
             'outputs' => $usulan->luaranItems
         ]);
     }

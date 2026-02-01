@@ -30,18 +30,53 @@ type NavItem = {
 
 const ROLE_MENU: Record<string, NavItem[]> = {
     "admin lppm": [
-        { href: "/lppm/dashboard", label: "Dashboard" }, // Updated to LPPM dashboard
+        { href: "/lppm/dashboard", label: "Dashboard" },
         { href: "/lppm/penelitian", label: "Penelitian" },
         { href: "/lppm/pengabdian", label: "Pengabdian" },
-        { href: "/lppm/luaran", label: "Luaran" },
-        // Mengelompokkan menu sistem ke dalam dropdown 'Manajemen'
         {
             label: "Manajemen",
             items: [
-                { href: "/admin/users", label: "Manajemen User" },
-                { href: "/admin/data", label: "Manajemen Data" },
-                { href: "/admin/bimtek", label: "Bimtek" },
-                { href: "/admin/settings", label: "Pengaturan Sistem" },
+                { href: "/lppm/users", label: "Manajemen Pengguna" },
+                { href: "/lppm/data", label: "Master Data" },
+                { href: "/lppm/periods", label: "Periode Kegiatan" },
+                { href: "/lppm/reviewers", label: "Plotting Reviewer" },
+                { href: "/lppm/setting-form", label: "Manajemen Form" },
+            ]
+        },
+        {
+            label: "System",
+            items: [
+                { href: "/audit-logs", label: "Audit Logs" },
+                { href: "/lppm/settings", label: "Pengaturan" },
+            ]
+        },
+    ],
+
+    // Super Admin / Admin Menu
+    admin: [
+        { href: "/admin/dashboard", label: "Command Center" },
+        { href: "/lppm/dashboard", label: "LPPM Dashboard" },
+        {
+            label: "System Control",
+            items: [
+                { href: "/lppm/users", label: "User Management" },
+                { href: "/lppm/data", label: "Master Data" },
+                { href: "/audit-logs", label: "System Logs" },
+                { href: "/lppm/settings", label: "Settings" },
+            ]
+        },
+    ],
+
+    "super-admin": [
+        { href: "/admin/dashboard", label: "Command Center" },
+        { href: "/lppm/dashboard", label: "LPPM Dashboard" },
+        {
+            label: "System Control",
+            items: [
+                { href: "/lppm/users", label: "User Management" },
+                { href: "/lppm/data", label: "Master Data" },
+                { href: "/audit-logs", label: "System Logs" },
+                { href: "/lppm/settings", label: "Settings" },
             ]
         },
     ],
@@ -50,9 +85,6 @@ const ROLE_MENU: Record<string, NavItem[]> = {
         { href: "/dosen/dashboard", label: "Dashboard" },
         { href: "/dosen/penelitian", label: "Penelitian" },
         { href: "/dosen/pengabdian", label: "Pengabdian" },
-
-        { href: "/dosen/luaran", label: "Submit Luaran PKM" },
-
     ],
 
     reviewer: [
@@ -86,6 +118,8 @@ const getDisplayRole = (roleKey: string): string => {
             return 'Kaprodi Informatika';
         case 'admin':
             return 'Administrator LPPM';
+        case 'super-admin':
+            return 'Super Administrator';
         case 'admin lppm':
             return 'Admin LPPM';
         default:
@@ -121,19 +155,16 @@ export default function Header() {
 
     // --- ROLE DETERMINATION LOGIC ---
 
-    // 1. Dapatkan role key dari data otentikasi (preferred).
-    let roleKey: string | undefined = authUser?.role?.toLowerCase();
+    // 1. Coba tebak dari URL saat ini (Priority utama agar menu sesuai konteks halaman)
+    let roleKey: string | undefined = getRoleFromUrl(page.url) ?? undefined;
 
-    // 2. Jika role key kosong/undefined, coba tebak dari URL saat ini (fallback heuristic).
+    // 2. Jika tidak ada di URL (misal di halaman profile atau home), gunakan data otentikasi
     if (!roleKey) {
-        const urlRole = getRoleFromUrl(page.url);
-        if (urlRole) {
-            roleKey = urlRole; // roleKey sekarang adalah string
-        }
+        roleKey = authUser?.role?.toLowerCase();
     }
 
     // 3. Fallback terakhir ke 'kaprodi' jika masih undefined.
-    const role: string = roleKey ?? "kaprodi";
+    const role: string = roleKey ?? "user";
 
     // MENU SESUAI ROLE
     const navItems = ROLE_MENU[role] ?? [];
@@ -141,9 +172,9 @@ export default function Header() {
     // USER (FALLBACK & DISPLAY)
     const user: AuthUser = {
         name: authUser?.name ?? "User Default",
-        role: authUser?.role || getDisplayRole(role),
+        role: getDisplayRole(role) || authUser?.role || "User",
         avatar:
-            authUser?.avatar ??
+            authUser?.avatar ||
             "https://i.pravatar.cc/150?img=32",
     };
 
@@ -154,22 +185,28 @@ export default function Header() {
         items.some(subItem => currentUrl.startsWith(subItem.href));
 
     return (
-        <header className="w-full bg-white shadow-sm border-b px-6 py-3 flex items-center justify-between sticky top-0 z-30">
+        <header className="w-full bg-white shadow-sm border-b px-6 py-3 flex items-center justify-between sticky top-0 z-50">
 
             {/* LEFT - LOGO */}
-            <div className="flex items-center gap-4">
+            <Link href="/" className="flex items-center gap-5 group">
                 <img
                     src="/image/logo-asaindo.png"
                     alt="Logo Kampus"
-                    className="h-12 w-auto"
+                    className="h-11 w-auto drop-shadow-sm group-hover:scale-105 transition-transform duration-300"
                 />
-                <div className="border-l pl-4">
-                    <h1 className="font-semibold text-xl tracking-wide text-[#2D4261]">L P P M</h1>
-                    <p className="text-xs text-gray-500 -mt-1">
-                        LEMBAGA PENELITIAN DAN PENGABDIAN MASYARAKAT
-                    </p>
+
+                {/* Divider */}
+                <div className="h-9 w-[2px] bg-gradient-to-b from-gray-100 via-gray-300 to-gray-100 rounded-full"></div>
+
+                <div className="flex flex-col">
+                    <span className="text-xl font-medium text-gray-500 leading-none">
+                        LPPM
+                    </span>
+                    <span className="text-[10px] text-gray-400 font-normal mt-0.5">
+                        Lembaga Penelitian Dan Pengabdian Masyarakat
+                    </span>
                 </div>
-            </div>
+            </Link>
 
             {/* DESKTOP MENU */}
             <nav className="hidden md:flex items-center gap-10 font-medium text-gray-600">

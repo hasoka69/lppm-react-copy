@@ -54,7 +54,7 @@ export const LuaranForm: React.FC<LuaranFormProps> = ({
         kategori: luaran?.kategori || fixedKategori || initialKategori,
         deskripsi: luaran?.deskripsi || '',
         is_wajib: luaran?.is_wajib ?? true,
-        status: luaran?.status || 'Rencana',
+        status: 'Rencana',
         keterangan: luaran?.keterangan || '',
     });
 
@@ -187,24 +187,19 @@ export const LuaranForm: React.FC<LuaranFormProps> = ({
                     {errors.deskripsi && <p className="text-red-500 text-sm mt-1">{errors.deskripsi[0]}</p>}
                 </div>
 
-                {/* Status */}
+                {/* Status - Read Only as Rencana */}
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                         Status
                     </label>
-                    <select
+                    <input
+                        type="text"
                         name="status"
-                        value={formData.status}
-                        onChange={handleChange}
-                        disabled={loading}
-                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.status ? 'border-red-500' : 'border-gray-300'
-                            }`}
-                    >
-                        <option value="Rencana">Rencana</option>
-                        <option value="Dalam Proses">Dalam Proses</option>
-                        <option value="Selesai">Selesai</option>
-                    </select>
-                    {errors.status && <p className="text-red-500 text-sm mt-1">{errors.status[0]}</p>}
+                        value="Rencana"
+                        disabled={true}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-500 cursor-not-allowed"
+                    />
+                    <input type="hidden" name="status" value="Rencana" />
                 </div>
 
                 {/* Keterangan */}

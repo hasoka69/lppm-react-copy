@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\AnggotaPengabdian;
 use App\Models\UsulanPengabdian;
+use App\Models\Dosen;
 use Illuminate\Support\Facades\Auth;
 
 class AnggotaPengabdianController extends Controller
@@ -38,13 +39,15 @@ class AnggotaPengabdianController extends Controller
             ], 422);
         }
 
+        $dosen = Dosen::where('nidn', $request->nidn)->first();
+
         $anggota = AnggotaPengabdian::create([
             'usulan_id' => $usulanId,
+            'dosen_id' => $dosen ? $dosen->id : null,
             'nidn' => $request->nidn,
             'nama' => $request->nama,
             'peran' => $request->peran,
             'tugas' => $request->tugas,
-            'status_persetujuan' => 'menunggu',
         ]);
 
         return response()->json([

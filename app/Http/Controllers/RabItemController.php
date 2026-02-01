@@ -45,9 +45,9 @@ class RabItemController extends Controller
 
         $validated = $request->validate([
             'tipe' => 'required|string|in:bahan,perjalanan,publikasi,pengumpulan_data',
-            'kategori' => 'required|string|max:100',
+            'kategori' => 'nullable|string|max:100',
             'item' => 'required|string|max:255',
-            'satuan' => 'required|string|max:50',
+            'satuan' => 'nullable|string|max:50',
             'volume' => 'required|integer|min:1',
             'harga_satuan' => 'required|integer|min:0',
             'keterangan' => 'nullable|string',
@@ -102,9 +102,9 @@ class RabItemController extends Controller
 
         $validated = $request->validate([
             'tipe' => 'sometimes|required|string|in:bahan,perjalanan,publikasi,pengumpulan_data',
-            'kategori' => 'sometimes|required|string|max:100',
+            'kategori' => 'nullable|string|max:100',
             'item' => 'sometimes|required|string|max:255',
-            'satuan' => 'sometimes|required|string|max:50',
+            'satuan' => 'nullable|string|max:50',
             'volume' => 'sometimes|required|integer|min:1',
             'harga_satuan' => 'sometimes|required|integer|min:0',
             'keterangan' => 'nullable|string',

@@ -3,6 +3,7 @@ import { Head, Link, router } from '@inertiajs/react';
 import Header from '@/components/Header';
 import Footer from '@/components/footer';
 import styles from '../../../../../css/pengajuan.module.css';
+import { formatAcademicYear, getAcademicYearOptions, getCurrentAcademicYearCode } from '@/utils/academicYear';
 import { motion } from 'framer-motion';
 import {
     FileText,
@@ -12,7 +13,8 @@ import {
     ChevronRight,
     AlertCircle,
     CheckCircle2,
-    Clock
+    Clock,
+    Search
 } from 'lucide-react';
 
 interface FundedUsulan {
@@ -50,17 +52,40 @@ const itemVariants = {
 };
 
 export default function Index({ fundedUsulan }: Props) {
+    const [selectedYear, setSelectedYear] = React.useState<number>(getCurrentAcademicYearCode());
+    const yearOptions = getAcademicYearOptions();
+
+    const filteredList = fundedUsulan.filter(u => u.tahun_pertama === selectedYear);
+
     return (
         <div className={styles.masterContainer}>
             <Header />
-            <div className={styles.tabContainer}>
-                <div className={styles.tabs}>
-                    <button className={styles.tab} onClick={() => router.visit('/dosen/penelitian')}>Daftar Usulan</button>
-                    <button className={styles.tab} onClick={() => router.visit('/dosen/penelitian/perbaikan')}>Perbaikan Usulan</button>
-                    <button className={styles.tab} onClick={() => router.visit(route('dosen.penelitian.laporan-kemajuan.index'))}>Laporan Kemajuan</button>
-                    <button className={styles.tab} onClick={() => router.visit(route('dosen.penelitian.catatan-harian.index'))}>Catatan Harian</button>
-                    <button className={`${styles.tab} ${styles.active}`} onClick={() => router.visit(route('dosen.penelitian.laporan-akhir.index'))}>Laporan Akhir</button>
-                    <button className={styles.tab} onClick={() => { }}>Pengkinian Capaian Luaran</button>
+            <div className="bg-white border-b border-gray-100 sticky top-0 z-30">
+                <div className="max-w-7xl mx-auto px-6">
+                    <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
+                        {[
+                            { label: 'Daftar Penelitian', route: route('dosen.penelitian.index') },
+                            { label: 'Perbaikan Usulan', route: route('dosen.penelitian.perbaikan') },
+                            { label: 'Laporan Kemajuan', route: route('dosen.penelitian.laporan-kemajuan.index') },
+                            { label: 'Catatan Harian', route: route('dosen.penelitian.catatan-harian.index') },
+                            { label: 'Laporan Akhir', active: true, route: route('dosen.penelitian.laporan-akhir.index') },
+                            { label: 'Pengkinian Capaian Luaran', route: route('dosen.penelitian.pengkinian-luaran.index') }
+                        ].map((tab, idx) => (
+                            <button
+                                key={idx}
+                                onClick={() => !tab.active && router.visit(tab.route)}
+                                className={`px-5 py-4 text-[13px] font-semibold transition-all whitespace-nowrap relative ${tab.active ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
+                            >
+                                {tab.label}
+                                {tab.active && (
+                                    <motion.div
+                                        layoutId="activeTab"
+                                        className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 rounded-full"
+                                    />
+                                )}
+                            </button>
+                        ))}
+                    </div>
                 </div>
             </div>
             <Head title="Laporan Akhir Penelitian" />
@@ -71,44 +96,58 @@ export default function Index({ fundedUsulan }: Props) {
                 animate="visible"
                 variants={containerVariants}
             >
-                <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div>
-                        <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight flex items-center gap-3">
-                            <FileText className="w-8 h-8 text-blue-600" />
-                            LAPORAN AKHIR PENELITIAN
-                        </h1>
-                        <p className="text-gray-500 mt-1 ml-11">Manajemen dan pengumpulan laporan akhir hasil penelitian</p>
-                    </div>
-                </div>
-
-                <div className="bg-white/80 backdrop-blur-md rounded-2xl shadow-xl shadow-blue-500/5 border border-white/20 overflow-hidden ring-1 ring-black/5">
-                    <div className="p-5 bg-gradient-to-r from-gray-50/50 to-white/50 border-b border-gray-100 flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                            <span className="text-sm font-semibold text-gray-700">Tahun Pelaksanaan</span>
-                            <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg border border-gray-200 shadow-sm transition-all hover:border-blue-300">
-                                <select className="bg-transparent border-none text-sm font-bold text-blue-700 focus:ring-0 cursor-pointer outline-none">
-                                    <option>2026</option>
-                                    <option>2025</option>
-                                </select>
-                                <Filter className="w-4 h-4 text-gray-400" />
+                <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
+                    <div className="space-y-1">
+                        <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight flex items-center gap-3 uppercase">
+                            <div className="p-2 bg-blue-600 rounded-xl shadow-lg shadow-blue-200">
+                                <FileText className="w-6 h-6 text-white" />
                             </div>
+                            Laporan <span className="text-blue-600">Akhir</span>
+                        </h1>
+                        <p className="text-gray-500 text-[13px] font-medium uppercase tracking-[0.1em] ml-14">Manajemen dan pengumpulan laporan akhir penelitian</p>
+                    </div>
+
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div className="relative group">
+                            <Search className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
+                            <input
+                                type="text"
+                                placeholder="Cari judul penelitian..."
+                                className="bg-white border-2 border-gray-100 rounded-2xl py-3 pl-12 pr-6 text-[13px] font-semibold text-gray-700 w-80 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/5 transition-all outline-none shadow-sm"
+                            />
+                        </div>
+
+                        <div className="flex items-center gap-3 bg-white px-6 py-2 rounded-2xl shadow-sm border border-gray-100">
+                            <Filter className="w-4 h-4 text-blue-600" />
+                            <select
+                                className="bg-transparent border-none text-[13px] font-bold text-gray-700 pr-10 focus:ring-0 cursor-pointer outline-none"
+                                value={selectedYear}
+                                onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+                            >
+                                {yearOptions.map((opt) => (
+                                    <option key={opt.value} value={opt.value}>
+                                        {opt.label}
+                                    </option>
+                                ))}
+                            </select>
                         </div>
                     </div>
-
+                </div>
+                <div className="bg-white rounded-[2.5rem] shadow-2xl shadow-blue-900/5 border border-gray-100 overflow-hidden">
                     <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse">
                             <thead>
-                                <tr className="bg-gray-50/30 text-[11px] font-bold text-gray-400 uppercase tracking-widest border-b border-gray-100/50">
-                                    <th className="px-6 py-4 w-16 text-center">No</th>
-                                    <th className="px-6 py-4">Informasi Program</th>
-                                    <th className="px-6 py-4">Judul Penelitian</th>
-                                    <th className="px-6 py-4 text-center">Status Laporan</th>
-                                    <th className="px-6 py-4 text-center">Berkas</th>
-                                    <th className="px-6 py-4 text-center">Aksi</th>
+                                <tr className="bg-gray-50/50 border-b border-gray-100">
+                                    <th className="px-6 py-5 text-[11px] font-bold text-gray-500 uppercase tracking-wider w-16 text-center">No</th>
+                                    <th className="px-6 py-5 text-[11px] font-bold text-gray-500 uppercase tracking-wider">Informasi Program</th>
+                                    <th className="px-6 py-5 text-[11px] font-bold text-gray-500 uppercase tracking-wider">Judul Penelitian</th>
+                                    <th className="px-6 py-5 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center">Status Laporan</th>
+                                    <th className="px-6 py-5 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center">Berkas</th>
+                                    <th className="px-6 py-5 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-50">
-                                {fundedUsulan.length === 0 ? (
+                                {filteredList.length === 0 ? (
                                     <tr>
                                         <td colSpan={6} className="px-6 py-20 text-center">
                                             <div className="flex flex-col items-center gap-3 text-gray-400">
@@ -118,7 +157,7 @@ export default function Index({ fundedUsulan }: Props) {
                                         </td>
                                     </tr>
                                 ) : (
-                                    fundedUsulan.map((usulan, index) => (
+                                    filteredList.map((usulan, index) => (
                                         <motion.tr
                                             key={usulan.id}
                                             variants={itemVariants}
@@ -133,14 +172,20 @@ export default function Index({ fundedUsulan }: Props) {
                                                     <p className="text-[12px] text-gray-900 font-bold leading-tight">Penelitian Kompetitif Nasional</p>
                                                     <div className="flex items-center gap-1.5 text-gray-500">
                                                         <Clock className="w-3 h-3" />
-                                                        <span className="text-[11px] font-medium">Tahun {usulan.tahun_pertama}</span>
+                                                        <span className="text-[11px] font-medium">{formatAcademicYear(usulan.tahun_pertama)}</span>
                                                     </div>
                                                 </div>
                                             </td>
                                             <td className="px-6 py-8">
-                                                <p className="text-sm text-gray-800 font-semibold leading-relaxed max-w-lg group-hover:text-blue-700 transition-colors">
-                                                    {usulan.judul}
-                                                </p>
+                                                <div className="flex flex-col gap-2">
+                                                    <p className="text-sm text-gray-800 font-semibold leading-relaxed max-w-lg group-hover:text-blue-700 transition-colors uppercase">
+                                                        {usulan.judul}
+                                                    </p>
+                                                    <div className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-blue-50 text-blue-700 rounded-md text-[10px] font-bold border border-blue-100/50 w-fit">
+                                                        <div className="w-1 h-1 bg-blue-400 rounded-full animate-pulse" />
+                                                        DANA DISETUJUI: Rp {new Intl.NumberFormat('id-ID').format(usulan.dana_disetujui || 0)}
+                                                    </div>
+                                                </div>
                                             </td>
                                             <td className="px-6 py-8">
                                                 <div className="flex justify-center">

@@ -13,7 +13,7 @@ use Inertia\Response;
 
 class AuthenticatedSessionController extends Controller
 {
-    
+
     /**
      * Show the login page.
      */
@@ -37,11 +37,16 @@ class AuthenticatedSessionController extends Controller
         // LOGIKA REDIRECT BARU BERDASARKAN PERAN
         $user = $request->user(); // Menggunakan $request->user() setelah authenticate()
 
-        // Penting: Urutan pengecekan peran (Role Priority)
+        // Check if user has multiple roles
+        if ($user->getRoleNames()->count() > 1) {
+            return redirect()->route('role.selection');
+        }
 
+        // Penting: Urutan pengecekan peran (Role Priority)
+        // Default redirect (Priority based) if only 1 role or fallback
         if ($user->hasRole('Admin')) {
             return redirect()->intended('/admin/dashboard');
-        } elseif ($user->hasRole('Admin LPPM')) { // PERBAIKAN: Tambahkan Admin LPPM
+        } elseif ($user->hasRole('Admin LPPM')) {
             return redirect()->intended('/lppm/dashboard');
         } elseif ($user->hasRole('Reviewer')) {
             return redirect()->intended('/reviewer/dashboard');
@@ -52,8 +57,19 @@ class AuthenticatedSessionController extends Controller
         }
 
         // Default redirect jika peran tidak terdeteksi
-        return redirect()->intended('/'); 
+        return redirect()->intended('/');
     }
+    /**
+     * Show role selection page
+     */
+    public function promptRole(Request $request): Response
+    {
+        $user = $request->user();
+        return Inertia::render('auth/SelectRole', [
+            'availableRoles' => $user->getRoleNames(),
+        ]);
+    }
+
     /**
      * Destroy an authenticated session.
      */

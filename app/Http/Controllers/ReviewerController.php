@@ -12,6 +12,92 @@ use Inertia\Inertia;
 class ReviewerController extends Controller
 {
     /**
+     * Display the Reviewer Dashboard with real statistics.
+     */
+    public function dashboard()
+    {
+        $user = Auth::user();
+
+        // 1. Calculate Stats
+        // Pending: Assigned but not yet reviewed (status 'reviewer_assigned' typically)
+        // OR check if no review history exists for assigned proposals.
+        // For simplicity, let's trust the 'status' column on Usulan if it reflects reviewer stage.
+        // 'reviewer_assigned', 'resubmitted_revision' -> PENDING
+        // 'reviewed_approved', 'rejected_reviewer', 'under_revision_admin' -> PROCESSED (by this reviewer or partially)
+
+        // However, a more accurate way for "My Stats" is checking ReviewHistory vs Assignment.
+        // Let's stick to simple Status counts for now as it's faster.
+
+        $pendingPenelitian = UsulanPenelitian::where('reviewer_id', $user->id)
+            ->whereIn('status', ['reviewer_assigned', 'resubmitted_revision'])
+            ->count();
+
+        $pendingPengabdian = \App\Models\UsulanPengabdian::where('reviewer_id', $user->id) // Assuming assignment column exists/used
+            ->whereIn('status', ['reviewer_assigned', 'resubmitted_revision', 'approved_prodi']) // 'approved_prodi' might be 'pool' or 'assigned'
+            ->count();
+
+        $totalPending = $pendingPenelitian + $pendingPengabdian;
+
+        // Reviewed Stats (Approved/Rejected) based on History
+        $history = ReviewHistory::where('reviewer_id', $user->id)
+            ->where('reviewer_type', 'reviewer')
+            ->get();
+
+        $totalReviewed = $history->count();
+        $totalApproved = $history->whereIn('action', ['reviewer_approved', 'reviewed_approved'])->count(); // Check action strings stored in history
+        $totalRejected = $history->whereIn('action', ['reviewer_rejected', 'rejected_reviewer'])->count();
+
+        // Recent Activities
+        $recentActivities = ReviewHistory::with('usulan')
+            ->where('reviewer_id', $user->id)
+            ->where('reviewer_type', 'reviewer')
+            ->latest('reviewed_at')
+            ->take(5)
+            ->get()
+            ->map(function ($rev) {
+                // Determine title/desc based on action
+                $statusMap = [
+                    'reviewer_approved' => 'Menyetujui Proposal',
+                    'reviewed_approved' => 'Menyetujui Proposal', // Legacy/Duplicate check
+                    'reviewer_rejected' => 'Menolak Proposal',
+                    'rejected_reviewer' => 'Menolak Proposal',
+                    'reviewer_revision_requested' => 'Meminta Revisi',
+                ];
+
+                $title = $statusMap[$rev->action] ?? 'Melakukan Review';
+                // Fallback for usulan if deleted
+                $usulanTitle = $rev->usulan->judul ?? 'Judul tidak tersedia';
+
+                return [
+                    'id' => $rev->id,
+                    'title' => $title,
+                    'desc' => "Anda {$title} \"{$usulanTitle}\"",
+                    'time' => \Carbon\Carbon::parse($rev->reviewed_at)->diffForHumans(),
+                    'type' => str_contains($rev->action, 'reject') ? 'danger' : (str_contains($rev->action, 'approv') ? 'success' : 'info')
+                ];
+            });
+
+        // Profile Data supplement
+        $profile = [
+            'name' => $user->name,
+            'role' => 'Reviewer Internal',
+            'expertise' => $user->dosen->kepakaran ?? '-', // Assuming relation exists
+            'avatar' => $user->avatar,
+        ];
+
+        return Inertia::render('reviewer/Dashboard', [
+            'stats' => [
+                'pending' => $totalPending,
+                'reviewed' => $totalReviewed,
+                'approved' => $totalApproved,
+                'rejected' => $totalRejected,
+            ],
+            'recentActivities' => $recentActivities,
+            'profile' => $profile
+        ]);
+    }
+
+    /**
      * Display a list of proposals assigned to the current reviewer.
      */
     public function index()
@@ -31,6 +117,7 @@ class ReviewerController extends Controller
                 'prodi' => $item->user->dosen->prodi ?? '-',
                 'skema' => $item->kelompok_skema,
                 'tanggal_pengajuan' => ($item->submitted_at ?? $item->created_at)->format('d M Y'),
+                'tahun_pelaksanaan' => $item->tahun_pertama,
                 'status' => $item->status,
                 'type' => 'penelitian'
             ]);
@@ -48,6 +135,7 @@ class ReviewerController extends Controller
                 'prodi' => $item->ketua->dosen->prodi ?? '-',
                 'skema' => $item->kelompok_skema,
                 'tanggal_pengajuan' => ($item->submitted_at ?? $item->created_at)->format('d M Y'),
+                'tahun_pelaksanaan' => $item->tahun_pertama,
                 'status' => $item->status,
                 'type' => 'pengabdian'
             ]);
@@ -210,6 +298,7 @@ class ReviewerController extends Controller
                 'prodi' => $item->ketua->dosen->prodi ?? '-',
                 'skema' => $item->kelompok_skema,
                 'tanggal_pengajuan' => ($item->submitted_at ?? $item->created_at)->format('d M Y'),
+                'tahun_pelaksanaan' => $item->tahun_pertama,
                 'status' => $item->status,
                 'type' => 'pengabdian'
             ]);

@@ -17,23 +17,123 @@ class AdminLPPMController extends Controller
      */
     public function indexPenelitian()
     {
-        $proposals = UsulanPenelitian::with(['ketua.dosen'])
-            ->whereIn('status', ['submitted', 'approved_prodi', 'reviewer_assigned', 'under_revision_admin', 'revision_dosen', 'resubmitted_revision', 'reviewed_approved', 'didanai', 'ditolak_akhir', 'rejected_reviewer'])
+        return $this->renderPenelitianIndex('daftar');
+    }
+
+    public function indexPenelitianPerbaikan()
+    {
+        return $this->renderPenelitianIndex('perbaikan');
+    }
+
+    public function indexPenelitianLaporanKemajuan()
+    {
+        return $this->renderPenelitianIndex('laporan-kemajuan');
+    }
+
+    public function indexPenelitianCatatanHarian()
+    {
+        return $this->renderPenelitianIndex('catatan-harian');
+    }
+
+    public function indexPenelitianLaporanAkhir()
+    {
+        return $this->renderPenelitianIndex('laporan-akhir');
+    }
+
+    public function indexPenelitianPengkinianLuaran()
+    {
+        return $this->renderPenelitianIndex('pengkinian-capaian');
+    }
+
+    private function renderPenelitianIndex($activeTab)
+    {
+        $statusFilter = ['submitted', 'approved_prodi', 'reviewer_assigned', 'under_revision_admin', 'revision_dosen', 'resubmitted_revision', 'reviewed_approved', 'didanai', 'ditolak_akhir', 'rejected_reviewer'];
+
+        if ($activeTab === 'perbaikan') {
+            $statusFilter = ['under_revision_admin', 'revision_dosen'];
+        } elseif (in_array($activeTab, ['laporan-kemajuan', 'catatan-harian', 'laporan-akhir', 'pengkinian-capaian'])) {
+            $statusFilter = ['didanai'];
+        }
+
+        $query = UsulanPenelitian::with(['ketua.dosen']);
+
+        // Eager load dynamically based on need
+        if ($activeTab === 'laporan-kemajuan') {
+            $query->with('laporanKemajuan');
+        } elseif ($activeTab === 'laporan-akhir') {
+            $query->with('laporanAkhir');
+        } elseif ($activeTab === 'catatan-harian') {
+            $query->with('catatanHarian');
+        } elseif ($activeTab === 'pengkinian-capaian') {
+            $query->with('luaranList');
+        }
+
+        $proposals = $query->whereIn('status', $statusFilter)
             ->latest()
             ->get()
-            ->map(fn($item) => [
-                'id' => $item->id,
-                'judul' => $item->judul,
-                'ketua' => $item->ketua->name ?? '-',
-                'prodi' => $item->ketua->dosen->prodi ?? '-',
-                'skema' => $item->kelompok_skema,
-                'tanggal' => $item->created_at->format('d M Y'),
-                'status' => $item->status,
-                'type' => 'penelitian'
-            ]);
+            ->map(function ($item) use ($activeTab) {
+                $data = [
+                    'id' => $item->id,
+                    'judul' => $item->judul,
+                    'ketua' => $item->ketua->name ?? '-',
+                    'prodi' => $item->ketua->dosen->prodi ?? '-',
+                    'skema' => $item->kelompok_skema,
+                    'tanggal' => $item->created_at->format('d M Y'),
+                    'status' => $item->status,
+                    'type' => 'penelitian',
+                    'dana_disetujui' => $item->dana_disetujui,
+                    'tahun_pertama' => $item->created_at->format('Y'), // Approximate
+                ];
+
+                // Add specialized data based on tab
+                if ($activeTab === 'laporan-kemajuan') {
+                    $report = $item->laporanKemajuan;
+                    $data['report'] = $report ? [
+                        'id' => $report->id,
+                        'status' => $report->status,
+                        'file_laporan' => $report->file_laporan
+                    ] : null;
+                } elseif ($activeTab === 'laporan-akhir') {
+                    $report = $item->laporanAkhir;
+                    $data['report'] = $report ? [
+                        'id' => $report->id,
+                        'status' => $report->status,
+                        'file_laporan' => $report->file_laporan
+                    ] : null;
+                } elseif ($activeTab === 'catatan-harian') {
+                    $logs = $item->catatanHarian;
+                    $data['total_logs'] = $logs ? $logs->count() : 0;
+                    $data['last_percentage'] = $logs ? $logs->max('persentase') ?? 0 : 0;
+                } elseif ($activeTab === 'pengkinian-capaian') {
+                    // Calculate progress based on logic: Draft 20, Submitted 40, Review 60, Accepted 80, Published 100
+                    $outputs = $item->luaranList;
+                    if ($outputs && $outputs->count() > 0) {
+                        $totalScore = $outputs->map(function ($out) {
+                            switch (strtolower($out->status)) {
+                                case 'published':
+                                    return 100;
+                                case 'accepted':
+                                    return 80;
+                                case 'in_review':
+                                    return 60;
+                                case 'submitted':
+                                    return 40;
+                                default:
+                                    return 20; // Draft
+                            }
+                        })->sum();
+                        $data['progress'] = round($totalScore / $outputs->count());
+                    } else {
+                        $data['progress'] = 0;
+                    }
+                }
+
+                return $data;
+            });
 
         return Inertia::render('lppm/penelitian/Index', [
-            'proposals' => $proposals
+            'proposals' => $proposals,
+            'activeTab' => $activeTab
         ]);
     }
 
@@ -42,23 +142,122 @@ class AdminLPPMController extends Controller
      */
     public function indexPengabdian()
     {
-        $proposals = UsulanPengabdian::with(['ketua.dosen'])
-            ->whereIn('status', ['submitted', 'approved_prodi', 'reviewer_assigned', 'under_revision_admin', 'revision_dosen', 'resubmitted_revision', 'reviewed_approved', 'didanai', 'ditolak_akhir', 'rejected_reviewer'])
+        return $this->renderPengabdianIndex('daftar');
+    }
+
+    public function indexPengabdianPerbaikan()
+    {
+        return $this->renderPengabdianIndex('perbaikan');
+    }
+
+    public function indexPengabdianLaporanKemajuan()
+    {
+        return $this->renderPengabdianIndex('laporan-kemajuan');
+    }
+
+    public function indexPengabdianCatatanHarian()
+    {
+        return $this->renderPengabdianIndex('catatan-harian');
+    }
+
+    public function indexPengabdianLaporanAkhir()
+    {
+        return $this->renderPengabdianIndex('laporan-akhir');
+    }
+
+    public function indexPengabdianPengkinianLuaran()
+    {
+        return $this->renderPengabdianIndex('pengkinian-capaian');
+    }
+
+    private function renderPengabdianIndex($activeTab)
+    {
+        $statusFilter = ['submitted', 'approved_prodi', 'reviewer_assigned', 'under_revision_admin', 'revision_dosen', 'resubmitted_revision', 'reviewed_approved', 'didanai', 'ditolak_akhir', 'rejected_reviewer'];
+
+        if ($activeTab === 'perbaikan') {
+            $statusFilter = ['under_revision_admin', 'revision_dosen'];
+        } elseif (in_array($activeTab, ['laporan-kemajuan', 'catatan-harian', 'laporan-akhir', 'pengkinian-capaian'])) {
+            $statusFilter = ['didanai'];
+        }
+
+        $query = UsulanPengabdian::with(['ketua.dosen']);
+
+        // Eager load dynamically based on need
+        if ($activeTab === 'laporan-kemajuan') {
+            $query->with('laporanKemajuan');
+        } elseif ($activeTab === 'laporan-akhir') {
+            $query->with('laporanAkhir');
+        } elseif ($activeTab === 'catatan-harian') {
+            $query->with('catatanHarian');
+        } elseif ($activeTab === 'pengkinian-capaian') {
+            $query->with('luaranList');
+        }
+
+        $proposals = $query->whereIn('status', $statusFilter)
             ->latest()
             ->get()
-            ->map(fn($item) => [
-                'id' => $item->id,
-                'judul' => $item->judul,
-                'ketua' => $item->ketua->name ?? '-',
-                'prodi' => $item->ketua->dosen->prodi ?? '-',
-                'skema' => $item->kelompok_skema,
-                'tanggal' => $item->created_at->format('d M Y'),
-                'status' => $item->status,
-                'type' => 'pengabdian'
-            ]);
+            ->map(function ($item) use ($activeTab) {
+                $data = [
+                    'id' => $item->id,
+                    'judul' => $item->judul,
+                    'ketua' => $item->ketua->name ?? '-',
+                    'prodi' => $item->ketua->dosen->prodi ?? '-',
+                    'skema' => $item->kelompok_skema,
+                    'tanggal' => $item->created_at->format('d M Y'),
+                    'status' => $item->status,
+                    'type' => 'pengabdian',
+                    'dana_disetujui' => $item->dana_disetujui,
+                    'tahun_pertama' => $item->created_at->format('Y'), // Approximate
+                ];
+
+                // Add specialized data based on tab
+                if ($activeTab === 'laporan-kemajuan') {
+                    $report = $item->laporanKemajuan;
+                    $data['report'] = $report ? [
+                        'id' => $report->id,
+                        'status' => $report->status,
+                        'file_laporan' => $report->file_laporan
+                    ] : null;
+                } elseif ($activeTab === 'laporan-akhir') {
+                    $report = $item->laporanAkhir;
+                    $data['report'] = $report ? [
+                        'id' => $report->id,
+                        'status' => $report->status,
+                        'file_laporan' => $report->file_laporan
+                    ] : null;
+                } elseif ($activeTab === 'catatan-harian') {
+                    $logs = $item->catatanHarian;
+                    $data['total_logs'] = $logs ? $logs->count() : 0;
+                    $data['last_percentage'] = $logs ? $logs->max('persentase') ?? 0 : 0;
+                } elseif ($activeTab === 'pengkinian-capaian') {
+                    $outputs = $item->luaranList;
+                    if ($outputs && $outputs->count() > 0) {
+                        $totalScore = $outputs->map(function ($out) {
+                            switch (strtolower($out->status)) {
+                                case 'published':
+                                    return 100;
+                                case 'accepted':
+                                    return 80;
+                                case 'in_review':
+                                    return 60;
+                                case 'submitted':
+                                    return 40;
+                                default:
+                                    return 20; // Draft
+                            }
+                        })->sum();
+                        $data['progress'] = round($totalScore / $outputs->count());
+                    } else {
+                        $data['progress'] = 0;
+                    }
+                }
+
+                return $data;
+            });
 
         return Inertia::render('lppm/pengabdian/Index', [
-            'proposals' => $proposals
+            'proposals' => $proposals,
+            'activeTab' => $activeTab
         ]);
     }
 
@@ -70,8 +269,22 @@ class AdminLPPMController extends Controller
             'anggotaNonDosen',
             'luaranList',
             'rabItems',
-            'reviewHistories.reviewer'
+            'reviewHistories.reviewer',
+            'reviewer'
         ])->findOrFail($id);
+
+        // Manually patch missing Dosen relation if NIDN exists (Data Consistency Fix)
+        // This handles cases where anggota_penelitian.dosen_id might be null but nidn is valid
+        foreach ($usulan->anggotaDosen as $anggota) {
+            if (!$anggota->dosen && $anggota->nidn) {
+                $dosen = \App\Models\Dosen::where('nidn', $anggota->nidn)->first();
+                if ($dosen) {
+                    $anggota->setRelation('dosen', $dosen);
+                    // Optional: Update the record permanently if needed, but for now just display
+                    // $anggota->update(['dosen_id' => $dosen->id]); 
+                }
+            }
+        }
 
         return Inertia::render('lppm/penelitian/Detail', [
             'usulan' => $usulan,
@@ -88,7 +301,8 @@ class AdminLPPMController extends Controller
             'luaranItems',
             'rabItems',
             'mitra',
-            'reviewHistories.reviewer'
+            'reviewHistories.reviewer',
+            'reviewer'
         ])->findOrFail($id);
 
         return Inertia::render('lppm/pengabdian/Detail', [
@@ -208,5 +422,189 @@ class AdminLPPMController extends Controller
         ]);
 
         return back()->with('success', 'Keputusan final berhasil disimpan.');
+    }
+
+    // ========================================
+    // MONITORING SUB-PAGES PENELITIAN
+    // ========================================
+
+    public function showPenelitianLaporanKemajuan($id)
+    {
+        $usulan = UsulanPenelitian::with(['luaranList', 'laporanKemajuan'])->findOrFail($id);
+        $report = $usulan->laporanKemajuan ?? \App\Models\LaporanKemajuanPenelitian::firstOrCreate(
+            ['usulan_id' => $usulan->id],
+            ['user_id' => $usulan->user_id, 'status' => 'Draft']
+        );
+        return Inertia::render('dosen/penelitian/LaporanKemajuan/Detail', [
+            'usulan' => $usulan,
+            'laporan_kemajuan' => $report,
+            'outputs' => $usulan->luaranList,
+            'isAdminView' => true
+        ]);
+    }
+
+    public function showPenelitianCatatanHarian($id)
+    {
+        $usulan = UsulanPenelitian::findOrFail($id);
+        $months = [
+            'Januari',
+            'Februari',
+            'Maret',
+            'April',
+            'Mei',
+            'Juni',
+            'Juli',
+            'Agustus',
+            'September',
+            'Oktober',
+            'November',
+            'Desember'
+        ];
+        $selectedMonth = $months[date('n') - 1];
+
+        $logs = \App\Models\CatatanHarianPenelitian::with('files')
+            ->where('usulan_id', $id)
+            ->latest()
+            ->get()
+            ->map(function ($log) {
+                return [
+                    'id' => $log->id,
+                    'tanggal' => $log->tanggal,
+                    'uraian_kegiatan' => $log->kegiatan,
+                    'persentase_capaian' => $log->persentase,
+                    'supporting_docs' => $log->files->map(function ($f) {
+                        return [
+                            'id' => $f->id,
+                            'path' => $f->file_path,
+                            'name' => $f->file_name
+                        ];
+                    })
+                ];
+            });
+
+        return Inertia::render('dosen/penelitian/CatatanHarian/Show', [
+            'usulan' => $usulan,
+            'logs' => $logs,
+            'months' => $months,
+            'selectedMonth' => $selectedMonth,
+            'isAdminView' => true
+        ]);
+    }
+
+    public function showPenelitianLaporanAkhir($id)
+    {
+        $usulan = UsulanPenelitian::with(['luaranList', 'laporanAkhir'])->findOrFail($id);
+        $report = $usulan->laporanAkhir ?? \App\Models\LaporanAkhirPenelitian::firstOrCreate(
+            ['usulan_id' => $usulan->id],
+            ['user_id' => $usulan->user_id, 'status' => 'Draft']
+        );
+        return Inertia::render('dosen/penelitian/LaporanAkhir/Detail', [
+            'usulan' => $usulan,
+            'laporan_akhir' => $report,
+            'outputs' => $usulan->luaranList,
+            'isAdminView' => true
+        ]);
+    }
+
+    public function showPenelitianPengkinianLuaran($id)
+    {
+        $usulan = UsulanPenelitian::with(['luaranList'])->findOrFail($id);
+        return Inertia::render('dosen/penelitian/PengkinianLuaran/Detail', [
+            'usulan' => $usulan,
+            'outputs' => $usulan->luaranList,
+            'isAdminView' => true
+        ]);
+    }
+
+    // ========================================
+    // MONITORING SUB-PAGES PENGABDIAN
+    // ========================================
+
+    public function showPengabdianLaporanKemajuan($id)
+    {
+        $usulan = UsulanPengabdian::with(['luaranList', 'laporanKemajuan'])->findOrFail($id);
+        $report = $usulan->laporanKemajuan ?? \App\Models\LaporanKemajuanPengabdian::firstOrCreate(
+            ['usulan_id' => $usulan->id],
+            ['user_id' => $usulan->user_id, 'status' => 'Draft']
+        );
+        return Inertia::render('dosen/pengabdian/LaporanKemajuan/Detail', [
+            'usulan' => $usulan,
+            'laporan_kemajuan' => $report,
+            'outputs' => $usulan->luaranList,
+            'isAdminView' => true
+        ]);
+    }
+
+    public function showPengabdianCatatanHarian($id)
+    {
+        $usulan = UsulanPengabdian::findOrFail($id);
+        $months = [
+            'Januari',
+            'Februari',
+            'Maret',
+            'April',
+            'Mei',
+            'Juni',
+            'Juli',
+            'Agustus',
+            'September',
+            'Oktober',
+            'November',
+            'Desember'
+        ];
+        $selectedMonth = $months[date('n') - 1];
+
+        $logs = \App\Models\CatatanHarianPengabdian::with('files')
+            ->where('usulan_id', $id)
+            ->latest()
+            ->get()
+            ->map(function ($log) {
+                return [
+                    'id' => $log->id,
+                    'tanggal' => $log->tanggal,
+                    'uraian_kegiatan' => $log->kegiatan,
+                    'persentase_capaian' => $log->persentase,
+                    'supporting_docs' => $log->files->map(function ($f) {
+                        return [
+                            'id' => $f->id,
+                            'path' => $f->file_path,
+                            'name' => $f->file_name
+                        ];
+                    })
+                ];
+            });
+
+        return Inertia::render('dosen/pengabdian/CatatanHarian/Show', [
+            'usulan' => $usulan,
+            'logs' => $logs,
+            'months' => $months,
+            'selectedMonth' => $selectedMonth,
+            'isAdminView' => true
+        ]);
+    }
+
+    public function showPengabdianLaporanAkhir($id)
+    {
+        $usulan = UsulanPengabdian::with(['luaranList', 'laporanAkhir'])->findOrFail($id);
+        $report = $usulan->laporanAkhir ?? \App\Models\LaporanAkhirPengabdian::firstOrCreate(
+            ['usulan_id' => $usulan->id],
+            ['user_id' => $usulan->user_id, 'status' => 'Draft']
+        );
+        return Inertia::render('dosen/pengabdian/LaporanAkhir/Detail', [
+            'usulan' => $usulan,
+            'laporan_akhir' => $report,
+            'outputs' => $usulan->luaranList,
+            'isAdminView' => true
+        ]);
+    }
+
+    public function showPengabdianPengkinianLuaran($id)
+    {
+        $usulan = UsulanPengabdian::with(['luaranList'])->findOrFail($id);
+        return Inertia::render('dosen/pengabdian/PengkinianLuaran/Detail', [
+            'usulan' => $usulan,
+            'outputs' => $usulan->luaranList,
+            'isAdminView' => true
+        ]);
     }
 }

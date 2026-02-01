@@ -3,6 +3,7 @@ import { Link, Head } from '@inertiajs/react';
 import Header from '@/components/Header';
 import Footer from '@/components/footer';
 import { Home, ChevronRight, Eye, Layers } from 'lucide-react';
+import { formatAcademicYear } from '@/utils/academicYear';
 
 interface Usulan {
     no: number;
@@ -58,8 +59,8 @@ export default function KaprodiUsulanIndex({ penelitianList = [], pengabdianList
                             <button
                                 onClick={() => setActiveTab('penelitian')}
                                 className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${activeTab === 'penelitian'
-                                        ? 'bg-white text-blue-600 shadow-sm'
-                                        : 'text-gray-500 hover:text-gray-700'
+                                    ? 'bg-white text-blue-600 shadow-sm'
+                                    : 'text-gray-500 hover:text-gray-700'
                                     }`}
                             >
                                 Penelitian
@@ -67,8 +68,8 @@ export default function KaprodiUsulanIndex({ penelitianList = [], pengabdianList
                             <button
                                 onClick={() => setActiveTab('pengabdian')}
                                 className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${activeTab === 'pengabdian'
-                                        ? 'bg-white text-blue-600 shadow-sm'
-                                        : 'text-gray-500 hover:text-gray-700'
+                                    ? 'bg-white text-blue-600 shadow-sm'
+                                    : 'text-gray-500 hover:text-gray-700'
                                     }`}
                             >
                                 Pengabdian
@@ -83,6 +84,7 @@ export default function KaprodiUsulanIndex({ penelitianList = [], pengabdianList
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Judul / Skema</th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pengusul</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tahun Akademik</th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
                                     <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                                     <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
@@ -109,6 +111,9 @@ export default function KaprodiUsulanIndex({ penelitianList = [], pengabdianList
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                                                 {usulan.pengusul}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                {formatAcademicYear(usulan.tahun)}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                                 {usulan.tanggal}

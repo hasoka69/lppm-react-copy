@@ -1,169 +1,402 @@
 import React from 'react';
-import { Link } from '@inertiajs/react';
+import { Link, Head } from '@inertiajs/react';
 import Header from '@/components/Header';
-import StatCard from '@/components/Shared/StatCard';
+import Footer from '@/components/footer';
 import WelcomeHero from '@/components/Shared/WelcomeHero';
-import StatusRing from '@/components/Shared/StatusRing'; // Reuse dari Admin
-import ActivityItem from '@/components/Shared/ActivityItem'; // Reuse dari Admin
+import {
+    FlaskConical,
+    HandHeart,
+    Wallet,
+    FileText,
+    ArrowUpRight,
+    Clock,
+    CheckCircle2,
+    AlertCircle,
+    GraduationCap,
+    Mail,
+    CreditCard
+} from 'lucide-react';
+import { motion } from 'framer-motion';
 
-// --- ICONS (Inline SVG) ---
-// FIX: PlusIcon telah dihapus untuk mengatasi error "unused var"
-const ChartIcon = <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>;
-const BoxIcon = <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>;
-const ShieldIcon = <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-5.618 2.04l-2.001 8.835L3 21h18l-1.381-5.221-2.001-8.835z" /></svg>;
-const BookIcon = <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>;
+// --- TYPES ---
+interface DashboardProps {
+    stats: {
+        total_penelitian: number;
+        total_pengabdian: number;
+        active_grants: number;
+        total_funds: number;
+    };
+    activities: {
+        id: number;
+        title: string;
+        type: string;
+        date: string;
+        status: string;
+        link: string;
+    }[];
+    user: {
+        name: string;
+        email: string;
+        nidn?: string;
+        role?: string;
+        avatar?: string;
+        prodi?: string;
+    };
+}
 
+export default function DashboardDosen({ stats, activities, user }: DashboardProps) {
 
-export default function DashboardDosen() {
+    // Format Currency
+    const formatIDR = (value: number) => {
+        return new Intl.NumberFormat('id-ID', {
+            style: 'currency',
+            currency: 'IDR',
+            maximumFractionDigits: 0
+        }).format(value);
+    };
 
-    // Data Dummy
-    const stats = [
-        { title: "Total Penelitian", value: 12, icon: ChartIcon, color: 'blue' as const },
-        { title: "Total Pengabdian", value: 8, icon: BoxIcon, color: 'green' as const },
-        { title: "HAKI", value: 3, icon: ShieldIcon, color: 'purple' as const },
-        { title: "Buku", value: 5, icon: BookIcon, color: 'yellow' as const },
+    const containerVariants = {
+        hidden: { opacity: 0 },
+        visible: {
+            opacity: 1,
+            transition: {
+                staggerChildren: 0.1
+            }
+        }
+    };
+
+    const itemVariants = {
+        hidden: { y: 20, opacity: 0 },
+        visible: {
+            y: 0,
+            opacity: 1,
+            transition: {
+                type: 'spring',
+                stiffness: 100,
+                damping: 15
+            } as any
+        }
+    };
+
+    const statCards = [
+        {
+            title: "Total Penelitian",
+            value: stats.total_penelitian,
+            icon: <FlaskConical className="w-6 h-6 text-blue-600" />,
+            color: 'blue' as const,
+            bg: 'bg-blue-50',
+            text: 'text-blue-600',
+            desc: "Usulan Diajukan"
+        },
+        {
+            title: "Total Pengabdian",
+            value: stats.total_pengabdian,
+            icon: <HandHeart className="w-6 h-6 text-emerald-600" />,
+            color: 'emerald' as const,
+            bg: 'bg-emerald-50',
+            text: 'text-emerald-600',
+            desc: "Usulan Diajukan"
+        },
+        {
+            title: "Hibah Aktif",
+            value: stats.active_grants,
+            icon: <FileText className="w-6 h-6 text-indigo-600" />,
+            color: 'indigo' as const,
+            bg: 'bg-indigo-50',
+            text: 'text-indigo-600',
+            desc: "Sedang Berjalan"
+        },
+        {
+            title: "Total Pendanaan",
+            value: formatIDR(stats.total_funds),
+            icon: <Wallet className="w-6 h-6 text-amber-600" />,
+            color: 'amber' as const,
+            bg: 'bg-amber-50',
+            text: 'text-amber-600',
+            desc: "Dana Diterima"
+        },
     ];
 
-    const activities = [
-        { id: 1, title: "Proposal Penelitian AI Education", desc: "15 Jan 2025", badge: "Disetujui" },
-        { id: 2, title: "Pengabdian UMKM Digital", desc: "12 Jan 2025", badge: "Dalam Review" },
-        { id: 3, title: "Publikasi Jurnal Internasional", desc: "10 Jan 2025", badge: "Published" }, // Badge custom string handled by ActivityItem fallback
-    ];
+    // Helper: Status Badge Logic
+    const getStatusBadge = (status: string) => {
+        const s = status.toLowerCase();
+        if (s.includes('didanai') || s.includes('setuju') || s.includes('accepted')) {
+            return (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700 border border-emerald-200">
+                    <CheckCircle2 className="w-3 h-3" /> {status}
+                </span>
+            );
+        } else if (s.includes('tolak') || s.includes('reject')) {
+            return (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-100 text-rose-700 border border-rose-200">
+                    <AlertCircle className="w-3 h-3" /> {status}
+                </span>
+            );
+        } else {
+            return (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-700 border border-amber-200">
+                    <Clock className="w-3 h-3" /> {status}
+                </span>
+            );
+        }
+    };
 
     return (
-        <div className="min-h-screen bg-gray-50 font-sans">
+        <div className="min-h-screen bg-slate-50 font-sans text-slate-800">
+            <Head title="Dashboard Dosen" />
             <Header />
 
-            <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
 
-                {/* 1. WELCOME HERO dengan Action Cards */}
-                <WelcomeHero
-                    title="Selamat Datang, Dr. Ahmad Wijaya"
-                    subtitle="Kelola penelitian dan pengabdian masyarakat Anda dengan mudah melalui portal LPPM Asaindo"
+                {/* 1. HERO SECTION */}
+                <motion.div
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5 }}
                 >
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <ActionCard label="Submit proposal penelitian baru" href="/dosen/penelitian/Index" />
-                        <ActionCard label="Submit proposal pengabdian masyarakat" href="/dosen/pengabdian/create" />
-                        <ActionCard label="Submit Luaran Penelitian dan PKM" href="/dosen/luaran/create" />
-                    </div>
-                </WelcomeHero>
-
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    {/* KOLOM KIRI (2/3) */}
-                    <div className="lg:col-span-2 space-y-8">
-
-                        {/* STAT CARDS (Solid Variant) */}
-                        <div>
-                            <div className="flex justify-between items-center mb-4">
-                                <h3 className="font-bold text-gray-800 text-lg">Statistik Penelitian & Pengabdian</h3>
-                                <Link href="/dosen/statistik" className="text-sm text-blue-600 hover:underline">Lihat Detail →</Link>
-                            </div>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                {stats.map((stat, index) => (
-                                    // Menggunakan variant="solid" agar sesuai desain Dosen
-                                    <StatCard key={index} {...stat} variant="solid" />
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* AKTIVITAS TERBARU */}
-                        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                            <div className="flex justify-between items-center mb-4">
-                                <h3 className="font-bold text-gray-800 text-lg">Aktivitas Terbaru</h3>
-                                <Link href="/dosen/aktivitas" className="text-sm text-blue-600 hover:underline">Lihat Semua →</Link>
-                            </div>
-                            <div className="space-y-2">
-                                {activities.map(act => (
-                                    // Reuse ActivityItem dari Admin
-                                    <ActivityItem
-                                        key={act.id}
-                                        title={act.title}
-                                        // Mengirim Tanggal ke 'time' karena layout ActivityItem Admin cocok
-                                        time={act.desc}
-                                        badge={act.badge}
-                                    />
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* KOLOM KANAN (1/3) */}
-                    <div className="space-y-8">
-
-                        {/* STATUS USULAN TERAKHIR */}
-                        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 text-center">
-                            <h3 className="font-bold text-gray-800 text-lg mb-6 text-left">Status Usulan Terakhir</h3>
-
-                            <div className="flex justify-center mb-4">
-                                {/* Reuse StatusRing dengan custom size */}
-                                <div className="relative">
-                                    <StatusRing percent={100} size={140} color="#2563eb" />
-                                    {/* Icon Check di tengah Ring */}
-                                    <div className="absolute inset-0 flex items-center justify-center">
-                                        <svg className="w-10 h-10 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 13l4 4L19 7" /></svg>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <h4 className="font-bold text-gray-800 text-lg">Proposal Disetujui</h4>
-                            <p className="text-sm text-gray-500 mt-1 mb-6">Penelitian AI Education telah disetujui untuk tahun 2025</p>
-
-                            <Link href="/dosen/usulan/1" className="block w-full bg-[#1e3a8a] text-white py-2.5 rounded-lg text-sm font-medium hover:bg-blue-900 transition">
-                                Lihat Detail
+                    <WelcomeHero
+                        title={`Selamat Datang, ${user.name} `}
+                        subtitle="Sistem Informasi Manajemen Penelitian dan Pengabdian Kepada Masyarakat (LPPM)"
+                    >
+                        <div className="flex flex-wrap gap-4 mt-6">
+                            <Link
+                                href={route('dosen.penelitian.index')}
+                                className="inline-flex items-center gap-2 px-6 py-3 bg-white/10 hover:bg-white/20 text-white font-semibold rounded-xl transition-all border border-white/20 backdrop-blur-sm shadow-sm group"
+                            >
+                                <FlaskConical className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                                Kelola Penelitian
+                            </Link>
+                            <Link
+                                href={route('dosen.pengabdian.index')}
+                                className="inline-flex items-center gap-2 px-6 py-3 bg-white/10 hover:bg-white/20 text-white font-semibold rounded-xl transition-all border border-white/20 backdrop-blur-sm shadow-sm group"
+                            >
+                                <HandHeart className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                                Kelola Pengabdian
                             </Link>
                         </div>
+                    </WelcomeHero>
+                </motion.div>
 
-                        {/* INFORMASI PROFIL */}
-                        <div className="bg-blue-50 p-6 rounded-xl border border-blue-100">
-                            <h3 className="font-bold text-gray-800 text-lg mb-4">Informasi Profil</h3>
-
-                            <div className="space-y-4 text-sm">
-                                <ProfileRow label="Nama Lengkap" value="Dr. Ahmad Wijaya, M.Kom" />
-                                <ProfileRow label="NIDN" value="0123456789" />
-                                <ProfileRow label="Institusi" value="Universitas Asaindo" />
-                                <ProfileRow label="Program Studi" value="Teknik Informatika" />
-                                <div className="pt-2">
-                                    <p className="text-gray-500 text-xs mb-1">Email</p>
-                                    <p className="font-medium text-gray-800">ahmad.wijaya@asaindo.ac.id</p>
+                {/* 2. STATS GRID */}
+                <motion.div
+                    variants={containerVariants}
+                    initial="hidden"
+                    animate="visible"
+                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+                >
+                    {statCards.map((stat, index) => (
+                        <motion.div
+                            key={index}
+                            variants={itemVariants}
+                            className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:shadow-lg hover:border-slate-200 transition-all duration-300 group"
+                        >
+                            <div className="flex justify-between items-start mb-4">
+                                <div className={`p - 3 rounded - xl ${stat.bg} group - hover: scale - 110 transition - transform duration - 300`}>
+                                    {stat.icon}
                                 </div>
-                                <div className="flex justify-between items-center pt-2">
-                                    <span className="text-gray-500">Status</span>
-                                    <span className="bg-green-100 text-green-700 px-3 py-0.5 rounded-full text-xs font-medium">Aktif</span>
+                                <div className={`px - 2.5 py - 1 rounded - lg text - [10px] font - bold uppercase tracking - wider ${stat.bg} ${stat.text} `}>
+                                    {new Date().getFullYear()}
+                                </div>
+                            </div>
+                            <h3 className="text-3xl font-extrabold text-slate-800 tracking-tight mb-1">
+                                {stat.value}
+                            </h3>
+                            <p className="text-slate-400 text-xs font-bold uppercase tracking-wide">{stat.title}</p>
+                            <div className="mt-4 pt-4 border-t border-slate-50 flex items-center gap-2 text-xs font-semibold text-slate-400">
+                                <div className={`w - 1.5 h - 1.5 rounded - full ${stat.text.replace('text-', 'bg-')} `}></div>
+                                {stat.desc}
+                            </div>
+                        </motion.div>
+                    ))}
+                </motion.div>
+
+                {/* 3. RECENT ACTIVITIES & INFO */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+                    {/* Activity Feed */}
+                    <motion.div
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.4, duration: 0.5 }}
+                        className="lg:col-span-2"
+                    >
+                        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                            <div className="px-8 py-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                                <div>
+                                    <h3 className="text-lg font-bold text-slate-800">Aktivitas Terbaru</h3>
+                                    <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mt-1">Status Proposal & Laporan</p>
+                                </div>
+                                <Link
+                                    href={route('dosen.penelitian.index')}
+                                    className="px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-lg text-xs font-bold hover:text-blue-600 hover:border-blue-200 transition-all flex items-center gap-2 shadow-sm"
+                                >
+                                    Lihat Semua <ArrowUpRight className="w-3.5 h-3.5" />
+                                </Link>
+                            </div>
+                            <div className="divide-y divide-slate-100">
+                                {activities.length > 0 ? activities.map((act) => (
+                                    <div key={`${act.type} -${act.id} `} className="p-6 hover:bg-slate-50 transition-colors group flex items-center gap-5">
+                                        <div className={`p - 3 rounded - xl shrink - 0 ${act.type === 'Penelitian' ? 'bg-blue-100/50 text-blue-600' : 'bg-emerald-100/50 text-emerald-600'} `}>
+                                            {act.type === 'Penelitian' ? <FlaskConical className="w-5 h-5" /> : <HandHeart className="w-5 h-5" />}
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <span className={`text - [10px] font - bold px - 2 py - 0.5 rounded - md uppercase tracking - wider border ${act.type === 'Penelitian' ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                                    } `}>
+                                                    {act.type}
+                                                </span>
+                                                <span className="text-[11px] font-semibold text-slate-400 flex items-center gap-1">
+                                                    <Clock className="w-3 h-3" /> {act.date}
+                                                </span>
+                                            </div>
+                                            <h4 className="text-sm font-bold text-slate-800 truncate group-hover:text-blue-700 transition-colors">
+                                                {act.title}
+                                            </h4>
+                                        </div>
+                                        <div>
+                                            {getStatusBadge(act.status)}
+                                        </div>
+                                    </div>
+                                )) : (
+                                    <div className="p-12 text-center">
+                                        <FileText className="w-10 h-10 text-slate-300 mx-auto mb-3" />
+                                        <p className="text-slate-500 font-medium">Belum ada aktivitas terbaru.</p>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </motion.div>
+
+                    {/* Sidebar Info */}
+                    <motion.div
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.5, duration: 0.5 }}
+                        className="space-y-6"
+                    >
+                        {/* Researcher Profile Card */}
+                        <div className="group relative bg-white rounded-[2rem] shadow-xl border border-slate-200 overflow-hidden hover:shadow-2xl transition-all duration-500">
+                            {/* Decorative Background Pattern */}
+                            <div className="absolute inset-0 opacity-[0.03] bg-[radial-gradient(#475569_1px,transparent_1px)] [background-size:16px_16px]"></div>
+
+                            {/* Curved Header */}
+                            <div className="relative h-32 bg-gradient-to-br from-[#2D4261] to-[#1e293b] overflow-hidden">
+                                <div className="absolute inset-0 bg-white/5 opacity-50">
+                                    <svg className="absolute w-full h-full opacity-30 animate-pulse" viewBox="0 0 100 100" preserveAspectRatio="none">
+                                        <path d="M0 100 C 20 0 50 0 100 100 Z" fill="url(#grad1)" />
+                                    </svg>
+                                </div>
+                                {/* Wave Shape */}
+                                <div className="absolute bottom-0 left-0 right-0">
+                                    <svg viewBox="0 0 1440 320" className="w-full h-auto text-white fill-current block translate-y-1">
+                                        <path fillOpacity="1" d="M0,160L48,170.7C96,181,192,203,288,197.3C384,192,480,160,576,138.7C672,117,768,107,864,122.7C960,139,1056,181,1152,186.7C1248,192,1344,160,1392,144L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
+                                    </svg>
                                 </div>
                             </div>
 
-                            <button className="w-full mt-6 bg-white border border-gray-300 text-gray-700 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition">
-                                Edit Profil
-                            </button>
+                            {/* Profile Info */}
+                            <div className="px-6 pb-8 relative z-10">
+                                {/* Floating Avatar */}
+                                <div className="relative -mt-20 mb-6 flex justify-center">
+                                    <div className="relative">
+                                        {user.avatar ? (
+                                            <div className="w-[6.5rem] h-[6.5rem] rounded-full border-[6px] border-white shadow-xl overflow-hidden bg-white ring-4 ring-blue-50/50">
+                                                <img
+                                                    src={user.avatar}
+                                                    alt={user.name}
+                                                    className="w-full h-full object-cover"
+                                                />
+                                            </div>
+                                        ) : (
+                                            <div className="w-[6.5rem] h-[6.5rem] rounded-full border-[6px] border-white shadow-xl bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center text-3xl font-bold text-slate-500 ring-4 ring-blue-50/50">
+                                                {user.name.charAt(0)}
+                                            </div>
+                                        )}
+                                        {/* Status Dot */}
+                                        <div className="absolute bottom-2 right-1 w-6 h-6 bg-emerald-500 border-[3px] border-white rounded-full shadow-lg" title="Active">
+                                            <span className="absolute inset-0 rounded-full bg-emerald-400 animate-ping opacity-75"></span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Main Identity */}
+                                <div className="text-center space-y-3 mb-8">
+                                    <div>
+                                        <h4 className="text-xl font-extrabold text-slate-800 tracking-tight leading-7 mb-1">{user.name}</h4>
+                                        <span className="inline-block px-3 py-1 rounded-full bg-slate-100 text-slate-500 text-[10px] font-bold uppercase tracking-[0.1em] border border-slate-200 shadow-sm">
+                                            {user.role || 'Dosen'}
+                                        </span>
+                                    </div>
+
+                                    {/* Styled Prodi Badge */}
+                                    <div className="relative inline-flex group/prodi">
+                                        <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl blur opacity-25 group-hover/prodi:opacity-40 transition-opacity"></div>
+                                        <div className="relative flex items-center gap-2 px-4 py-2 bg-white border border-blue-100 rounded-xl shadow-sm text-blue-700">
+                                            <div className="p-1 bg-blue-50 rounded-lg">
+                                                <GraduationCap className="w-4 h-4 text-blue-600" />
+                                            </div>
+                                            <span className="text-xs font-bold">{user.prodi || 'Program Studi Tidak Ada'}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Info Pills */}
+                                <div className="space-y-3">
+                                    {/* NIDN Pill */}
+                                    <div className="flex items-center gap-4 p-3 rounded-2xl bg-slate-50 border border-slate-100 hover:bg-white hover:shadow-md hover:border-blue-100 hover:-translate-y-0.5 transition-all duration-300 group/item">
+                                        <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 shadow-sm flex items-center justify-center text-slate-400 group-hover/item:text-blue-500 group-hover/item:border-blue-200 transition-colors">
+                                            <CreditCard className="w-5 h-5" />
+                                        </div>
+                                        <div className="flex-1">
+                                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">NIDN</p>
+                                            <p className="text-sm font-bold text-slate-700 font-mono tracking-tight">{user.nidn || '-'}</p>
+                                        </div>
+                                    </div>
+
+                                    {/* Email Pill */}
+                                    <div className="flex items-center gap-4 p-3 rounded-2xl bg-slate-50 border border-slate-100 hover:bg-white hover:shadow-md hover:border-emerald-100 hover:-translate-y-0.5 transition-all duration-300 group/item">
+                                        <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 shadow-sm flex items-center justify-center text-slate-400 group-hover/item:text-emerald-500 group-hover/item:border-emerald-200 transition-colors">
+                                            <Mail className="w-5 h-5" />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Email</p>
+                                            <p className="text-sm font-bold text-slate-700 truncate" title={user.email}>{user.email}</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Action Button */}
+                                <button className="w-full mt-8 py-3 bg-slate-900 text-white rounded-xl text-xs font-bold tracking-wide hover:bg-slate-800 hover:shadow-lg hover:shadow-slate-300/50 transition-all active:scale-[0.98] flex items-center justify-center gap-2 group/btn">
+                                    <span>Edit Profil Lengkap</span>
+                                    <ArrowUpRight className="w-3.5 h-3.5 group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform" />
+                                </button>
+                            </div>
                         </div>
 
-                    </div>
+                        {/* Important Info */}
+                        <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl shadow-sm border border-amber-100 p-6">
+                            <h3 className="text-sm font-bold text-amber-900 mb-4 flex items-center gap-2">
+                                <AlertCircle className="w-4 h-4 text-amber-600" />
+                                Informasi Penting
+                            </h3>
+                            <ul className="space-y-3">
+                                {[
+                                    { text: "Batas akhir proposal 2026: 30 Mar", important: true },
+                                    { text: "Laporan kemajuan: Juni 2025", important: false },
+                                    { text: "Update data profil SINTA anda", important: false }
+                                ].map((item, i) => (
+                                    <li key={i} className="flex gap-3 items-start text-xs font-medium text-amber-900/80 leading-relaxed">
+                                        <span className={`mt - 1.5 w - 1.5 h - 1.5 rounded - full shrink - 0 ${item.important ? 'bg-amber-600 ring-2 ring-amber-200/50' : 'bg-amber-400'} `}></span>
+                                        <span className={item.important ? 'font-bold' : ''}>{item.text}</span>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    </motion.div>
                 </div>
-            </div>
-        </div>
-    );
-}
 
-// --- SUB COMPONENTS (Lokal) ---
-
-function ActionCard({ label, href }: { label: string, href: string }) {
-    return (
-        <Link href={href} className="bg-white p-5 rounded-lg shadow-md flex items-center gap-4 hover:shadow-lg transition duration-200 group h-24">
-            <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center group-hover:bg-blue-50 transition">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-600 group-hover:text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-            </div>
-            <span className="text-gray-700 font-medium text-sm group-hover:text-blue-600 transition">{label}</span>
-        </Link>
-    );
-}
-
-function ProfileRow({ label, value }: { label: string, value: string }) {
-    return (
-        <div className="flex justify-between items-start">
-            <span className="text-gray-500 w-1/3">{label}</span>
-            <span className="text-gray-800 font-medium text-right w-2/3">{value}</span>
+            </main>
+            <Footer />
         </div>
     );
 }

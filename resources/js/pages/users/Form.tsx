@@ -23,13 +23,19 @@ interface User {
   roles?: string[];
 }
 
+interface DosenProfile {
+  nidn?: string;
+  prodi?: string;
+}
+
 interface Props {
   user?: User;
   roles: Role[];
   currentRoles?: string[];
+  dosenProfile?: DosenProfile;
 }
 
-export default function UserForm({ user, roles, currentRoles }: Props) {
+export default function UserForm({ user, roles, currentRoles, dosenProfile }: Props) {
   const isEdit = !!user;
 
   const { data, setData, post, put, processing, errors } = useForm({
@@ -37,20 +43,24 @@ export default function UserForm({ user, roles, currentRoles }: Props) {
     email: user?.email || '',
     password: '',
     roles: currentRoles || [],
+    nidn: dosenProfile?.nidn || '',
+    prodi: dosenProfile?.prodi || '',
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    isEdit ? put(`/users/${user?.id}`) : post('/users');
+    isEdit ? put(`/lppm/users/${user?.id}`) : post('/lppm/users');
   };
 
   const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'User Management', href: '/users' },
+    { title: 'User Management', href: '/lppm/users' },
     { title: isEdit ? 'Edit User' : 'Create User', href: '#' },
   ];
 
+  const showDosenFields = data.roles.some(r => r.toLowerCase() === 'dosen') || data.roles.some(r => r.toLowerCase() === 'kaprodi');
+
   return (
-    <AppLayout breadcrumbs={breadcrumbs}>
+    <AppLayout breadcrumbs={breadcrumbs} hideSidebar={true}>
       <Head title={isEdit ? 'Edit User' : 'Create User'} />
       <div className="flex-1 p-4 md:p-6">
         <Card className="max-w-3xl mx-auto">
@@ -125,7 +135,7 @@ export default function UserForm({ user, roles, currentRoles }: Props) {
                             }
                           }}
                         />
-                        <Label htmlFor={`role-${role.id}`} className="text-sm font-normal cursor-pointer">
+                        <Label htmlFor={`role-${role.id}`} className="text-sm font-normal cursor-pointer capitalize">
                           {role.name}
                         </Label>
                       </div>
@@ -133,12 +143,46 @@ export default function UserForm({ user, roles, currentRoles }: Props) {
                   </div>
                   {errors.roles && <p className="text-sm text-red-500 mt-2">{errors.roles}</p>}
                 </div>
+
+                {/* Dosen Specific Fields - Animate or just conditional render */}
+                {showDosenFields && (
+                  <div className="bg-blue-50 p-4 rounded-lg space-y-4 border border-blue-100 animate-in fade-in slide-in-from-top-2">
+                    <h4 className="font-semibold text-blue-800 text-sm">Informasi Dosen / Kaprodi</h4>
+
+                    <div>
+                      <Label htmlFor="nidn" className="mb-2 block">NIDN</Label>
+                      <Input
+                        id="nidn"
+                        placeholder="Nomor Induk Dosen Nasional"
+                        value={data.nidn}
+                        onChange={(e) => setData('nidn', e.target.value)}
+                        className={`bg-white ${errors.nidn ? 'border-red-500' : ''}`}
+                      />
+                      {errors.nidn && <p className="text-sm text-red-500 mt-2">{errors.nidn}</p>}
+                    </div>
+
+                    <div>
+                      <Label htmlFor="prodi" className="mb-2 block">Program Studi</Label>
+                      {/* Bisa diganti Select jika ada data master Prodi */}
+                      <Input
+                        id="prodi"
+                        placeholder="Contoh: Teknik Informatika"
+                        value={data.prodi}
+                        onChange={(e) => setData('prodi', e.target.value)}
+                        className={`bg-white ${errors.prodi ? 'border-red-500' : ''}`}
+                      />
+                      {errors.prodi && <p className="text-sm text-red-500 mt-2">{errors.prodi}</p>}
+                    </div>
+                  </div>
+                )}
+
+
               </div>
 
               <Separator />
 
               <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-2">
-                <Link href="/users" className="w-full sm:w-auto">
+                <Link href="/lppm/users" className="w-full sm:w-auto">
                   <Button type="button" variant="secondary" className="w-full">
                     Back
                   </Button>

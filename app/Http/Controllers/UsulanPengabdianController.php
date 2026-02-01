@@ -21,8 +21,22 @@ class UsulanPengabdianController extends Controller
     {
         $user = Auth::user();
 
+        // Ambil Data Dosen ID dari User yang login
+        $dosenId = $user->dosen->id ?? null;
+
         $usulanList = UsulanPengabdian::with(['reviewHistories'])
-            ->where('user_id', $user->id)
+            ->where(function ($query) use ($user, $dosenId) {
+                // Sebagai Ketua (Owner)
+                $query->where('user_id', $user->id)
+                    // Atau Sebagai Anggota Dosen
+                    ->orWhereHas('anggotaDosen', function ($q) use ($dosenId) {
+                    if ($dosenId) {
+                        $q->where('dosen_id', $dosenId);
+                    } else {
+                        $q->where('id', 0);
+                    }
+                });
+            })
             ->whereNotIn('status', ['under_revision_admin', 'revision_dosen'])
             ->latest()
             ->get()
@@ -32,7 +46,7 @@ class UsulanPengabdianController extends Controller
                 'skema' => $u->kelompok_skema ?? 'N/A',
                 'judul' => $u->judul,
                 'tahun_pelaksanaan' => $u->tahun_pertama ?? date('Y'),
-                'peran' => 'Ketua',
+                'peran' => $u->user_id === $user->id ? 'Ketua' : 'Anggota',
                 'status' => $u->status,
                 // Get latest review comment (from Reviewer or Kaprodi)
                 'catatan' => $u->reviewHistories->sortByDesc('reviewed_at')->first()?->comments ?? '-',
@@ -86,7 +100,7 @@ class UsulanPengabdianController extends Controller
                 'tahun_pengusulan' => 2026,
                 'judul' => $validated['judul'] ?? 'Draft Usulan Pengabdian',
                 'kelompok_skema' => $validated['kelompok_skema'] ?? null,
-                'tahun_pertama' => 2026,
+                'tahun_pertama' => 20261, // Defaulting to 20261 (Ganjil 2025/2026) for new drafts if not specified
             ]);
 
             DB::commit();
@@ -168,7 +182,7 @@ class UsulanPengabdianController extends Controller
             }
 
             $data['tahun_pengusulan'] = 2026;
-            $data['tahun_pertama'] = 2026;
+            // $data['tahun_pertama'] = 2026; // Removed hardcoded override
             $usulan->update($data);
             return back()->with('success', 'Data berhasil diperbarui!');
         } catch (\Exception $e) {
@@ -212,7 +226,30 @@ class UsulanPengabdianController extends Controller
             'rabItems',
             'mitra',
             'reviewHistories.reviewer'
-        ])->where('user_id', Auth::id())->findOrFail($usulanId);
+        ])->find($usulanId); // Remove direct where('user_id') scope, handle manually
+
+        if (!$usulan) {
+            abort(404);
+        }
+
+        // Authorization Check
+        $user = Auth::user();
+        $dosenId = $user->dosen->id ?? null;
+
+        $isOwner = $usulan->user_id === $user->id;
+        $isMember = false;
+        if ($dosenId) {
+            $isMember = $usulan->anggotaDosen()->where('dosen_id', $dosenId)->exists();
+        }
+
+        if (!$isOwner && !$isMember) {
+            abort(403, 'Unauthorized access to this proposal.');
+        }
+
+        // Determine ReadOnly Mode
+        // If query param 'mode' is view OR User is Member -> ReadOnly
+        // Or if we default members to read-only always
+        $isReadOnly = request()->query('mode') === 'view' || $isMember;
 
         $masterData = $this->getMasterData();
 
@@ -220,6 +257,7 @@ class UsulanPengabdianController extends Controller
             'usulanId' => $usulan->id,
             'usulan' => $usulan,
             'currentStep' => $step,
+            'isReadOnly' => $isReadOnly,
             ...$masterData,
         ]);
     }

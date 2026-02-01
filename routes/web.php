@@ -26,6 +26,36 @@ use App\Http\Controllers\AnggotaNonDosenPengabdianController;
 // Group untuk authenticated users
 Route::middleware(['auth', 'verified'])->group(function () {
 
+    // Generic Dashboard Redirect
+    // Generic Dashboard Redirect
+    Route::get('/dashboard', function () {
+        $user = auth()->user();
+        // If has multiple roles, redirect to selection
+        if ($user->getRoleNames()->count() > 1) {
+            return redirect()->route('role.selection');
+        }
+
+        if ($user->hasRole('Admin') || $user->hasRole('super-admin')) {
+            return redirect('/admin/dashboard');
+        } elseif ($user->hasRole('Admin LPPM')) {
+            return redirect('/lppm/dashboard');
+        } elseif ($user->hasRole('Reviewer')) {
+            return redirect('/reviewer/dashboard');
+        } elseif ($user->hasRole('Kaprodi')) {
+            return redirect('/kaprodi/dashboard');
+        } elseif ($user->hasRole('Dosen')) {
+            return redirect('/dosen/dashboard');
+        }
+        return redirect('/');
+    })->name('dashboard');
+
+    // Role Selection Route
+    Route::get('/select-role', [\App\Http\Controllers\Auth\AuthenticatedSessionController::class, 'promptRole'])->name('role.selection');
+
+    // Profile Route
+    Route::get('/profile', [\App\Http\Controllers\ProfileController::class, 'index'])->name('profile.index');
+    Route::post('/profile/photo', [\App\Http\Controllers\ProfileController::class, 'updatePhoto'])->name('profile.photo.update');
+
     // Routes Dosen Penelitian (Ex-Pengajuan)
     Route::prefix('dosen/penelitian')
         ->name('dosen.penelitian.')
@@ -108,6 +138,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 Route::post('/{id}/update', [\App\Http\Controllers\CatatanHarianPenelitianController::class, 'update'])->name('update');
                 Route::delete('/{id}', [\App\Http\Controllers\CatatanHarianPenelitianController::class, 'destroy'])->name('destroy');
                 Route::delete('/file/{fileId}', [\App\Http\Controllers\CatatanHarianPenelitianController::class, 'destroyFile'])->name('file.destroy');
+            });
+
+            // Pengkinian Capaian Luaran [NEW]
+            Route::prefix('pengkinian-luaran')->name('pengkinian-luaran.')->group(function () {
+                Route::get('/', [\App\Http\Controllers\PengkinianCapaianPenelitianController::class, 'index'])->name('index');
+                Route::get('/{usulan}', [\App\Http\Controllers\PengkinianCapaianPenelitianController::class, 'show'])->name('show');
+                Route::post('/luaran/{luaran}', [\App\Http\Controllers\PengkinianCapaianPenelitianController::class, 'updateLuaran'])->name('luaran.update');
             });
         });
 
@@ -194,6 +231,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 Route::delete('/{id}', [\App\Http\Controllers\CatatanHarianPengabdianController::class, 'destroy'])->name('destroy');
                 Route::delete('/file/{fileId}', [\App\Http\Controllers\CatatanHarianPengabdianController::class, 'destroyFile'])->name('file.destroy');
             });
+
+            // Pengkinian Capaian Luaran [NEW]
+            Route::prefix('pengkinian-luaran')->name('pengkinian-luaran.')->group(function () {
+                Route::get('/', [\App\Http\Controllers\PengkinianCapaianPengabdianController::class, 'index'])->name('index');
+                Route::get('/{usulan}', [\App\Http\Controllers\PengkinianCapaianPengabdianController::class, 'show'])->name('show');
+                Route::post('/luaran/{luaran}', [\App\Http\Controllers\PengkinianCapaianPengabdianController::class, 'updateLuaran'])->name('luaran.update');
+            });
         });
 });
 
@@ -229,9 +273,15 @@ Route::middleware('auth')->group(function () {
 
     // Dashboard Admin LPPM & Routes
     Route::middleware('can:dashboard-lppm-view')->prefix('lppm')->name('lppm.')->group(function () {
-        Route::get('/dashboard', function () {
-            return Inertia::render('lppm/Dashboard');
-        })->name('dashboard');
+        Route::get('/dashboard', [\App\Http\Controllers\DashboardController::class, 'lppm'])->name('dashboard');
+
+        // Setting Form
+        Route::get('/setting-form', [\App\Http\Controllers\SettingFormController::class, 'index'])->name('setting-form');
+        Route::put('/setting-form/{id}', [\App\Http\Controllers\SettingFormController::class, 'update'])->name('setting-form.update');
+
+        // User Management under LPPM
+        Route::resource('users', \App\Http\Controllers\UserController::class);
+        Route::put('/users/{user}/reset-password', [\App\Http\Controllers\UserController::class, 'resetPassword'])->name('users.reset-password');
 
         // Global Workflow Actions (Using type parameter)
         Route::post('/{type}/{id}/assign-reviewer', [\App\Http\Controllers\AdminLPPMController::class, 'assignReviewer'])->name('assign_reviewer');
@@ -239,22 +289,40 @@ Route::middleware('auth')->group(function () {
         Route::post('/{type}/{id}/final-decision', [\App\Http\Controllers\AdminLPPMController::class, 'finalDecision'])->name('final_decision');
 
         // Penelitian
-        Route::get('/penelitian', [\App\Http\Controllers\AdminLPPMController::class, 'indexPenelitian'])->name('penelitian.index');
-        Route::get('/penelitian/{id}', [\App\Http\Controllers\AdminLPPMController::class, 'showPenelitian'])->name('penelitian.show');
+        Route::prefix('penelitian')->name('penelitian.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\AdminLPPMController::class, 'indexPenelitian'])->name('index');
+            Route::get('/perbaikan', [\App\Http\Controllers\AdminLPPMController::class, 'indexPenelitianPerbaikan'])->name('perbaikan');
+            Route::get('/laporan-kemajuan', [\App\Http\Controllers\AdminLPPMController::class, 'indexPenelitianLaporanKemajuan'])->name('laporan-kemajuan');
+            Route::get('/laporan-kemajuan/{id}', [\App\Http\Controllers\AdminLPPMController::class, 'showPenelitianLaporanKemajuan'])->name('laporan-kemajuan.show');
+            Route::get('/catatan-harian', [\App\Http\Controllers\AdminLPPMController::class, 'indexPenelitianCatatanHarian'])->name('catatan-harian');
+            Route::get('/catatan-harian/{id}', [\App\Http\Controllers\AdminLPPMController::class, 'showPenelitianCatatanHarian'])->name('catatan-harian.show');
+            Route::get('/laporan-akhir', [\App\Http\Controllers\AdminLPPMController::class, 'indexPenelitianLaporanAkhir'])->name('laporan-akhir');
+            Route::get('/laporan-akhir/{id}', [\App\Http\Controllers\AdminLPPMController::class, 'showPenelitianLaporanAkhir'])->name('laporan-akhir.show');
+            Route::get('/pengkinian-luaran', [\App\Http\Controllers\AdminLPPMController::class, 'indexPenelitianPengkinianLuaran'])->name('pengkinian-luaran');
+            Route::get('/pengkinian-luaran/{id}', [\App\Http\Controllers\AdminLPPMController::class, 'showPenelitianPengkinianLuaran'])->name('pengkinian-luaran.show');
+            Route::get('/{id}', [\App\Http\Controllers\AdminLPPMController::class, 'showPenelitian'])->name('show');
+        });
 
         // Pengabdian
-        Route::get('/pengabdian', [\App\Http\Controllers\AdminLPPMController::class, 'indexPengabdian'])->name('pengabdian.index');
-        Route::get('/pengabdian/{id}', [\App\Http\Controllers\AdminLPPMController::class, 'showPengabdian'])->name('pengabdian.show');
-        Route::post('/pengabdian/{id}/decision', [\App\Http\Controllers\AdminLPPMController::class, 'storeDecision'])->name('pengabdian.decision');
+        Route::prefix('pengabdian')->name('pengabdian.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\AdminLPPMController::class, 'indexPengabdian'])->name('index');
+            Route::get('/perbaikan', [\App\Http\Controllers\AdminLPPMController::class, 'indexPengabdianPerbaikan'])->name('perbaikan');
+            Route::get('/laporan-kemajuan', [\App\Http\Controllers\AdminLPPMController::class, 'indexPengabdianLaporanKemajuan'])->name('laporan-kemajuan');
+            Route::get('/laporan-kemajuan/{id}', [\App\Http\Controllers\AdminLPPMController::class, 'showPengabdianLaporanKemajuan'])->name('laporan-kemajuan.show');
+            Route::get('/catatan-harian', [\App\Http\Controllers\AdminLPPMController::class, 'indexPengabdianCatatanHarian'])->name('catatan-harian');
+            Route::get('/catatan-harian/{id}', [\App\Http\Controllers\AdminLPPMController::class, 'showPengabdianCatatanHarian'])->name('catatan-harian.show');
+            Route::get('/laporan-akhir', [\App\Http\Controllers\AdminLPPMController::class, 'indexPengabdianLaporanAkhir'])->name('laporan-akhir');
+            Route::get('/laporan-akhir/{id}', [\App\Http\Controllers\AdminLPPMController::class, 'showPengabdianLaporanAkhir'])->name('laporan-akhir.show');
+            Route::get('/pengkinian-luaran', [\App\Http\Controllers\AdminLPPMController::class, 'indexPengabdianPengkinianLuaran'])->name('pengkinian-luaran');
+            Route::get('/pengkinian-luaran/{id}', [\App\Http\Controllers\AdminLPPMController::class, 'showPengabdianPengkinianLuaran'])->name('pengkinian-luaran.show');
+            Route::get('/{id}', [\App\Http\Controllers\AdminLPPMController::class, 'showPengabdian'])->name('show');
+            Route::post('/{id}/decision', [\App\Http\Controllers\AdminLPPMController::class, 'storeDecision'])->name('decision');
+        });
     });
 
     // Dashboard Dosen
     Route::middleware('can:dashboard-reviewer-view')->prefix('reviewer')->name('reviewer.')->group(function () {
-        Route::get('/dashboard', function () {
-            // Dashboard now fetches stats via Controller or direct render
-            // For now, keep it simple or redirect to usulan index for stats
-            return Inertia::render('reviewer/Dashboard');
-        })->name('dashboard');
+        Route::get('/dashboard', [\App\Http\Controllers\ReviewerController::class, 'dashboard'])->name('dashboard');
 
         // Penelitian
         Route::get('/usulan', [\App\Http\Controllers\ReviewerController::class, 'index'])->name('usulan.index');
@@ -287,9 +355,7 @@ Route::middleware('auth')->group(function () {
     });
 
     // Dashboard Dosen
-    Route::get('/dosen/dashboard', function () {
-        return Inertia::render('dosen/Dashboard');
-    })->middleware('can:dashboard-dosen-view')->name('dosen.dashboard');
+    Route::get('/dosen/dashboard', [\App\Http\Controllers\DashboardController::class, 'dosen'])->middleware('can:dashboard-dosen-view')->name('dosen.dashboard');
 });
 
 
@@ -317,8 +383,8 @@ Route::middleware(['auth', 'menu.permission'])->group(function () {
     Route::resource('permissions', PermissionController::class)->middleware('can:permission-view');
 
     // Users harus dilindungi oleh users-view, dan impersonate oleh users-impersonate
-    Route::resource('users', UserController::class)->middleware('can:users-view');
-    Route::put('/users/{user}/reset-password', [UserController::class, 'resetPassword'])->name('users.reset-password')->middleware('can:users-edit');
+    // Route::resource('users', UserController::class)->middleware('can:users-view');
+    // Route::put('/users/{user}/reset-password', [UserController::class, 'resetPassword'])->name('users.reset-password')->middleware('can:users-edit');
 
     // RUTE IMpersonate (Ganti User) - Penting agar Admin bisa mengakses semua peran
     Route::post('/users/{user}/impersonate', [UserController::class, 'impersonate'])->name('users.impersonate')->middleware('can:users-impersonate');

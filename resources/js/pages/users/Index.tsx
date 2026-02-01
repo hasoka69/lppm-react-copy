@@ -25,7 +25,7 @@ dayjs.locale('id');
 const breadcrumbs: BreadcrumbItem[] = [
   {
     title: 'User Management',
-    href: '/users',
+    href: '/lppm/users',
   },
 ];
 
@@ -38,6 +38,10 @@ interface User {
     id: number;
     name: string;
   }[];
+  dosen?: {
+    nidn: string;
+    prodi: string;
+  };
 }
 
 interface Props {
@@ -61,7 +65,7 @@ export default function UserIndex({ users }: Props) {
   const { delete: destroy, processing } = useForm();
 
   const handleDelete = (id: number) => {
-    destroy(`/users/${id}`, {
+    destroy(`/lppm/users/${id}`, {
       preserveScroll: true,
       onSuccess: () => {
         // Data akan otomatis terupdate karena Inertia.js
@@ -73,11 +77,11 @@ export default function UserIndex({ users }: Props) {
   };
 
   const handleResetPassword = (id: number) => {
-    router.put(`/users/${id}/reset-password`, {}, { preserveScroll: true });
+    router.put(`/lppm/users/${id}/reset-password`, {}, { preserveScroll: true });
   };
 
   return (
-    <AppLayout breadcrumbs={breadcrumbs}>
+    <AppLayout breadcrumbs={breadcrumbs} hideSidebar={true}>
       <Head title="User Management" />
       <div className="p-4 md:p-6 space-y-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -85,7 +89,7 @@ export default function UserIndex({ users }: Props) {
             <h1 className="text-2xl font-bold tracking-tight">User Management</h1>
             <p className="text-muted-foreground">Manage user data and their roles within the system.</p>
           </div>
-          <Link href="/users/create">
+          <Link href="/lppm/users/create">
             <Button className="w-full md:w-auto" size="sm">+ Add User</Button>
           </Link>
         </div>
@@ -105,8 +109,20 @@ export default function UserIndex({ users }: Props) {
                     {getInitials(user.name)}
                   </div>
                   <div className="space-y-1">
-                    <div className="text-base font-medium">{user.name}</div>
-                    <div className="text-sm text-muted-foreground">{user.email}</div>
+                    <div className="text-base font-medium flex items-center gap-2">
+                      {user.name}
+                      {user.dosen?.nidn && (
+                        <span className="text-xs font-normal text-muted-foreground bg-gray-100 px-1.5 py-0.5 rounded">
+                          NIDN: {user.dosen.nidn}
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      {user.email}
+                      {user.dosen?.prodi && (
+                        <span className="ml-2 text-gray-500">• {user.dosen.prodi}</span>
+                      )}
+                    </div>
                     <div className="text-xs text-muted-foreground italic">
                       Registered {dayjs(user.created_at).fromNow()}
                     </div>
@@ -124,7 +140,7 @@ export default function UserIndex({ users }: Props) {
 
                 {/* Aksi */}
                 <div className="flex flex-wrap gap-2 md:justify-end">
-                  <Link href={`/users/${user.id}/edit`}>
+                  <Link href={`/lppm/users/${user.id}/edit`}>
                     <Button size="sm" variant="outline">Edit</Button>
                   </Link>
 

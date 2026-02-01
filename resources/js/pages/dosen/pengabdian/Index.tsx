@@ -9,6 +9,7 @@ import PageRAB from '././steps/page-rab-3';
 import PageMitra from '././steps/page-mitra-4';
 import PageKonfirmasi from '././steps/page-konfirmasi-5';
 import PageStatus from '././steps/page-status';
+import { motion, AnimatePresence } from 'framer-motion';
 import styles from '../../../../css/pengajuan.module.css';
 
 export interface Usulan {
@@ -30,6 +31,18 @@ export interface UsulanData extends Usulan {
 
 export type CurrentStep = 1 | 2 | 3 | 4 | 5;
 type ActiveView = 'daftar' | 'pengajuan';
+
+const containerVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+        opacity: 1,
+        y: 0,
+        transition: {
+            duration: 0.6,
+            staggerChildren: 0.1
+        }
+    }
+};
 
 const PengabdianIndex = () => {
     const { props } = usePage<{
@@ -278,40 +291,50 @@ const PengabdianIndex = () => {
     return (
         <div className={styles.masterContainer}>
             <Header />
-            <div className={styles.tabContainer}>
-                <div className={styles.tabs}>
-                    <button
-                        className={`${styles.tab} ${activeTab === 'daftar' ? styles.active : ''}`}
-                        onClick={() => {
-                            if (isPerbaikanView) {
-                                router.visit('/dosen/pengabdian');
-                            } else {
-                                setActiveView('daftar');
-                                setActiveTab('daftar');
-                            }
-                        }}
-                    >
-                        Daftar Pengabdian
-                    </button>
-                    <button
-                        className={`${styles.tab} ${activeTab === 'perbaikan' ? styles.active : ''}`}
-                        onClick={() => {
-                            if (!isPerbaikanView) {
-                                router.visit('/dosen/pengabdian/perbaikan');
-                            } else {
-                                setActiveTab('perbaikan');
-                            }
-                        }}
-                    >
-                        Perbaikan Usulan
-                    </button>
-                    <button className={`${styles.tab} ${activeTab === 'laporan-kemajuan' ? styles.active : ''}`} onClick={() => router.visit(route('dosen.pengabdian.laporan-kemajuan.index'))}>Laporan Kemajuan</button>
-                    <button className={`${styles.tab} ${activeTab === 'catatan-harian' ? styles.active : ''}`} onClick={() => router.visit(route('dosen.pengabdian.catatan-harian.index'))}>Catatan Harian</button>
-                    <button className={`${styles.tab} ${activeTab === 'laporan-akhir' ? styles.active : ''}`} onClick={() => router.visit(route('dosen.pengabdian.laporan-akhir.index'))}>Laporan Akhir</button>
-                    <button className={`${styles.tab} ${activeTab === 'pengkinian-capaian' ? styles.active : ''}`} onClick={() => setActiveTab('pengkinian-capaian')}>Pengkinian Capaian Luaran</button>
+            <div className="bg-white border-b border-gray-100 sticky top-0 z-30">
+                <div className="max-w-7xl mx-auto px-6">
+                    <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
+                        {[
+                            { label: 'Daftar Pengabdian', active: activeTab === 'daftar', route: route('dosen.pengabdian.index') },
+                            { label: 'Perbaikan Usulan', active: activeTab === 'perbaikan', route: route('dosen.pengabdian.perbaikan') },
+                            { label: 'Laporan Kemajuan', route: route('dosen.pengabdian.laporan-kemajuan.index') },
+                            { label: 'Catatan Harian', route: route('dosen.pengabdian.catatan-harian.index') },
+                            { label: 'Laporan Akhir', route: route('dosen.pengabdian.laporan-akhir.index') },
+                            { label: 'Pengkinian Capaian Luaran', route: route('dosen.pengabdian.pengkinian-luaran.index') }
+                        ].map((tab, idx) => (
+                            <button
+                                key={idx}
+                                onClick={() => {
+                                    if (tab.active) return;
+                                    if (tab.label === 'Daftar Pengabdian' && !isPerbaikanView) {
+                                        setActiveView('daftar');
+                                        setActiveTab('daftar');
+                                    } else {
+                                        router.visit(tab.route);
+                                    }
+                                }}
+                                className={`px-5 py-4 text-[13px] font-semibold transition-all whitespace-nowrap relative ${tab.active ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
+                            >
+                                {tab.label}
+                                {tab.active && (
+                                    <motion.div
+                                        layoutId="activeTab"
+                                        className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 rounded-full"
+                                    />
+                                )}
+                            </button>
+                        ))}
+                    </div>
                 </div>
             </div>
-            <div className={styles.contentArea}>{renderContent()}</div>
+            <motion.div
+                initial="hidden"
+                animate="visible"
+                variants={containerVariants}
+                className={styles.contentArea}
+            >
+                {renderContent()}
+            </motion.div>
             <Footer />
         </div>
     );

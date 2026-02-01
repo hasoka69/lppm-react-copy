@@ -36,23 +36,44 @@ class KaprodiController extends Controller
         }
 
         $prodi = $dosenProfile->prodi;
+        $year = date('Y');
 
+        // Helper closures for stats
+        $penelitianQuery = function ($status) use ($prodi) {
+            return UsulanPenelitian::whereHas('ketua.dosen', function ($q) use ($prodi) {
+                $q->where('prodi', '=', $prodi);
+            })->where('status', '=', $status)->count();
+        };
+
+        $pengabdianQuery = function ($status) use ($prodi) {
+            return \App\Models\UsulanPengabdian::whereHas('ketua.dosen', function ($q) use ($prodi) {
+                $q->where('prodi', '=', $prodi);
+            })->where('status', '=', $status)->count();
+        };
+
+        // Aggregated Stats
         $stats = [
-            'waiting_review' => \App\Models\UsulanPengabdian::whereHas('ketua.dosen', function ($q) use ($prodi) {
-                $q->where('prodi', '=', $prodi);
-            })->where('status', '=', 'submitted')->count(),
+            'waiting_review' => $penelitianQuery('submitted') + $pengabdianQuery('submitted'),
 
-            'forwarded' => \App\Models\UsulanPengabdian::whereHas('ketua.dosen', function ($q) use ($prodi) {
-                $q->where('prodi', '=', $prodi);
-            })->whereIn('status', ['reviewer_review', 'reviewed', 'didanai'])->count(),
+            'forwarded' =>
+                UsulanPenelitian::whereHas('ketua.dosen', function ($q) use ($prodi) {
+                    $q->where('prodi', '=', $prodi);
+                })->whereIn('status', ['reviewer_review', 'reviewed', 'didanai'])->count() +
+                \App\Models\UsulanPengabdian::whereHas('ketua.dosen', function ($q) use ($prodi) {
+                    $q->where('prodi', '=', $prodi);
+                })->whereIn('status', ['reviewer_review', 'reviewed', 'didanai'])->count(),
 
-            'rejected' => \App\Models\UsulanPengabdian::whereHas('ketua.dosen', function ($q) use ($prodi) {
-                $q->where('prodi', '=', $prodi);
-            })->where('status', '=', 'rejected_prodi')->count(),
+            'rejected' =>
+                UsulanPenelitian::whereHas('ketua.dosen', function ($q) use ($prodi) {
+                    $q->where('prodi', '=', $prodi);
+                })->whereIn('status', ['rejected_prodi', 'ditolak', 'ditolak_administrasi'])->count() +
+                \App\Models\UsulanPengabdian::whereHas('ketua.dosen', function ($q) use ($prodi) {
+                    $q->where('prodi', '=', $prodi);
+                })->whereIn('status', ['rejected_prodi', 'ditolak', 'ditolak_administrasi'])->count(),
         ];
 
-        // Fetch recent proposals (limit 5)
-        $recentProposals = UsulanPenelitian::with(['ketua.dosen'])
+        // Fetch recent proposals (Penelitian)
+        $recentPenelitian = UsulanPenelitian::with(['ketua.dosen'])
             ->whereHas('ketua.dosen', function ($q) use ($prodi) {
                 $q->where('prodi', $prodi);
             })
@@ -64,28 +85,67 @@ class KaprodiController extends Controller
                 return [
                     'id' => $usulan->id,
                     'title' => $usulan->judul,
-                    'type' => $usulan->kelompok_skema,
+                    'type' => 'Penelitian', // Explicit type
                     'proposer' => [
                         'name' => $usulan->ketua->name,
                         'prodi' => $usulan->ketua->dosen->prodi ?? '-',
                     ],
                     'date' => $usulan->created_at ? \Carbon\Carbon::parse($usulan->created_at)->format('d M Y') : '-',
+                    'raw_date' => $usulan->created_at, // For sorting
                     'status' => $usulan->status,
                 ];
             });
 
+        // Fetch recent proposals (Pengabdian)
+        $recentPengabdian = \App\Models\UsulanPengabdian::with(['ketua.dosen'])
+            ->whereHas('ketua.dosen', function ($q) use ($prodi) {
+                $q->where('prodi', $prodi);
+            })
+            ->where('status', 'submitted')
+            ->latest()
+            ->take(5)
+            ->get()
+            ->map(function ($usulan) {
+                return [
+                    'id' => $usulan->id,
+                    'title' => $usulan->judul,
+                    'type' => 'Pengabdian', // Explicit type
+                    'proposer' => [
+                        'name' => $usulan->ketua->name,
+                        'prodi' => $usulan->ketua->dosen->prodi ?? '-',
+                    ],
+                    'date' => $usulan->created_at ? \Carbon\Carbon::parse($usulan->created_at)->format('d M Y') : '-',
+                    'raw_date' => $usulan->created_at, // For sorting
+                    'status' => $usulan->status,
+                ];
+            });
+
+        // Merge and Sort
+        $recentProposals = $recentPenelitian->merge($recentPengabdian)
+            ->sortByDesc('raw_date')
+            ->take(5)
+            ->values();
+
+        // Program Stats (Current Year)
+        $proposalsCount =
+            UsulanPenelitian::whereHas('ketua.dosen', function ($q) use ($prodi) {
+                $q->where('prodi', '=', $prodi);
+            })->whereYear('created_at', '=', $year)->count() +
+            \App\Models\UsulanPengabdian::whereHas('ketua.dosen', function ($q) use ($prodi) {
+                $q->where('prodi', '=', $prodi);
+            })->whereYear('created_at', '=', $year)->count();
+
         return Inertia::render('kaprodi/Dashboard', [
             'program' => [
                 'name' => $prodi,
-                'faculty' => 'Fakultas Teknik', // Placeholder or fetch from relation
-                'lecturers_count' => \App\Models\Dosen::where('prodi', '=', $prodi, 'and')->count(),
-                'proposals_2024' => UsulanPenelitian::whereHas('ketua.dosen', function ($q) use ($prodi) {
-                    $q->where('prodi', '=', $prodi, 'and');
-                })->whereYear('created_at', '=', date('Y'), 'and')->count(),
+                'faculty' => 'Fakultas Teknik', // Placeholder
+                'lecturers_count' => \App\Models\Dosen::where('prodi', '=', $prodi)->count(),
+                'proposals_current_year' => $proposalsCount, // Unified count
+                'year' => $year,
             ],
             'summary' => $stats,
             'proposals' => $recentProposals,
-            'activities' => [] // Implement activity log later if needed
+            'activities' => []
         ]);
     }
 

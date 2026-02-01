@@ -3,8 +3,20 @@ import { useForm } from '@inertiajs/react';
 import styles from '../../../../../css/pengajuan.module.css';
 import IdentityAnggota from '../../../../components/Pengajuan/IdentityAnggota';
 import axios from 'axios';
+import {
+    FileText,
+    Settings,
+    GraduationCap,
+    ChevronRight,
+    X,
+    Save,
+    Puzzle,
+    Calendar,
+    Search,
+    Users,
+    Layers
+} from 'lucide-react';
 
-// Configure Axios locally to ensure CSRF token is sent
 axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 axios.interceptors.request.use((config) => {
     const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
@@ -38,7 +50,6 @@ interface PageIdentitasProps {
     isPengabdian?: boolean;
     kelompokSkemaList?: any[];
     ruangLingkupList?: any[];
-    bidangFokusList?: any[]; // Legacy, might not need if hardcoded/fetched
     rumpunIlmuLevel1List?: any[];
 }
 
@@ -48,39 +59,54 @@ const PageIdentitas: React.FC<PageIdentitasProps> = ({
     usulanId,
     usulan,
     onDraftCreated,
-    isPengabdian,
     kelompokSkemaList = [],
     ruangLingkupList = [],
     rumpunIlmuLevel1List = [],
 }) => {
     const [currentUsulanId, setCurrentUsulanId] = useState<number | null>(usulanId ?? null);
-
-    // Cascading Rumpun Ilmu State
     const [rumpunLevel2, setRumpunLevel2] = useState<any[]>([]);
     const [rumpunLevel3, setRumpunLevel3] = useState<any[]>([]);
 
+    const currentDate = new Date();
+    const currentMonth = currentDate.getMonth() + 1;
+    const currentYearVal = currentDate.getFullYear();
+    const currentYear = currentYearVal; // Keep for 'tahun_pengusulan'
+
+    // Calculate Academic Year Logic
+    let academicYearCode: number;
+    let academicYearLabel: string;
+
+    if (currentMonth >= 8 || currentMonth === 1) {
+        // Ganjil (Aug - Jan of next year)
+        const startY = currentMonth === 1 ? currentYearVal - 1 : currentYearVal;
+        const endY = startY + 1;
+        academicYearCode = parseInt(`${endY}1`);
+        academicYearLabel = `Semester Ganjil ${startY}/${endY}`;
+    } else {
+        // Genap (Feb - Jul)
+        const startY = currentYearVal - 1;
+        const endY = currentYearVal;
+        academicYearCode = parseInt(`${endY}2`);
+        academicYearLabel = `Semester Genap ${startY}/${endY}`;
+    }
     const { data, setData, post, put, processing, errors } = useForm<UsulanData>({
         judul: usulan?.judul ?? '',
-        tahun_pengusulan: 2026,
+        tahun_pengusulan: currentYear,
         jenis_bidang_fokus: (usulan?.jenis_bidang_fokus as 'tematik' | 'ririn') ?? '',
         bidang_fokus: usulan?.bidang_fokus ?? '',
         kelompok_skema: usulan?.kelompok_skema ?? '',
         ruang_lingkup: usulan?.ruang_lingkup ?? '',
-        tahun_pertama: 2026,
+        tahun_pertama: academicYearCode,
         lama_kegiatan: usulan?.lama_kegiatan ?? '1',
         rumpun_ilmu_level1_id: usulan?.rumpun_ilmu_level1_id ?? '',
         rumpun_ilmu_level2_id: usulan?.rumpun_ilmu_level2_id ?? '',
         rumpun_ilmu_level3_id: usulan?.rumpun_ilmu_level3_id ?? '',
     });
 
-    // Hardcoded Focus Options based on selection
     const tematikOptions = ['Ketahanan Pangan', 'Kesehatan', 'Pendidikan', 'UMKM & Kewirausahaan', 'Lingkungan', 'Sosial Budaya'];
     const ririnOptions = ['Teknologi Informasi', 'Energi', 'Kesehatan', 'Pertanian', 'Sosial Humaniora'];
-
-    // Determine which list to show
     const currentFocusList = data.jenis_bidang_fokus === 'tematik' ? tematikOptions : (data.jenis_bidang_fokus === 'ririn' ? ririnOptions : []);
 
-    // Load Level 2 when Level 1 changes
     useEffect(() => {
         if (data.rumpun_ilmu_level1_id) {
             axios.get(`/api/master/rumpun-ilmu?level=2&parent_id=${data.rumpun_ilmu_level1_id}`)
@@ -90,7 +116,6 @@ const PageIdentitas: React.FC<PageIdentitasProps> = ({
         }
     }, [data.rumpun_ilmu_level1_id]);
 
-    // Load Level 3 when Level 2 changes
     useEffect(() => {
         if (data.rumpun_ilmu_level2_id) {
             axios.get(`/api/master/rumpun-ilmu?level=3&parent_id=${data.rumpun_ilmu_level2_id}`)
@@ -111,12 +136,11 @@ const PageIdentitas: React.FC<PageIdentitasProps> = ({
     };
 
     const saveData = (isNext: boolean) => {
-        const payload = { ...data };
-
         if (currentUsulanId) {
             put(`/dosen/pengabdian/${currentUsulanId}`, {
                 preserveScroll: true,
                 onSuccess: () => {
+                    if (!isNext) alert('Draft berhasil diperbarui.');
                     if (isNext) {
                         onDraftCreated?.(currentUsulanId);
                         onSelanjutnya?.();
@@ -132,17 +156,15 @@ const PageIdentitas: React.FC<PageIdentitasProps> = ({
                         setCurrentUsulanId(id);
                         onDraftCreated?.(id);
                     }
+                    if (!isNext) alert('Draft berhasil disimpan.');
                     if (isNext) onSelanjutnya?.();
                 },
             });
         }
     };
 
-
-
     const ensureDraftExists = async (): Promise<number | null> => {
         if (currentUsulanId) return currentUsulanId;
-
         try {
             const response = await axios.post('/dosen/pengabdian/draft', {});
             if (response.data?.usulanId) {
@@ -160,154 +182,185 @@ const PageIdentitas: React.FC<PageIdentitasProps> = ({
     return (
         <div className={styles.container}>
             <form onSubmit={handleNext}>
-                {/* 1.1 Informasi Dasar */}
-                <div className={styles.formSection}>
-                    <h2 className={styles.sectionTitle}>1.1 Informasi Dasar Usulan</h2>
-                    <div className={styles.formGrid}>
-                        <div className={styles.fullWidth}>
-                            <label className={`${styles.label} ${styles.required}`}>Judul Proposal Pengabdian</label>
-                            <input type="text" className={styles.input} value={data.judul} onChange={(e) => setData('judul', e.target.value)} placeholder="Masukkan judul proposal lengkap" />
-                            {errors.judul && <span className={styles.error}>{errors.judul}</span>}
-                        </div>
-                        <div className={styles.formGroup}>
-                            <label className={styles.label}>Tahun Pengusulan</label>
-                            <input
-                                type="text"
-                                className={styles.input}
-                                value="2026"
-                                disabled
-                                readOnly
-                            />
-                            <input type="hidden" name="tahun_pengusulan" value="2026" />
-                        </div>
-                    </div>
-                </div>
-
-                {/* 1.2 Fokus Pengabdian */}
-                <div className={styles.formSection}>
-                    <h2 className={styles.sectionTitle}>1.2 Fokus Pengabdian</h2>
-                    <div className={styles.formGroup}>
-                        <label className={`${styles.label} ${styles.required}`}>Jenis Bidang Fokus</label>
-                        <div style={{ display: 'flex', gap: '20px', marginTop: '8px' }}>
-                            <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
-                                <input type="radio" value="tematik" checked={data.jenis_bidang_fokus === 'tematik'} onChange={(e) => setData('jenis_bidang_fokus', 'tematik')} style={{ marginRight: '8px' }} />
-                                Tematik
-                            </label>
-                            <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
-                                <input type="radio" value="ririn" checked={data.jenis_bidang_fokus === 'ririn'} onChange={(e) => setData('jenis_bidang_fokus', 'ririn')} style={{ marginRight: '8px' }} />
-                                RIRIN
-                            </label>
-                        </div>
-                    </div>
-                    {data.jenis_bidang_fokus && (
-                        <div className={styles.formGroup}>
-                            <label className={styles.label}>Bidang Fokus {data.jenis_bidang_fokus === 'tematik' ? 'Tematik' : 'RIRIN'}</label>
-                            <select className={styles.select} value={data.bidang_fokus} onChange={(e) => setData('bidang_fokus', e.target.value)}>
-                                <option value="">Pilih Bidang Fokus</option>
-                                {currentFocusList.map((opt) => (
-                                    <option key={opt} value={opt}>{opt}</option>
-                                ))}
-                            </select>
-                        </div>
-                    )}
-                </div>
-
-                {/* 1.3 Skema & Pelaksanaan */}
-                <div className={styles.formSection}>
-                    <h2 className={styles.sectionTitle}>1.3 Skema & Pelaksanaan</h2>
-                    <div className={styles.formGrid}>
-                        <div className={styles.formGroup}>
-                            <label className={`${styles.label} ${styles.required}`}>Kelompok Skema</label>
-                            <select className={styles.select} value={data.kelompok_skema} onChange={(e) => setData('kelompok_skema', e.target.value)}>
-                                <option value="">Pilih Skema</option>
-                                {kelompokSkemaList.map((item) => (
-                                    <option key={item.id} value={item.nama}>{item.nama}</option>
-                                ))}
-                            </select>
-                        </div>
-                        <div className={styles.formGroup}>
-                            <label className={styles.label}>Ruang Lingkup Kegiatan</label>
-                            <select className={styles.select} value={data.ruang_lingkup} onChange={(e) => setData('ruang_lingkup', e.target.value)}>
-                                <option value="">Pilih Ruang Lingkup</option>
-                                {ruangLingkupList.map((item) => (
-                                    <option key={item.id} value={item.nama}>{item.nama}</option>
-                                ))}
-                            </select>
-                        </div>
-                        <div className={styles.formGroup}>
-                            <label className={styles.label}>Tahun Pertama Usulan</label>
-                            <input
-                                type="text"
-                                className={styles.input}
-                                value="2026"
-                                disabled
-                                readOnly
-                            />
-                            <input type="hidden" name="tahun_pertama" value="2026" />
-                        </div>
-                        <div className={styles.formGroup}>
-                            <label className={styles.label}>Lama Kegiatan</label>
-                            <select className={styles.select} value={data.lama_kegiatan} onChange={(e) => setData('lama_kegiatan', e.target.value)}>
-                                <option value="1">1 Tahun</option>
-                                <option value="2">2 Tahun</option>
-                                <option value="3">3 Tahun</option>
-                            </select>
+                {/* Section 1: Dasar Usulan */}
+                <div className={styles.pageSection}>
+                    <div className={styles.formSection}>
+                        <h2 className={styles.sectionTitle}>
+                            <FileText size={24} className="text-emerald-600" />
+                            Informasi Dasar Pengabdian
+                        </h2>
+                        <div className={styles.formGrid}>
+                            <div className={styles.fullWidth}>
+                                <div className={styles.formGroup}>
+                                    <label className={styles.label}>Judul Proposal Pengabdian *</label>
+                                    <textarea
+                                        className={styles.textarea}
+                                        rows={3}
+                                        value={data.judul}
+                                        onChange={(e) => setData('judul', e.target.value)}
+                                        placeholder="Masukkan judul proposal lengkap..."
+                                    />
+                                    {errors.judul && <span className={styles.error}>{errors.judul}</span>}
+                                </div>
+                            </div>
+                            <div className={styles.formGroup}>
+                                <label className={styles.label}>Tahun Pengusulan</label>
+                                <div className={styles.inputWithIcon}>
+                                    <Calendar size={18} />
+                                    <input type="text" className={styles.input} value={currentYear} disabled readOnly style={{ background: '#f1f5f9', color: '#64748b' }} />
+                                </div>
+                            </div>
+                            <div className={styles.formGroup}>
+                                <label className={styles.label}>Tahun Akademik (Pelaksanaan) *</label>
+                                <div className={styles.inputWithIcon}>
+                                    <Calendar size={18} />
+                                    <input
+                                        type="text"
+                                        className={styles.input}
+                                        value={academicYearLabel}
+                                        disabled
+                                        readOnly
+                                        style={{ background: '#f1f5f9', color: '#64748b' }}
+                                    />
+                                </div>
+                                <small className="text-gray-500 text-xs mt-1">
+                                    Otomatis mengikuti Tahun Akademik berjalan (Kode: {data.tahun_pertama})
+                                </small>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                {/* 1.4 Rumpun Ilmu */}
-                <div className={styles.formSection}>
-                    <h2 className={styles.sectionTitle}>1.4 Rumpun Ilmu</h2>
-                    <div className={styles.formGrid}>
-                        <div className={styles.formGroup}>
-                            <label className={styles.label}>Rumpun Ilmu Level 1</label>
-                            <select className={styles.select} value={data.rumpun_ilmu_level1_id} onChange={(e) => setData('rumpun_ilmu_level1_id', e.target.value)}>
-                                <option value="">Pilih Rumpun Level 1</option>
-                                {rumpunIlmuLevel1List.map((item) => (
-                                    <option key={item.id} value={item.id}>{item.nama}</option>
-                                ))}
-                            </select>
-                        </div>
-                        <div className={styles.formGroup}>
-                            <label className={styles.label}>Rumpun Ilmu Level 2</label>
-                            <select className={styles.select} value={data.rumpun_ilmu_level2_id} onChange={(e) => setData('rumpun_ilmu_level2_id', e.target.value)} disabled={!data.rumpun_ilmu_level1_id}>
-                                <option value="">Pilih Rumpun Level 2</option>
-                                {rumpunLevel2.map((item) => (
-                                    <option key={item.id} value={item.id}>{item.nama}</option>
-                                ))}
-                            </select>
-                        </div>
-                        <div className={styles.formGroup}>
-                            <label className={styles.label}>Rumpun Ilmu Level 3</label>
-                            <select className={styles.select} value={data.rumpun_ilmu_level3_id} onChange={(e) => setData('rumpun_ilmu_level3_id', e.target.value)} disabled={!data.rumpun_ilmu_level2_id}>
-                                <option value="">Pilih Rumpun Level 3</option>
-                                {rumpunLevel3.map((item) => (
-                                    <option key={item.id} value={item.id}>{item.nama}</option>
-                                ))}
-                            </select>
+                {/* Section 2: Fokus & Skema */}
+                <div className={styles.pageSection}>
+                    <div className={styles.formSection}>
+                        <h2 className={styles.sectionTitle}>
+                            <Puzzle size={24} className="text-emerald-600" />
+                            Fokus & Skema Pengabdian
+                        </h2>
+                        <div className={styles.formGrid}>
+                            <div className={styles.fullWidth}>
+                                <label className={styles.label}>Jenis Bidang Fokus *</label>
+                                <div style={{ display: 'flex', gap: '2rem', marginTop: '0.5rem' }}>
+                                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+                                        <input type="radio" value="tematik" checked={data.jenis_bidang_fokus === 'tematik'} onChange={() => setData('jenis_bidang_fokus', 'tematik')} />
+                                        <span style={{ fontWeight: 600 }}>Tematik</span>
+                                    </label>
+                                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+                                        <input type="radio" value="ririn" checked={data.jenis_bidang_fokus === 'ririn'} onChange={() => setData('jenis_bidang_fokus', 'ririn')} />
+                                        <span style={{ fontWeight: 600 }}>RIRIN</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            {data.jenis_bidang_fokus && (
+                                <div className={styles.formGroup}>
+                                    <label className={styles.label}>Bidang Fokus {data.jenis_bidang_fokus.toUpperCase()} *</label>
+                                    <select className={styles.select} value={data.bidang_fokus} onChange={(e) => setData('bidang_fokus', e.target.value)}>
+                                        <option value="">Pilih Bidang Fokus</option>
+                                        {currentFocusList.map((opt) => (
+                                            <option key={opt} value={opt}>{opt}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            )}
+
+                            <div className={styles.formGroup}>
+                                <label className={styles.label}>Kelompok Skema *</label>
+                                <select className={styles.select} value={data.kelompok_skema} onChange={(e) => setData('kelompok_skema', e.target.value)}>
+                                    <option value="">Pilih Skema</option>
+                                    {kelompokSkemaList.map((item) => (
+                                        <option key={item.id} value={item.nama}>{item.nama}</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div className={styles.formGroup}>
+                                <label className={styles.label}>Ruang Lingkup Kegiatan *</label>
+                                <select className={styles.select} value={data.ruang_lingkup} onChange={(e) => setData('ruang_lingkup', e.target.value)}>
+                                    <option value="">Pilih Ruang Lingkup</option>
+                                    {ruangLingkupList.map((item) => (
+                                        <option key={item.id} value={item.nama}>{item.nama}</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div className={styles.formGroup}>
+                                <label className={styles.label}>Lama Kegiatan (Tahun) *</label>
+                                <select className={styles.select} value={data.lama_kegiatan} onChange={(e) => setData('lama_kegiatan', e.target.value)}>
+                                    <option value="1">1 Tahun</option>
+                                    <option value="2">2 Tahun</option>
+                                    <option value="3">3 Tahun</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                {/* 1.5 & 1.6 Identitas Anggota */}
-                <div style={{ padding: 20, background: '#f8fafc', border: '1px dashed #cbd5e1', borderRadius: 8, textAlign: 'center', marginBottom: 20 }}>
-                    <h3 className={styles.sectionTitle} style={{ marginTop: 0 }}>1.5 & 1.6 Identitas Tim Pengusul</h3>
-                    <p style={{ color: '#64748b', fontSize: '0.9rem', marginBottom: 16 }}>
-                        Ketua Pengusul otomatis diambil dari akun yang login. Silahkan tambahkan Anggota Dosen dan Mahasiswa.
-                        Data anggota otomatis tersimpan saat Anda menekan tombol "Selanjutnya".
-                    </p>
-                    <IdentityAnggota
-                        usulanId={currentUsulanId ?? 0}
-                        isPengabdian={true}
-                        onCreateDraft={ensureDraftExists}
-                    />
+                {/* Section 3: Rumpun Ilmu */}
+                <div className={styles.pageSection}>
+                    <div className={styles.formSection}>
+                        <h2 className={styles.sectionTitle}>
+                            <GraduationCap size={24} className="text-emerald-600" />
+                            Klasifikasi Rumpun Ilmu
+                        </h2>
+                        <div className={styles.formGrid}>
+                            <div className={styles.formGroup}>
+                                <label className={styles.label}>Rumpun Ilmu Level 1 *</label>
+                                <select className={styles.select} value={data.rumpun_ilmu_level1_id} onChange={(e) => setData('rumpun_ilmu_level1_id', e.target.value)}>
+                                    <option value="">Pilih Level 1</option>
+                                    {rumpunIlmuLevel1List.map((item) => (
+                                        <option key={item.id} value={item.id}>{item.nama}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className={styles.formGroup}>
+                                <label className={styles.label}>Rumpun Ilmu Level 2 *</label>
+                                <select className={styles.select} value={data.rumpun_ilmu_level2_id} onChange={(e) => setData('rumpun_ilmu_level2_id', e.target.value)} disabled={!data.rumpun_ilmu_level1_id}>
+                                    <option value="">Pilih Level 2</option>
+                                    {rumpunLevel2.map((item) => (
+                                        <option key={item.id} value={item.id}>{item.nama}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className={styles.formGroup}>
+                                <label className={styles.label}>Rumpun Ilmu Level 3 *</label>
+                                <select className={styles.select} value={data.rumpun_ilmu_level3_id} onChange={(e) => setData('rumpun_ilmu_level3_id', e.target.value)} disabled={!data.rumpun_ilmu_level2_id}>
+                                    <option value="">Pilih Level 3</option>
+                                    {rumpunLevel3.map((item) => (
+                                        <option key={item.id} value={item.id}>{item.nama}</option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Section 4: Tim Pengusul */}
+                <div className={styles.pageSection}>
+                    <div className={styles.formSection}>
+                        <h2 className={styles.sectionTitle}>
+                            <Users size={24} className="text-emerald-600" />
+                            Identitas Tim Pengusul
+                        </h2>
+                        <IdentityAnggota
+                            usulanId={currentUsulanId ?? 0}
+                            isPengabdian={true}
+                            onCreateDraft={ensureDraftExists}
+                        />
+                    </div>
                 </div>
 
                 <div className={styles.actionContainer}>
-                    <button type="button" className={styles.secondaryButton} onClick={onTutupForm}>Tutup Form</button>
-                    <button type="button" className={styles.secondaryButton} onClick={handleSaveDraft} disabled={processing}>Simpan Draft</button>
-                    <button type="submit" className={styles.primaryButton} disabled={processing}>Selanjutnya &gt;</button>
+                    <button type="button" className={styles.secondaryButton} onClick={onTutupForm}>
+                        <X size={18} style={{ marginRight: '8px' }} /> Tutup
+                    </button>
+                    <button type="button" className={styles.secondaryButton} onClick={handleSaveDraft} disabled={processing}>
+                        <Save size={18} style={{ marginRight: '8px' }} /> Simpan Draft
+                    </button>
+                    <button type="submit" className={styles.primaryButton} disabled={processing}>
+                        Selanjutnya <ChevronRight size={18} style={{ marginLeft: '8px' }} />
+                    </button>
                 </div>
             </form>
         </div>

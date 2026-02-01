@@ -109,6 +109,14 @@ class UsulanPengabdian extends Model
     /**
      * Relationship to Luaran items
      */
+    public function luaranList()
+    {
+        return $this->hasMany(LuaranPengabdian::class, 'usulan_id');
+    }
+
+    /**
+     * Relationship to Luaran items (Alias for backward compatibility)
+     */
     public function luaranItems()
     {
         return $this->hasMany(LuaranPengabdian::class, 'usulan_id');
@@ -128,5 +136,29 @@ class UsulanPengabdian extends Model
     public function reviewer()
     {
         return $this->belongsTo(User::class, 'reviewer_id');
+    }
+
+    /**
+     * Relasi ke Laporan Kemajuan
+     */
+    public function laporanKemajuan()
+    {
+        return $this->hasOne(LaporanKemajuanPengabdian::class, 'usulan_id');
+    }
+
+    /**
+     * Relasi ke Laporan Akhir
+     */
+    public function laporanAkhir()
+    {
+        return $this->hasOne(LaporanAkhirPengabdian::class, 'usulan_id');
+    }
+
+    /**
+     * Relasi ke Catatan Harian
+     */
+    public function catatanHarian()
+    {
+        return $this->hasMany(CatatanHarianPengabdian::class, 'usulan_id');
     }
 }
