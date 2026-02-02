@@ -14,7 +14,8 @@ import {
     Target,
     BookOpen,
     Layers,
-    Calendar
+    Calendar,
+    Users
 } from 'lucide-react';
 
 interface UsulanData {
@@ -119,6 +120,32 @@ const PageIdentitas: React.FC<PageIdentitasProps> = ({
 
     const handleNext = (e: React.FormEvent) => {
         e.preventDefault();
+
+        // VALIDATION: Check for mandatory fields
+        const requiredFields = [
+            'judul',
+            'tkt_saat_ini',
+            'target_akhir_tkt',
+            'kelompok_skema',
+            'ruang_lingkup',
+            'kategori_sbk',
+            'bidang_fokus',
+            'tema_penelitian',
+            'topik_penelitian',
+            'rumpun_ilmu_1',
+            'rumpun_ilmu_2',
+            'rumpun_ilmu_3',
+            'prioritas_riset',
+            'lama_kegiatan'
+        ];
+
+        const emptyFields = requiredFields.filter(field => !data[field]);
+
+        if (emptyFields.length > 0) {
+            alert('Mohon lengkapi semua data sebelum melanjutkan.');
+            return;
+        }
+
         if (currentUsulanId) {
             put(`/dosen/penelitian/${currentUsulanId}`, {
                 preserveScroll: true,
@@ -382,7 +409,13 @@ const PageIdentitas: React.FC<PageIdentitasProps> = ({
                 </div>
 
                 <div className={styles.pageSection}>
-                    <IdentityAnggota usulanId={currentUsulanId} onCreateDraft={ensureDraftExists} />
+                    <div className={styles.formSection}>
+                        <h2 className={styles.sectionTitle}>
+                            <Users size={24} className="text-blue-600" />
+                            Identitas Tim Pengusul
+                        </h2>
+                        <IdentityAnggota usulanId={currentUsulanId} onCreateDraft={ensureDraftExists} />
+                    </div>
                 </div>
 
                 {/* Tombol aksi */}

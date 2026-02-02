@@ -7,7 +7,9 @@ import {
     BookOpen, AlertCircle, CheckCircle2, Clock, CheckCircle, Download
 } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { formatAcademicYear } from '@/utils/academicYear';
+import { formatAcademicYear, getAcademicYearOptions } from '@/utils/academicYear';
+import { router } from '@inertiajs/react';
+import Select from 'react-select';
 
 interface Usulan {
     id: number;
@@ -34,9 +36,13 @@ interface Usulan {
 interface PageProps {
     proposals: Usulan[];
     activeTab: string;
+    filters?: {
+        tahun_akademik?: string;
+        search?: string;
+    }
 }
 
-export default function AdminPengabdianIndex({ proposals = [], activeTab = 'daftar' }: PageProps) {
+export default function AdminPengabdianIndex({ proposals = [], activeTab = 'daftar', filters = {} }: PageProps) {
     const tabs = [
         { id: 'daftar', label: 'Daftar Usulan', href: route('lppm.pengabdian.index') },
         { id: 'perbaikan', label: 'Perbaikan Usulan', href: route('lppm.pengabdian.perbaikan') },
@@ -46,12 +52,48 @@ export default function AdminPengabdianIndex({ proposals = [], activeTab = 'daft
         { id: 'pengkinian-capaian', label: 'Pengkinian Capaian Luaran', href: route('lppm.pengabdian.pengkinian-luaran') },
     ];
 
-    const [searchQuery, setSearchQuery] = useState('');
 
-    const filteredProposals = proposals.filter(p =>
-        p.judul.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.ketua.toLowerCase().includes(searchQuery.toLowerCase())
+
+    // -- FILTER STATE --
+    const [searchQuery, setSearchQuery] = useState(filters.search || '');
+    const [selectedYear, setSelectedYear] = useState<{ value: string, label: string } | null>(
+        filters.tahun_akademik ? {
+            value: filters.tahun_akademik,
+            label: formatAcademicYear(filters.tahun_akademik)
+        } : null
     );
+
+    // Debounce search
+    const onSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setSearchQuery(e.target.value);
+    };
+
+    // Effect to trigger reload on filter change
+    const handleFilterChange = (term: string, year: string | undefined) => {
+        router.get(route(route().current() as string), {
+            activeTab: activeTab === 'daftar' ? undefined : activeTab,
+            search: term,
+            tahun_akademik: year
+        }, {
+            preserveState: true,
+            preserveScroll: true,
+            replace: true
+        });
+    };
+
+    // Trigger on Search Enter
+    const handleSearchKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter') {
+            handleFilterChange(searchQuery, selectedYear?.value);
+        }
+    }
+
+    const handleYearChange = (option: any) => {
+        setSelectedYear(option);
+        handleFilterChange(searchQuery, option?.value);
+    };
+
+    const filteredProposals = proposals;
 
     const renderContent = () => {
         switch (activeTab) {
@@ -107,6 +149,25 @@ export default function AdminPengabdianIndex({ proposals = [], activeTab = 'daft
                     </div>
 
                     <div className="flex items-center gap-4">
+                        <div className="w-48">
+                            <Select
+                                options={getAcademicYearOptions().map(opt => ({ value: opt.value.toString(), label: opt.label }))}
+                                value={selectedYear}
+                                onChange={handleYearChange}
+                                placeholder="Pilih Tahun..."
+                                isClearable
+                                styles={{
+                                    control: (base) => ({
+                                        ...base,
+                                        borderRadius: '0.75rem',
+                                        borderColor: '#e5e7eb',
+                                        padding: '0.1rem',
+                                        fontSize: '0.875rem',
+                                        minHeight: '42px'
+                                    })
+                                }}
+                            />
+                        </div>
                         <div className="relative group">
                             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
                             <input
@@ -114,6 +175,7 @@ export default function AdminPengabdianIndex({ proposals = [], activeTab = 'daft
                                 placeholder="Cari judul atau ketua..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
+                                onKeyDown={handleSearchKeyDown}
                                 className="bg-white border text-sm border-gray-200 rounded-xl py-2 pl-10 pr-4 w-64 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all"
                             />
                         </div>
@@ -205,13 +267,14 @@ function LaporanKemajuanTable({ proposals }: { proposals: Usulan[] }) {
                             <th className="px-6 py-5 text-[11px] font-bold text-gray-500 uppercase tracking-wider w-16 text-center">No</th>
                             <th className="px-6 py-5 text-[11px] font-bold text-gray-500 uppercase tracking-wider">Ketua Peneliti</th>
                             <th className="px-6 py-5 text-[11px] font-bold text-gray-500 uppercase tracking-wider">Judul Pengabdian</th>
+                            <th className="px-6 py-5 text-[11px] font-bold text-gray-500 uppercase tracking-wider">Tahun</th>
                             <th className="px-6 py-5 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center">Status Laporan</th>
                             <th className="px-6 py-5 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center">Aksi</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-50">
                         {proposals.length === 0 ? (
-                            <tr><td colSpan={5} className="px-6 py-12 text-center text-gray-400 italic">Tidak ada data.</td></tr>
+                            <tr><td colSpan={6} className="px-6 py-12 text-center text-gray-400 italic">Tidak ada data.</td></tr>
                         ) : proposals.map((usulan, index) => (
                             <tr key={usulan.id} className="hover:bg-green-50/30 transition-colors">
                                 <td className="px-6 py-6 text-sm text-gray-400 font-medium text-center">{index + 1}</td>
@@ -224,6 +287,9 @@ function LaporanKemajuanTable({ proposals }: { proposals: Usulan[] }) {
                                 <td className="px-6 py-6">
                                     <p className="text-sm text-gray-800 font-semibold leading-relaxed line-clamp-2">{usulan.judul}</p>
                                     <span className="text-[10px] uppercase font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded border border-green-100 mt-1 inline-block">{usulan.skema}</span>
+                                </td>
+                                <td className="px-6 py-6 text-sm text-gray-500">
+                                    {formatAcademicYear(usulan.tahun_pertama)}
                                 </td>
                                 <td className="px-6 py-6 text-center">
                                     {!usulan.report || usulan.report.status === 'Draft' ? (
@@ -260,13 +326,14 @@ function LaporanAkhirTable({ proposals }: { proposals: Usulan[] }) {
                             <th className="px-6 py-5 text-[11px] font-bold text-gray-500 uppercase tracking-wider w-16 text-center">No</th>
                             <th className="px-6 py-5 text-[11px] font-bold text-gray-500 uppercase tracking-wider">Ketua Peneliti</th>
                             <th className="px-6 py-5 text-[11px] font-bold text-gray-500 uppercase tracking-wider">Judul Pengabdian</th>
+                            <th className="px-6 py-5 text-[11px] font-bold text-gray-500 uppercase tracking-wider">Tahun</th>
                             <th className="px-6 py-5 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center">Status Laporan</th>
                             <th className="px-6 py-5 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center">Aksi</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-50">
                         {proposals.length === 0 ? (
-                            <tr><td colSpan={5} className="px-6 py-12 text-center text-gray-400 italic">Tidak ada data.</td></tr>
+                            <tr><td colSpan={6} className="px-6 py-12 text-center text-gray-400 italic">Tidak ada data.</td></tr>
                         ) : proposals.map((usulan, index) => (
                             <tr key={usulan.id} className="hover:bg-green-50/30 transition-colors">
                                 <td className="px-6 py-6 text-sm text-gray-400 font-medium text-center">{index + 1}</td>
@@ -278,6 +345,9 @@ function LaporanAkhirTable({ proposals }: { proposals: Usulan[] }) {
                                 </td>
                                 <td className="px-6 py-6">
                                     <p className="text-sm text-gray-800 font-semibold leading-relaxed line-clamp-2">{usulan.judul}</p>
+                                </td>
+                                <td className="px-6 py-6 text-sm text-gray-500">
+                                    {formatAcademicYear(usulan.tahun_pertama)}
                                 </td>
                                 <td className="px-6 py-6 text-center">
                                     {!usulan.report || usulan.report.status === 'Draft' ? (
@@ -314,13 +384,14 @@ function CatatanHarianTable({ proposals }: { proposals: Usulan[] }) {
                             <th className="px-6 py-5 text-[11px] font-bold text-gray-500 uppercase tracking-wider w-16 text-center">No</th>
                             <th className="px-6 py-5 text-[11px] font-bold text-gray-500 uppercase tracking-wider">Ketua Peneliti</th>
                             <th className="px-6 py-5 text-[11px] font-bold text-gray-500 uppercase tracking-wider">Judul & Anggaran</th>
+                            <th className="px-6 py-5 text-[11px] font-bold text-gray-500 uppercase tracking-wider">Tahun</th>
                             <th className="px-6 py-5 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center">Progress</th>
                             <th className="px-6 py-5 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center">Aksi</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-50">
                         {proposals.length === 0 ? (
-                            <tr><td colSpan={5} className="px-6 py-12 text-center text-gray-400 italic">Tidak ada data.</td></tr>
+                            <tr><td colSpan={6} className="px-6 py-12 text-center text-gray-400 italic">Tidak ada data.</td></tr>
                         ) : proposals.map((item, index) => (
                             <tr key={item.id} className="hover:bg-green-50/20 transition">
                                 <td className="px-6 py-6 text-sm text-gray-400 font-bold text-center">{index + 1}</td>
@@ -337,6 +408,9 @@ function CatatanHarianTable({ proposals }: { proposals: Usulan[] }) {
                                             DANA DISETUJUI: Rp {new Intl.NumberFormat('id-ID').format(item.dana_disetujui || 0)}
                                         </div>
                                     </div>
+                                </td>
+                                <td className="px-6 py-6 text-sm text-gray-500">
+                                    {formatAcademicYear(item.tahun_pertama)}
                                 </td>
                                 <td className="px-6 py-6">
                                     <div className="space-y-3 min-w-[150px]">
@@ -382,12 +456,13 @@ function PengkinianLuaranTable({ proposals }: { proposals: Usulan[] }) {
                             <th className="px-6 py-5 text-[11px] font-bold text-gray-500 uppercase tracking-wider w-16 text-center">No</th>
                             <th className="px-6 py-5 text-[11px] font-bold text-gray-500 uppercase tracking-wider">Ketua Peneliti</th>
                             <th className="px-6 py-5 text-[11px] font-bold text-gray-500 uppercase tracking-wider">Judul Pengabdian</th>
+                            <th className="px-6 py-5 text-[11px] font-bold text-gray-500 uppercase tracking-wider">Tahun</th>
                             <th className="px-6 py-5 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center">Aksi</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-50">
                         {proposals.length === 0 ? (
-                            <tr><td colSpan={4} className="px-6 py-12 text-center text-gray-400 italic">Tidak ada data.</td></tr>
+                            <tr><td colSpan={5} className="px-6 py-12 text-center text-gray-400 italic">Tidak ada data.</td></tr>
                         ) : proposals.map((usulan, index) => (
                             <tr key={usulan.id} className="hover:bg-green-50/30 transition-all duration-300">
                                 <td className="px-6 py-6 text-sm text-gray-400 font-bold text-center">{index + 1}</td>
@@ -404,6 +479,9 @@ function PengkinianLuaranTable({ proposals }: { proposals: Usulan[] }) {
                                             {usulan.skema}
                                         </span>
                                     </div>
+                                </td>
+                                <td className="px-6 py-6 text-sm text-gray-500">
+                                    {formatAcademicYear(usulan.tahun_pertama)}
                                 </td>
                                 <td className="px-6 py-6 text-center">
                                     <Link href={route('lppm.pengabdian.pengkinian-luaran.show', usulan.id)} className="text-blue-600 hover:text-blue-800 font-bold text-xs inline-flex items-center">

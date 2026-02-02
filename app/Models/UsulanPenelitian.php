@@ -123,6 +123,14 @@ class UsulanPenelitian extends Model
         return $this->belongsTo(User::class, 'reviewer_id');
     }
 
+    /**
+     * Relasi ke Makro Riset
+     */
+    public function makroRiset()
+    {
+        return $this->belongsTo(MakroRiset::class, 'kelompok_makro_riset');
+    }
+
     // ========================================
     // HELPER METHODS
     // ========================================

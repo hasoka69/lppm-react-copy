@@ -3,7 +3,7 @@ import footerStyles from '../../css/footer.module.css';
 
 export default function Footer() {
   return (
-    <footer className={footerStyles.footerLppm}>
+    <footer id="footer" className={footerStyles.footerLppm}>
       <div className={footerStyles.footerContainer}>
         <div className={`${footerStyles.footerCol} ${footerStyles.infoCol}`}>
           <div className={footerStyles.footerLogoBrand}>
@@ -15,7 +15,7 @@ export default function Footer() {
           </div>
           <p className={footerStyles.footerQuote}>"Menginspirasi Lewat Ilmu, Mengabdi Lewat Aksi."</p>
           <p className={footerStyles.footerDescription}>
-            Memajukan penelitian berkualitas dan pengabdian masyarakat yang 
+            Memajukan penelitian berkualitas dan pengabdian masyarakat yang
             berdampak untuk kemajuan bangsa dan kesejahteraan masyarakat Indonesia.
           </p>
 

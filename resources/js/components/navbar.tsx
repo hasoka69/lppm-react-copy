@@ -15,31 +15,16 @@ const Navbar = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const navLinks = [
+  interface NavItem {
+    label: string;
+    href: string;
+    children?: NavItem[];
+  }
+
+  const navLinks: NavItem[] = [
     { label: 'Home', href: '/' },
-    { label: 'Berita', href: '#' },
-    {
-      label: 'Pengajuan',
-      href: '#',
-      children: [
-        { label: 'Usulan Baru', href: '#' },
-        { label: 'Perbaikan', href: '#' },
-        { label: 'Laporan Kemajuan', href: '#' },
-        { label: 'Catatan Harian', href: '#' },
-        { label: 'Laporan Akhir', href: '#' },
-      ]
-    },
-    {
-      label: 'Pengabdian',
-      href: '#',
-      children: [
-        { label: 'Usulan Baru', href: '#' },
-        { label: 'Perbaikan', href: '#' },
-        { label: 'Laporan Kemajuan', href: '#' },
-        { label: 'Catatan Harian', href: '#' },
-        { label: 'Laporan Akhir', href: '#' },
-      ]
-    },
+    { label: 'Berita', href: '/berita' },
+    { label: 'Kontak', href: '#footer' },
   ];
 
   return (
@@ -54,10 +39,10 @@ const Navbar = () => {
       <div className="container mx-auto px-6 flex items-center justify-between">
         {/* LOGO */}
         <div className="flex items-center gap-3">
-          <img src="/image/logo-asaindo.png" alt="Logo" className="h-10 w-auto" />
+          <img src="/image/logo-asaindo.png" alt="Logo" className="h-12 w-auto" />
           <div className={cn("flex flex-col", scrolled ? "text-slate-800" : "text-white")}>
-            <span className="font-bold text-lg leading-none tracking-wide">LPPM</span>
-            <span className="text-[10px] font-medium opacity-80 tracking-wider">LEMBAGA PENELITIAN & PENGABDIAN</span>
+            <span className="font-bold text-2xl leading-none tracking-wide">LPPM</span>
+            <span className="text-xs font-medium opacity-80 tracking-wider">LEMBAGA PENELITIAN & PENGABDIAN</span>
           </div>
         </div>
 

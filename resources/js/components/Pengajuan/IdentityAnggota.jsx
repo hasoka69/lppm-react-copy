@@ -163,7 +163,7 @@ const IdentityAnggota = ({ usulanId, onCreateDraft, isPengabdian = false }) => {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
             {/* Ketua Section */}
             <div>
-                <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '1.125rem', fontWeight: 700, color: 'var(--secondary)', marginBottom: '1rem' }}>
+                <h3 style={{ display: 'flex', alignItems: 'center', gap: '1rem', fontSize: '1.125rem', fontWeight: 700, color: 'var(--secondary)', marginBottom: '1.5rem' }}>
                     <div style={{ background: 'var(--primary-light)', padding: '0.5rem', borderRadius: '8px' }}>
                         <User size={20} color="var(--primary)" />
                     </div>
@@ -185,8 +185,8 @@ const IdentityAnggota = ({ usulanId, onCreateDraft, isPengabdian = false }) => {
 
             {/* Anggota Dosen Section */}
             <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                    <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '1.125rem', fontWeight: 700, color: 'var(--secondary)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                    <h3 style={{ display: 'flex', alignItems: 'center', gap: '1rem', fontSize: '1.125rem', fontWeight: 700, color: 'var(--secondary)' }}>
                         <div style={{ background: 'var(--primary-light)', padding: '0.5rem', borderRadius: '8px' }}>
                             <Users size={20} color="var(--primary)" />
                         </div>
@@ -243,8 +243,8 @@ const IdentityAnggota = ({ usulanId, onCreateDraft, isPengabdian = false }) => {
 
             {/* Anggota Non-Dosen Section */}
             <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                    <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontSize: '1.125rem', fontWeight: 700, color: 'var(--secondary)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                    <h3 style={{ display: 'flex', alignItems: 'center', gap: '1rem', fontSize: '1.125rem', fontWeight: 700, color: 'var(--secondary)' }}>
                         <div style={{ background: 'var(--primary-light)', padding: '0.5rem', borderRadius: '8px' }}>
                             <School size={20} color="var(--primary)" />
                         </div>

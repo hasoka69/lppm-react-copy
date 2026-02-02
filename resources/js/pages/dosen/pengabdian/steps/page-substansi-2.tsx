@@ -20,7 +20,6 @@ import {
 
 interface SubstansiData {
     file_substansi: string | null;
-    tahun_pelaksanaan: number | '';
 }
 
 interface PageSubstansiProps {
@@ -45,14 +44,11 @@ const PageSubstansi: React.FC<PageSubstansiProps> = ({
     const [showLuaranForm, setShowLuaranForm] = useState<string | null>(null);
     const [editingLuaran, setEditingLuaran] = useState<Luaran | undefined>(undefined);
     const [refreshTrigger, setRefreshTrigger] = useState(0);
-    const currentYear = new Date().getFullYear();
 
     const { data, setData, put, post, progress, transform, processing } = useForm<{
         file_substansi: File | null;
-        tahun_pelaksanaan: number | '';
     }>({
         file_substansi: null,
-        tahun_pelaksanaan: substansi?.tahun_pelaksanaan ?? '',
     });
 
     const handleSimpan = () => {
@@ -156,24 +152,7 @@ const PageSubstansi: React.FC<PageSubstansiProps> = ({
                     )}
 
                     <div className={styles.formGrid}>
-                        <div className={styles.formGroup}>
-                            <label className={styles.label}>Tahun Pelaksanaan *</label>
-                            <div style={{ position: 'relative' }}>
-                                <Calendar size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
-                                <select
-                                    className={styles.select}
-                                    style={{ paddingLeft: '40px' }}
-                                    value={data.tahun_pelaksanaan}
-                                    onChange={(e) => setData('tahun_pelaksanaan', e.target.value === '' ? '' : (Number(e.target.value) || 0))}
-                                    disabled={!usulanId}
-                                >
-                                    <option value="">Pilih Tahun</option>
-                                    {[currentYear - 1, currentYear, currentYear + 1].map(y => (
-                                        <option key={y} value={y}>{y}</option>
-                                    ))}
-                                </select>
-                            </div>
-                        </div>
+                        {/* Tahun Pelaksanaan removed as per request */}
 
                         <div className={styles.fullWidth}>
                             <label className={styles.label}>Unggah Dokumen Proposal (PDF) *</label>

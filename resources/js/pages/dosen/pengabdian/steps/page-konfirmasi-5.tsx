@@ -64,6 +64,15 @@ const PageKonfirmasi: React.FC<PageKonfirmasiProps> = ({
             return;
         }
 
+        const rabItems = usulan.rab_items || usulan.rabItems || [];
+        const totalAnggaran = rabItems.reduce((acc: number, item: any) => acc + (Number(item.total) || 0), 0);
+
+        // Validation for Budget Cap logic
+        if (usulan.dana_disetujui > 0 && totalAnggaran > Number(usulan.dana_disetujui)) {
+            alert(`Gagal Kirim: Total RAB (Rp ${formatCurrency(totalAnggaran)}) melebihi pagu dana yang disetujui (Rp ${formatCurrency(usulan.dana_disetujui)}). Silakan revisi RAB Anda.`);
+            return;
+        }
+
         setIsSubmitting(true);
         router.post(route('dosen.pengabdian.submit', usulanId), {}, {
             onSuccess: (page) => {
@@ -152,17 +161,6 @@ const PageKonfirmasi: React.FC<PageKonfirmasiProps> = ({
                                     </td>
                                     <td>{m.peran}</td>
                                     <td style={{ fontSize: '0.875rem' }}>{m.tugas}</td>
-                                    <td style={{ textAlign: 'center' }}>
-                                        {m.status_approval === 'approved' ? (
-                                            <span style={{ color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', fontSize: '0.75rem', fontWeight: 600 }}>
-                                                <CheckCircle2 size={14} /> Setuju
-                                            </span>
-                                        ) : (
-                                            <span style={{ color: '#f59e0b', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', fontSize: '0.75rem', fontWeight: 600 }}>
-                                                <Clock size={14} /> Pending
-                                            </span>
-                                        )}
-                                    </td>
                                 </tr>
                             ))}
                             {(usulan.anggota_non_dosen || usulan.anggotaNonDosen || []).map((m: any) => (
@@ -173,17 +171,6 @@ const PageKonfirmasi: React.FC<PageKonfirmasiProps> = ({
                                     </td>
                                     <td>{m.peran || 'Anggota'}</td>
                                     <td style={{ fontSize: '0.875rem' }}>{m.tugas}</td>
-                                    <td style={{ textAlign: 'center' }}>
-                                        {m.status_approval === 'approved' ? (
-                                            <span style={{ color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', fontSize: '0.75rem', fontWeight: 600 }}>
-                                                <CheckCircle2 size={14} /> Setuju
-                                            </span>
-                                        ) : (
-                                            <span style={{ color: '#f59e0b', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', fontSize: '0.75rem', fontWeight: 600 }}>
-                                                <Clock size={14} /> Pending
-                                            </span>
-                                        )}
-                                    </td>
                                 </tr>
                             ))}
                         </tbody>
@@ -284,7 +271,38 @@ const PageKonfirmasi: React.FC<PageKonfirmasiProps> = ({
                 </div>
             </div>
 
-            {/* Riwayat & Konfirmasi Summary */}
+            {/* Riwayat & Catatan Review */}
+            {(usulan.review_histories || usulan.reviewHistories || []).length > 0 && (
+                <div className={styles.pageSection}>
+                    <div className={styles.formSection}>
+                        <h3 className={styles.sectionTitle}>
+                            <History size={20} className="text-blue-600" />
+                            Riwayat Usulan & Catatan Review
+                        </h3>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                            {(usulan.review_histories || usulan.reviewHistories).map((h: any, i: number) => (
+                                <div key={i} style={{ display: 'flex', gap: '1rem', padding: '1rem', background: '#f8fafc', borderRadius: '8px' }}>
+                                    <div style={{ minWidth: '100px', fontSize: '0.75rem', color: '#94a3b8' }}>
+                                        {new Date(h.reviewed_at || h.created_at).toLocaleDateString('id-ID', {
+                                            day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+                                        })}
+                                    </div>
+                                    <div>
+                                        <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--secondary)', textTransform: 'uppercase' }}>
+                                            {h.action ? h.action.replace(/_/g, ' ') : '-'}
+                                        </span>
+                                        <div style={{ fontSize: '0.875rem', color: '#475569', marginTop: '4px', fontStyle: 'italic' }}>
+                                            "{h.comments || '-'}"
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Konfirmasi Summary */}
             <div className={styles.pageSection}>
                 <div style={{ background: '#ecfdf5', padding: '2rem', borderRadius: '12px', border: '1px solid #10b981' }}>
                     <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>

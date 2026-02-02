@@ -140,9 +140,16 @@ class ReviewerController extends Controller
                 'type' => 'pengabdian'
             ]);
 
+        // Filter by Year if requested
+        if ($year = request('tahun_akademik')) {
+            $usulanPenelitian = $usulanPenelitian->where('tahun_pelaksanaan', $year)->values();
+            $usulanPengabdian = $usulanPengabdian->where('tahun_pelaksanaan', $year)->values();
+        }
+
         return Inertia::render('reviewer/usulan/Index', [
             'proposals' => $usulanPenelitian,
-            'pengabdianProposals' => $usulanPengabdian
+            'pengabdianProposals' => $usulanPengabdian,
+            'filters' => request()->all(['tahun_akademik'])
         ]);
     }
 
@@ -207,7 +214,10 @@ class ReviewerController extends Controller
             'anggotaDosen',
             'anggotaNonDosen',
             'luaranList',
-            'rabItems'
+            'rabItems',
+            'makroRiset',
+            'reviewer',
+            'reviewHistories'
         ])
             ->where('id', '=', $id, 'and')
             ->where(function ($query) use ($user) {

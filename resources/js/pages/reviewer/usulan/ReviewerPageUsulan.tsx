@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button"
 import { Search, Filter, FileText, Calendar, User, CheckCircle, Clock, XCircle, AlertCircle } from "lucide-react"
 import { motion } from 'framer-motion';
 import { Link } from '@inertiajs/react';
-import { formatAcademicYear } from '@/utils/academicYear';
+import { formatAcademicYear, getAcademicYearOptions } from '@/utils/academicYear'; // Added getAcademicYearOptions
+import Select from 'react-select'; // Added Select
 
 export interface Proposal {
     id: number;
@@ -22,15 +23,19 @@ interface ReviewerPageUsulanProps {
     proposals: Proposal[];
     title?: string;
     type: 'penelitian' | 'pengabdian';
+    selectedYear: { value: string; label: string } | null;
+    onYearChange: (option: any) => void;
 }
 
 const ReviewerPageUsulan: React.FC<ReviewerPageUsulanProps> = ({
     proposals,
     title = "Daftar Usulan Masuk",
-    type
+    type,
+    selectedYear,
+    onYearChange
 }) => {
     const [searchTerm, setSearchTerm] = useState('');
-    const [filterYear, setFilterYear] = useState(new Date().getFullYear().toString());
+    // Removed local filterYear state
 
     // Filter Logic
     const filteredProposals = proposals.filter(p => {
@@ -83,16 +88,32 @@ const ReviewerPageUsulan: React.FC<ReviewerPageUsulanProps> = ({
                         />
                     </div>
 
-                    <div className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl shadow-sm">
-                        <Filter size={14} className="text-blue-600" />
-                        <select
-                            value={filterYear}
-                            onChange={(e) => setFilterYear(e.target.value)}
-                            className="bg-transparent border-none text-[13px] font-bold text-gray-700 pr-8 focus:ring-0 cursor-pointer outline-none"
-                        >
-                            <option value="2026">2026</option>
-                            <option value="2025">2025</option>
-                        </select>
+                    <div className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl shadow-sm w-48">
+                        {/* <Filter size={14} className="text-blue-600" /> Removed icon from wrapper, put inside select if needed, or just standard Select */}
+                        <div style={{ width: '100%' }}>
+                            <Select
+                                options={getAcademicYearOptions().map(opt => ({ value: opt.value.toString(), label: opt.label }))}
+                                value={selectedYear}
+                                onChange={onYearChange}
+                                placeholder="Pilih Tahun..."
+                                isClearable
+                                styles={{
+                                    control: (base) => ({
+                                        ...base,
+                                        border: 'none',
+                                        boxShadow: 'none',
+                                        fontSize: '0.875rem',
+                                        fontWeight: 600,
+                                        color: '#374151'
+                                    }),
+                                    placeholder: (base) => ({
+                                        ...base,
+                                        fontSize: '0.875rem',
+                                        color: '#9ca3af'
+                                    })
+                                }}
+                            />
+                        </div>
                     </div>
                 </div>
 

@@ -108,6 +108,13 @@ const PageRAB: React.FC<PageRABProps> = ({ onKembali, onSelanjutnya, usulanId: p
     const handleSimpan = async () => {
         if (!usulanId) return;
         setIsSaving(true);
+        // Validation: Cek Pagu Dana (Admin Revision Mode)
+        if (usulan?.dana_disetujui > 0 && totalRAB > Number(usulan.dana_disetujui)) {
+            alert(`Gagal Menyimpan: Total RAB (Rp ${formatCurrency(totalRAB)}) melebihi pagu dana yang disetujui (Rp ${formatCurrency(usulan.dana_disetujui)}). Silakan sesuaikan kembali.`);
+            setIsSaving(false);
+            return;
+        }
+
         try {
             await Promise.all(deletedIds.map(id => axios.delete(route('dosen.pengabdian.rab.destroy', id))));
 
@@ -271,7 +278,18 @@ const PageRAB: React.FC<PageRABProps> = ({ onKembali, onSelanjutnya, usulanId: p
                         </div>
                     </div>
                 </div>
+
+                {usulan?.dana_disetujui > 0 && (
+                    <div style={{ marginTop: '1.5rem', padding: '1rem', background: 'rgba(255,255,255,0.1)', borderRadius: '8px', borderLeft: '4px solid #fbbf24', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <Info size={20} />
+                        <div>
+                            <span style={{ fontSize: '0.875rem', opacity: 0.9 }}>Anggaran Disetujui Admin:</span>
+                            <strong style={{ marginLeft: '8px', color: '#fbbf24' }}>{formatCurrency(Number(usulan.dana_disetujui))}</strong>
+                        </div>
+                    </div>
+                )}
             </div>
+
 
             {renderTable('RAB Pelatihan', <Users size={22} />, pelatihanItems, setPelatihanItems, 'pelatihan')}
             {renderTable('RAB Konsumsi', <Coffee size={22} />, konsumsiItems, setKonsumsiItems, 'konsumsi')}
@@ -306,7 +324,7 @@ const PageRAB: React.FC<PageRABProps> = ({ onKembali, onSelanjutnya, usulanId: p
                     </button>
                 </div>
             </div>
-        </div>
+        </div >
     );
 };
 

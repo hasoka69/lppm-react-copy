@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Head, useForm, Link } from '@inertiajs/react';
+import { formatAcademicYear } from '@/utils/academicYear'; // Added import
 import Header from '@/components/Header';
 import Footer from '@/components/footer';
 import {
@@ -16,7 +17,8 @@ import {
     Clock,
     Download,
     Maximize2,
-    DollarSign
+    DollarSign,
+    GraduationCap
 } from 'lucide-react';
 import { Toaster, toast } from 'sonner';
 
@@ -115,7 +117,7 @@ const ReviewerReview: React.FC<ReviewerReviewProps> = ({ proposal, dosen }) => {
                     </div>
                     <div className="flex items-center gap-3">
                         <Badge variant="outline" className="px-3 py-1 bg-white">
-                            Tahun {usulan.tahun_pelaksanaan}
+                            Tahun {formatAcademicYear(usulan.tahun_pelaksanaan)}
                         </Badge>
                         <Badge className={`${usulan.status === 'submitted' ? 'bg-blue-100 text-blue-800 hover:bg-blue-200' :
                             usulan.status === 'needs_revision' ? 'bg-orange-100 text-orange-800 hover:bg-orange-200' :
@@ -137,50 +139,108 @@ const ReviewerReview: React.FC<ReviewerReviewProps> = ({ proposal, dosen }) => {
                             <div className="bg-gradient-to-r from-blue-50 to-white px-6 py-4 border-b border-blue-100">
                                 <h2 className="text-lg font-bold text-blue-900 flex items-center">
                                     <FileText className="w-5 h-5 mr-2 text-blue-600" />
-                                    Identitas Proposal
+                                    Identitas Proposal Lengkap
                                 </h2>
                             </div>
-                            <CardContent className="p-6 space-y-6">
+                            <CardContent className="p-6 space-y-8">
+                                {/* Judul & Skema */}
                                 <div>
-                                    <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">Judul Penelitian</label>
-                                    <h3 className="text-xl font-bold text-gray-900 mt-1 leading-relaxed">{usulan.judul}</h3>
-                                </div>
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div className="space-y-4">
-                                        <div>
-                                            <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">Skema</label>
-                                            <p className="font-medium text-gray-800">{usulan.skema}</p>
-                                        </div>
-                                        <div>
-                                            <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">Rumpun Ilmu</label>
-                                            <p className="font-medium text-gray-800">{usulan.rumpun_ilmu_1 || '-'}</p>
-                                            <p className="text-sm text-gray-500">{usulan.rumpun_ilmu_2}</p>
-                                        </div>
-                                    </div>
-                                    <div className="space-y-4">
-                                        <div>
-                                            <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">Bidang Fokus</label>
-                                            <p className="font-medium text-gray-800 flex items-center gap-2">
-                                                <Target className="w-4 h-4 text-blue-500" />
-                                                {usulan.bidang_fokus}
-                                            </p>
-                                        </div>
-                                        <div>
-                                            <label className="text-xs font-bold text-gray-400 uppercase tracking-wider">Lama Kegiatan</label>
-                                            <p className="font-medium text-gray-800">{usulan.lama_kegiatan} Tahun (Mulai {usulan.tahun_pertama})</p>
-                                        </div>
+                                    <label className="text-xs font-bold text-gray-400 uppercase tracking-wider block mb-2">Judul Penelitian</label>
+                                    <h3 className="text-xl font-bold text-gray-900 leading-relaxed">{usulan.judul}</h3>
+                                    <div className="flex flex-wrap gap-2 mt-3">
+                                        <Badge variant="secondary" className="bg-blue-50 text-blue-700 hover:bg-blue-100 border-blue-200">
+                                            {usulan.kelompok_skema || usulan.skema}
+                                        </Badge>
+                                        <Badge variant="outline" className="text-gray-600">
+                                            {usulan.ruang_lingkup}
+                                        </Badge>
+                                        <Badge variant="outline" className="text-gray-600">
+                                            {usulan.kategori_sbk}
+                                        </Badge>
                                     </div>
                                 </div>
 
-                                <div className="bg-slate-50 p-4 rounded-lg border border-slate-100 grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="text-[10px] font-bold text-slate-400 uppercase">TKT Saat Ini</label>
-                                        <div className="text-lg font-bold text-slate-700">{usulan.tkt_saat_ini || 0}</div>
+                                <Separator />
+
+                                {/* Klasifikasi Riset */}
+                                <div>
+                                    <h4 className="text-sm font-bold text-gray-800 mb-4 flex items-center gap-2">
+                                        <Layers className="w-4 h-4 text-blue-500" /> Klasifikasi Riset
+                                    </h4>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-50 p-5 rounded-xl border border-slate-100">
+                                        <div className="space-y-4">
+                                            <div>
+                                                <label className="text-xs font-bold text-gray-400 uppercase">Bidang Fokus</label>
+                                                <p className="font-medium text-gray-800">{usulan.bidang_fokus}</p>
+                                            </div>
+                                            <div>
+                                                <label className="text-xs font-bold text-gray-400 uppercase">Tema Penelitian</label>
+                                                <p className="font-medium text-gray-800">{usulan.tema_penelitian}</p>
+                                            </div>
+                                        </div>
+                                        <div className="space-y-4">
+                                            <div>
+                                                <label className="text-xs font-bold text-gray-400 uppercase">Prioritas Riset</label>
+                                                <p className="font-medium text-gray-800">{usulan.prioritas_riset}</p>
+                                            </div>
+                                            <div>
+                                                <label className="text-xs font-bold text-gray-400 uppercase">Topik Penelitian</label>
+                                                <p className="font-medium text-gray-800">{usulan.topik_penelitian}</p>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <label className="text-[10px] font-bold text-slate-400 uppercase">Target TKT</label>
-                                        <div className="text-lg font-bold text-blue-600">{usulan.target_akhir_tkt || 0}</div>
+                                </div>
+
+                                {/* Rumpun Ilmu */}
+                                <div>
+                                    <h4 className="text-sm font-bold text-gray-800 mb-4 flex items-center gap-2">
+                                        <GraduationCap className="w-4 h-4 text-purple-500" /> Rumpun Ilmu
+                                    </h4>
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <div className="bg-white border border-gray-200 p-4 rounded-lg shadow-sm">
+                                            <label className="text-[10px] font-bold text-gray-400 uppercase mb-1 block">Level 1</label>
+                                            <p className="font-semibold text-gray-800 text-sm">{usulan.rumpun_ilmu_1 || '-'}</p>
+                                        </div>
+                                        <div className="bg-white border border-gray-200 p-4 rounded-lg shadow-sm">
+                                            <label className="text-[10px] font-bold text-gray-400 uppercase mb-1 block">Level 2</label>
+                                            <p className="font-semibold text-gray-800 text-sm">{usulan.rumpun_ilmu_2 || '-'}</p>
+                                        </div>
+                                        <div className="bg-white border border-gray-200 p-4 rounded-lg shadow-sm">
+                                            <label className="text-[10px] font-bold text-gray-400 uppercase mb-1 block">Level 3</label>
+                                            <p className="font-semibold text-gray-800 text-sm">{usulan.rumpun_ilmu_3 || '-'}</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <Separator />
+
+                                {/* Pelaksanaan & TKT */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    <div className="space-y-4">
+                                        <div>
+                                            <label className="text-xs font-bold text-gray-400 uppercase tracking-wider block mb-1">Pelaksanaan</label>
+                                            <div className="p-4 bg-orange-50 rounded-lg border border-orange-100">
+                                                <div className="flex items-center gap-3 mb-2">
+                                                    <Clock className="w-5 h-5 text-orange-600" />
+                                                    <span className="font-bold text-orange-900">{usulan.lama_kegiatan} Tahun</span>
+                                                </div>
+                                                <p className="text-sm text-orange-800">Mulai Tahun {formatAcademicYear(usulan.tahun_pertama)}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-4">
+                                        <label className="text-xs font-bold text-gray-400 uppercase tracking-wider block mb-1">Target TKT</label>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="text-center p-3 bg-slate-100 rounded-lg">
+                                                <div className="text-xs text-slate-500 mb-1">Saat Ini</div>
+                                                <div className="text-2xl font-bold text-slate-700">{usulan.tkt_saat_ini || 0}</div>
+                                            </div>
+                                            <div className="text-center p-3 bg-blue-100 rounded-lg">
+                                                <div className="text-xs text-blue-600 mb-1">Target Akhir</div>
+                                                <div className="text-2xl font-bold text-blue-700">{usulan.target_akhir_tkt || 0}</div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </CardContent>
@@ -247,7 +307,80 @@ const ReviewerReview: React.FC<ReviewerReviewProps> = ({ proposal, dosen }) => {
                             </CardContent>
                         </Card>
 
-                        {/* 3. PDF VIEWER & SUBSTANSI */}
+                        {/* 3. TARGET LUARAN */}
+                        <Card className="border-gray-200 shadow-sm">
+                            <CardHeader className="pb-3 border-b border-gray-100">
+                                <CardTitle className="text-base font-bold text-gray-800 flex items-center">
+                                    <Target className="w-5 h-5 mr-2 text-gray-500" />
+                                    Target Luaran
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent className="p-6">
+                                {/* Kelompok Makro Riset Display */}
+                                <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-100">
+                                    <h4 className="text-xs font-bold text-blue-500 uppercase tracking-wider mb-1">
+                                        Kelompok Makro Riset
+                                    </h4>
+                                    <p className="text-lg font-bold text-blue-900 leading-tight">
+                                        {usulan.kelompok_makro_riset || usulan.makro_riset?.nama || 'Belum ditentukan'}
+                                    </p>
+                                </div>
+
+                                <div className="space-y-6">
+                                    {(usulan?.luaran_list || usulan?.luaranList || []).length > 0 ? (
+                                        (usulan?.luaran_list || usulan?.luaranList || []).map((luaran: any, idx: number) => (
+                                            <div key={`luaran-${idx}`} className="border border-gray-200 rounded-xl overflow-hidden hover:border-blue-300 transition-colors">
+                                                <div className="bg-gray-50 px-4 py-3 flex items-center justify-between border-b border-gray-100">
+                                                    <div className="flex items-center gap-2">
+                                                        <Badge className="bg-purple-100 text-purple-700 hover:bg-purple-200 border-0">
+                                                            Luaran #{idx + 1}
+                                                        </Badge>
+                                                        <span className="text-sm font-bold text-gray-700">{luaran.kategori}</span>
+                                                    </div>
+                                                    <Badge variant={luaran.is_wajib ? "default" : "secondary"} className={luaran.is_wajib ? "bg-blue-600" : ""}>
+                                                        {luaran.is_wajib ? 'Wajib' : 'Tambahan'}
+                                                    </Badge>
+                                                </div>
+
+                                                <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 text-sm">
+                                                    <div>
+                                                        <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Tahun Penelitian</label>
+                                                        <p className="font-medium text-gray-800">Tahun ke-{luaran.tahun}</p>
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Status Capaian</label>
+                                                        <p className="font-medium text-gray-800">{luaran.status || luaran.status_capaian || 'Rencana'}</p>
+                                                    </div>
+
+                                                    <div className="md:col-span-2">
+                                                        <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Deskripsi Luaran</label>
+                                                        <p className="font-medium text-gray-800 leading-relaxed bg-gray-50/50 p-3 rounded-lg border border-gray-100">
+                                                            {luaran.deskripsi}
+                                                        </p>
+                                                    </div>
+
+                                                    {luaran.keterangan && (
+                                                        <div className="md:col-span-2">
+                                                            <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Keterangan</label>
+                                                            <p className="text-gray-600 italic">
+                                                                "{luaran.keterangan}"
+                                                            </p>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <div className="p-8 text-center text-gray-400 bg-gray-50 rounded-lg border border-dashed border-gray-200">
+                                            <Target className="w-10 h-10 mx-auto mb-2 opacity-50" />
+                                            <p className="text-sm">Tidak ada target luaran yang terdaftar.</p>
+                                        </div>
+                                    )}
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        {/* 4. PDF VIEWER & SUBSTANSI */}
                         <Card className="border-gray-200 shadow-sm overflow-hidden">
                             <CardHeader className="pb-3 border-b border-gray-100 bg-gray-50">
                                 <div className="flex items-center justify-between">
@@ -380,15 +513,18 @@ const ReviewerReview: React.FC<ReviewerReviewProps> = ({ proposal, dosen }) => {
                                 <Separator />
 
                                 <div className="space-y-3">
-                                    <Button
-                                        type="button"
-                                        onClick={() => handleActionClick('approve')}
-                                        disabled={processing}
-                                        className="w-full bg-green-600 hover:bg-green-700 text-white justify-start"
-                                    >
-                                        <CheckCircle className="w-4 h-4 mr-2" />
-                                        Setujui Proposal
-                                    </Button>
+                                    {/* Phase 2 Check: Only show Approve if status is resubmitted_revision */}
+                                    {usulan.status === 'resubmitted_revision' && (
+                                        <Button
+                                            type="button"
+                                            onClick={() => handleActionClick('approve')}
+                                            disabled={processing}
+                                            className="w-full bg-green-600 hover:bg-green-700 text-white justify-start"
+                                        >
+                                            <CheckCircle className="w-4 h-4 mr-2" />
+                                            Setujui Proposal
+                                        </Button>
+                                    )}
 
                                     <Button
                                         type="button"

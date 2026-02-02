@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Head, usePage } from '@inertiajs/react';
+import { Head, usePage, router } from '@inertiajs/react';
+import { formatAcademicYear } from '@/utils/academicYear'; // Added import
 import Header from '../../../components/Header';
 import Footer from '@/components/footer';
 import ReviewerPageUsulan, { Proposal } from './ReviewerPageUsulan';
@@ -9,13 +10,35 @@ interface PageProps {
     proposals: Proposal[]; // Penelitian
     pengabdianProposals: Proposal[]; // Pengabdian
     [key: string]: unknown;
+    filters?: {
+        tahun_akademik?: string;
+    }
 }
 
 const ReviewerIndex: React.FC = () => {
     const { props } = usePage<PageProps>();
-    const { proposals, pengabdianProposals = [] } = props;
+    const { proposals, pengabdianProposals = [], filters = {} } = props;
 
     const [activeTab, setActiveTab] = useState<'penelitian' | 'pengabdian'>('penelitian');
+
+    // Filter State
+    const [selectedYear, setSelectedYear] = useState<{ value: string, label: string } | null>(
+        filters.tahun_akademik ? {
+            value: filters.tahun_akademik,
+            label: formatAcademicYear(filters.tahun_akademik)
+        } : null
+    );
+
+    const handleYearChange = (option: any) => {
+        setSelectedYear(option);
+        router.get(route(route().current() as string), {
+            tahun_akademik: option?.value
+        }, {
+            preserveState: true,
+            preserveScroll: true,
+            replace: true
+        });
+    };
 
     // Combine data for display based on tab
     const activeData = activeTab === 'penelitian' ? proposals : pengabdianProposals;
@@ -60,6 +83,8 @@ const ReviewerIndex: React.FC = () => {
                     proposals={activeData}
                     type={activeTab}
                     title={activeTab === 'penelitian' ? 'Usulan Penelitian Masuk' : 'Usulan Pengabdian Masuk'}
+                    selectedYear={selectedYear}
+                    onYearChange={handleYearChange}
                 />
             </main>
 

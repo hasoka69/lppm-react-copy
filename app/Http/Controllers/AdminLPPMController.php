@@ -68,6 +68,10 @@ class AdminLPPMController extends Controller
             $query->with('luaranList');
         }
 
+        if ($year = request('tahun_akademik')) {
+            $query->where('tahun_pertama', $year);
+        }
+
         $proposals = $query->whereIn('status', $statusFilter)
             ->latest()
             ->get()
@@ -82,7 +86,7 @@ class AdminLPPMController extends Controller
                     'status' => $item->status,
                     'type' => 'penelitian',
                     'dana_disetujui' => $item->dana_disetujui,
-                    'tahun_pertama' => $item->created_at->format('Y'), // Approximate
+                    'tahun_pertama' => $item->tahun_pertama,
                 ];
 
                 // Add specialized data based on tab
@@ -133,7 +137,8 @@ class AdminLPPMController extends Controller
 
         return Inertia::render('lppm/penelitian/Index', [
             'proposals' => $proposals,
-            'activeTab' => $activeTab
+            'activeTab' => $activeTab,
+            'filters' => request()->all(['tahun_akademik', 'search'])
         ]);
     }
 
@@ -193,6 +198,10 @@ class AdminLPPMController extends Controller
             $query->with('luaranList');
         }
 
+        if ($year = request('tahun_akademik')) {
+            $query->where('tahun_pertama', $year);
+        }
+
         $proposals = $query->whereIn('status', $statusFilter)
             ->latest()
             ->get()
@@ -207,7 +216,7 @@ class AdminLPPMController extends Controller
                     'status' => $item->status,
                     'type' => 'pengabdian',
                     'dana_disetujui' => $item->dana_disetujui,
-                    'tahun_pertama' => $item->created_at->format('Y'), // Approximate
+                    'tahun_pertama' => $item->tahun_pertama,
                 ];
 
                 // Add specialized data based on tab
@@ -257,7 +266,8 @@ class AdminLPPMController extends Controller
 
         return Inertia::render('lppm/pengabdian/Index', [
             'proposals' => $proposals,
-            'activeTab' => $activeTab
+            'activeTab' => $activeTab,
+            'filters' => request()->all(['tahun_akademik', 'search'])
         ]);
     }
 

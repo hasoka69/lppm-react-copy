@@ -37,11 +37,14 @@ interface Mitra {
     jabatan_penanggung_jawab: string;
     no_telepon: string;
     email: string;
-    nama_provinsi: string; // [NEW]
-    nama_kota: string;     // [NEW]
-    jarak_mitra: number;   // [NEW]
-    file_surat_kesediaan: string; // [NEW] fix TS error
+    nama_provinsi: string;
+    nama_kota: string;
+    jarak_mitra: number;
+    file_surat_kesediaan: string;
     file_mitra: string; // Keep for safety
+    kelompok_mitra?: string;
+    dana_pendamping?: number;
+    pendanaan_tahun_1?: number;
 }
 
 interface RabItem {
@@ -437,7 +440,10 @@ export default function ReviewPengabdian({ proposal, dosen, mitra = [], anggotaN
                                         <div key={m.id} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
                                             <h4 className="font-bold text-gray-800 mb-3 border-b border-gray-200 pb-1 flex items-center justify-between">
                                                 <span>Mitra #{index + 1}</span>
-                                                <span className="text-xs font-normal bg-gray-200 px-2 py-0.5 rounded text-gray-600">{m.jenis_mitra}</span>
+                                                <div className="flex gap-2">
+                                                    <span className="text-xs font-normal bg-blue-100 px-2 py-0.5 rounded text-blue-700">{m.kelompok_mitra || 'Umum'}</span>
+                                                    <span className="text-xs font-normal bg-gray-200 px-2 py-0.5 rounded text-gray-600">{m.jenis_mitra}</span>
+                                                </div>
                                             </h4>
 
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -446,18 +452,22 @@ export default function ReviewPengabdian({ proposal, dosen, mitra = [], anggotaN
                                                     <p className="font-semibold text-gray-800">{m.nama_mitra}</p>
                                                 </div>
                                                 <div>
-                                                    <p className="text-xs text-gray-500 uppercase">Alamat</p>
+                                                    <p className="text-xs text-gray-500 uppercase">Lokasi Mitra</p>
                                                     <p className="text-sm text-gray-700">{m.alamat_mitra}</p>
+                                                    <p className="text-xs text-gray-500">{m.nama_kota}, {m.nama_provinsi}</p>
                                                 </div>
                                                 <div>
                                                     <p className="text-xs text-gray-500 uppercase">Penanggung Jawab</p>
                                                     <p className="font-medium text-gray-800">{m.penanggung_jawab}</p>
-                                                    <p className="text-xs text-gray-500">{m.jabatan_penanggung_jawab}</p>
+                                                    {/* Jabatan not input in form */}
                                                 </div>
                                                 <div>
-                                                    <p className="text-xs text-gray-500 uppercase">Kontak</p>
+                                                    <p className="text-xs text-gray-500 uppercase">Kontak & Pendanaan</p>
                                                     <p className="text-sm text-gray-700">Telp: {m.no_telepon}</p>
                                                     <p className="text-sm text-gray-700">Email: {m.email}</p>
+                                                    <p className="text-sm font-bold text-emerald-600 mt-1">
+                                                        Dana: {formatRupiah(m.dana_pendamping || Number(m.pendanaan_tahun_1) || 0)}
+                                                    </p>
                                                 </div>
                                             </div>
 

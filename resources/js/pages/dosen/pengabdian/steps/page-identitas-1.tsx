@@ -136,6 +136,28 @@ const PageIdentitas: React.FC<PageIdentitasProps> = ({
     };
 
     const saveData = (isNext: boolean) => {
+        if (isNext) {
+            // VALIDATION: Check for mandatory fields
+            const requiredFields = [
+                'judul',
+                'jenis_bidang_fokus',
+                'bidang_fokus',
+                'kelompok_skema',
+                'ruang_lingkup',
+                'lama_kegiatan',
+                'rumpun_ilmu_level1_id',
+                'rumpun_ilmu_level2_id',
+                'rumpun_ilmu_level3_id'
+            ];
+
+            const emptyFields = requiredFields.filter(field => !data[field]);
+
+            if (emptyFields.length > 0) {
+                alert('Mohon lengkapi semua data sebelum melanjutkan.');
+                return;
+            }
+        }
+
         if (currentUsulanId) {
             put(`/dosen/pengabdian/${currentUsulanId}`, {
                 preserveScroll: true,

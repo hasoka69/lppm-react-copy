@@ -9,20 +9,45 @@ use Inertia\Inertia;
 
 class Berita extends Model
 {
-    protected $table = 'beritas'; // atau 'berita' sesuai nama tabel di database
-    protected $fillable = ['judul', 'ringkasan', 'konten', 'user_id'];
-    public $timestamps = true;
+    protected $table = 'beritas';
+    protected $fillable = [
+        'judul',
+        'slug',
+        'kategori',
+        'ringkasan',
+        'konten',
+        'gambar',
+        'status',
+        'published_at',
+        'featured',
+        'user_id'
+    ];
 
-    public static function createTable()
+    protected $casts = [
+        'published_at' => 'datetime',
+        'featured' => 'boolean',
+    ];
+
+    public static function boot()
     {
-        Schema::create('beritas', function (Blueprint $table) {
-            $table->id();
-            $table->string('judul');
-            $table->text('ringkasan')->nullable();
-            $table->text('konten')->nullable();
-            $table->unsignedBigInteger('user_id')->nullable();
-            $table->timestamps();
+        parent::boot();
+
+        static::creating(function ($model) {
+            if (empty($model->slug)) {
+                $model->slug = \Illuminate\Support\Str::slug($model->judul);
+            }
         });
+
+        static::updating(function ($model) {
+            if ($model->isDirty('judul') && empty($model->slug)) {
+                $model->slug = \Illuminate\Support\Str::slug($model->judul);
+            }
+        });
+    }
+
+    public function scopePublished($query)
+    {
+        return $query->where('status', 'published');
     }
 
 }

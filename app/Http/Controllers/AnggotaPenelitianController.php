@@ -63,7 +63,6 @@ class AnggotaPenelitianController extends Controller
             'peran' => $request->peran,
             'prodi' => $request->prodi,
             'tugas' => $request->tugas,
-            'status_approval' => 'pending',
         ]);
 
         return response()->json([

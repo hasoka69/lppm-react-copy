@@ -252,12 +252,8 @@ Route::get('/', function () {
     return Inertia::render('welcome');
 })->name('home');
 
-Route::get('/berita', function () {
-    $berita = Berita::all();
-    return Inertia::render('berita/Index', [
-        'berita' => $berita
-    ]);
-});
+Route::get('/berita', [\App\Http\Controllers\BeritaController::class, 'indexPublic'])->name('berita.index');
+Route::get('/berita/{slug}', [\App\Http\Controllers\BeritaController::class, 'showPublic'])->name('berita.show');
 
 // Otentikasi dihandle di routes/auth.php (already included at bottom)
 
@@ -274,6 +270,9 @@ Route::middleware('auth')->group(function () {
     // Dashboard Admin LPPM & Routes
     Route::middleware('can:dashboard-lppm-view')->prefix('lppm')->name('lppm.')->group(function () {
         Route::get('/dashboard', [\App\Http\Controllers\DashboardController::class, 'lppm'])->name('dashboard');
+
+        // Berita Management
+        Route::resource('berita', \App\Http\Controllers\BeritaController::class);
 
         // Setting Form
         Route::get('/setting-form', [\App\Http\Controllers\SettingFormController::class, 'index'])->name('setting-form');

@@ -235,7 +235,7 @@ const PengabdianIndex = () => {
                             });
                         }}
                         onViewUsulan={(usulan: Usulan) => {
-                            if (usulan.id) router.visit(`/dosen/pengabdian/${usulan.id}/step/5`);
+                            if (usulan.id) router.visit(`/dosen/pengabdian/${usulan.id}/step/5?mode=view`);
                         }}
                         usulanList={usulanList}
                         title={pageTitle}
