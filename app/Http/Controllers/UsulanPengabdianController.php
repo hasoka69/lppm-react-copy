@@ -37,7 +37,7 @@ class UsulanPengabdianController extends Controller
                     }
                 });
             })
-            ->whereNotIn('status', ['under_revision_admin', 'revision_dosen'])
+            // ->whereNotIn('status', ['under_revision_admin', 'revision_dosen']) // User requested to show all statuses
             ->latest()
             ->get()
             ->map(fn($u, $i) => [
@@ -299,6 +299,12 @@ class UsulanPengabdianController extends Controller
         if ($usulan->mitra()->count() === 0) {
             Log::info('Validation Failed: No Mitra');
             return back()->with('error', 'Minimal harus ada satu Mitra Sasaran!');
+        }
+
+        // [NEW] Check Member Approval Status
+        $pendingMembers = $usulan->anggotaDosen()->whereIn('status_approval', ['pending', 'rejected'])->count();
+        if ($pendingMembers > 0) {
+            return back()->with('error', 'Terdapat anggota dosen yang belum menyetujui atau menolak undangan. Pastikan semua anggota berstatus Accepted.');
         }
 
         // Only allowed to submit if status is draft or revision_dosen

@@ -97,6 +97,8 @@ const PageRAB: React.FC<PageRABProps> = ({ onKembali, onSelanjutnya, usulanId: p
     const calculateTotal = (list: RABItem[]) => list.reduce((sum, i) => sum + i.total, 0);
     const totalRAB = calculateTotal(bahanItems) + calculateTotal(perjalananItems) + calculateTotal(publikasiItems) + calculateTotal(pengumpulanItems);
 
+    const isOverLimit = totalRAB > 7000000;
+
     const formatCurrency = (amount: number) => {
         return new Intl.NumberFormat('id-ID', {
             style: 'currency',
@@ -276,8 +278,36 @@ const PageRAB: React.FC<PageRABProps> = ({ onKembali, onSelanjutnya, usulanId: p
                         <div style={{ textAlign: 'right' }}>
                             <p style={{ margin: 0, fontSize: '0.875rem', opacity: 0.8 }}>Total Anggaran</p>
                             <h2 style={{ fontSize: '2.25rem', fontWeight: 800, margin: 0, color: '#10b981' }}>{formatCurrency(totalRAB)}</h2>
+                            <p style={{ margin: '4px 0 0', fontSize: '0.75rem', color: '#cbd5e1', fontStyle: 'italic' }}>
+                                Maximal Dana yang di ajukan sebesar 7.000.000 Rupiah
+                            </p>
                         </div>
                     </div>
+
+                    {/* NEW: Limit Warning */}
+                    {isOverLimit && (
+                        <div style={{
+                            margin: '1.5rem 0',
+                            padding: '1rem',
+                            background: '#fef2f2',
+                            borderRadius: '8px',
+                            border: '1px solid #fecaca',
+                            display: 'flex',
+                            alignItems: 'flex-start',
+                            gap: '12px'
+                        }}>
+                            <div style={{ background: '#ef4444', color: 'white', padding: '6px', borderRadius: '50%' }}>
+                                <Info size={16} />
+                            </div>
+                            <div>
+                                <h4 style={{ margin: '0 0 4px', fontSize: '1rem', fontWeight: 700, color: '#991b1b' }}>Perhatian: Total RAB Melebihi Batas</h4>
+                                <p style={{ margin: 0, fontSize: '0.875rem', color: '#b91c1c' }}>
+                                    Total anggaran yang diajukan sebesar <strong>{formatCurrency(totalRAB)}</strong> melebihi batas maksimal yang disarankan (Rp 7.000.000).
+                                    Mohon pertimbangkan untuk menyesuaikan kembali item anggaran Anda agar peluang disetujui lebih besar.
+                                </p>
+                            </div>
+                        </div>
+                    )}
 
                     {usulan?.dana_disetujui > 0 && (
                         <div style={{ marginTop: '1.5rem', padding: '1rem', background: 'rgba(255,255,255,0.1)', borderRadius: '8px', borderLeft: '4px solid #3b82f6', display: 'flex', alignItems: 'center', gap: '12px' }}>

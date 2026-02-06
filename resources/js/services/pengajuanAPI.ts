@@ -7,7 +7,7 @@ import axios, { AxiosError } from 'axios';
 // ========================================
 
 interface LuaranData {
-    tahun: number;
+    // tahun: number; // REMOVED
     kategori: string;
     deskripsi: string;
     is_wajib: boolean;

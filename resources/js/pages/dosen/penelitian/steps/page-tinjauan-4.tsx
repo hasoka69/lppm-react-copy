@@ -1,5 +1,6 @@
 import React from 'react';
 import { usePage, router } from '@inertiajs/react';
+import { formatAcademicYear } from '../../../../lib/utils';
 import styles from '../../../../../css/pengajuan.module.css';
 import {
     ClipboardCheck,
@@ -74,11 +75,19 @@ const PageTinjauan: React.FC<PageTinjauanProps> = ({
         if (confirm('Apakah Anda yakin ingin mengirim usulan ini? Data tidak dapat diubah setelah dikirim.')) {
             setIsSubmitting(true);
             router.post(`/dosen/penelitian/${usulanId}/submit`, {}, {
-                onSuccess: () => {
-                    alert('Usulan berhasil dikirim!');
-                    onKonfirmasi?.();
+                onSuccess: (page) => {
+                    const flash = (page.props as any).flash;
+                    if (flash?.success) {
+                        alert(flash.success);
+                        onKonfirmasi?.();
+                    } else if (flash?.error) {
+                        alert(`Gagal: ${flash.error}`);
+                    }
                 },
-                onError: () => alert('Gagal mengirim usulan. Silakan cek kembali kelengkapan data.'),
+                onError: (errors) => {
+                    console.error(errors);
+                    alert('Gagal mengirim usulan. Terjadi kesalahan sistem atau validasi.');
+                },
                 onFinish: () => setIsSubmitting(false)
             });
         }
@@ -213,7 +222,7 @@ const PageTinjauan: React.FC<PageTinjauanProps> = ({
                                 </div>
                                 {renderReviewItem('Kelompok Skema', usulan.kelompok_skema)}
                                 {renderReviewItem('Lama Kegiatan', `${usulan.lama_kegiatan} Tahun`)}
-                                {renderReviewItem('Tahun Pertama', usulan.tahun_pertama)}
+                                {renderReviewItem('Tahun Pertama', formatAcademicYear(usulan.tahun_pertama))}
                             </div>
 
                             {/* Group: Fokus & Bidang */}

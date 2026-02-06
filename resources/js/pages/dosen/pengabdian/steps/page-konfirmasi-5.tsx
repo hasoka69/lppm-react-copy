@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { usePage, router } from '@inertiajs/react';
+import { formatAcademicYear } from '../../../../lib/utils';
 import styles from '../../../../../css/pengajuan.module.css';
 import {
     ClipboardCheck,
@@ -81,10 +82,13 @@ const PageKonfirmasi: React.FC<PageKonfirmasiProps> = ({
                     alert(flash.success);
                     onKonfirmasi?.();
                 } else if (flash?.error) {
-                    alert(flash.error);
+                    alert(`Gagal: ${flash.error}`);
                 }
             },
-            onError: () => alert('Gagal mengirim usulan. Silakan periksa kembali kelengkapan data.'),
+            onError: (errors) => {
+                console.error(errors);
+                alert('Gagal mengirim usulan. Terjadi kesalahan sistem atau validasi.');
+            },
             onFinish: () => setIsSubmitting(false)
         });
     };
@@ -134,7 +138,7 @@ const PageKonfirmasi: React.FC<PageKonfirmasiProps> = ({
                         <div className={styles.fullWidth}>{renderReviewItem('Judul Pengabdian', usulan.judul)}</div>
                         {renderReviewItem('Skema', usulan.kelompok_skema)}
                         {renderReviewItem('Bidang Fokus', usulan.bidang_fokus)}
-                        {renderReviewItem('Tahun Pelaksanaan', usulan.tahun_pertama)}
+                        {renderReviewItem('Tahun Pelaksanaan', formatAcademicYear(usulan.tahun_pertama))}
                         {renderReviewItem('Lama Kegiatan', `${usulan.lama_kegiatan} Tahun`)}
                     </div>
                 </div>

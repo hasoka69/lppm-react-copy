@@ -97,24 +97,6 @@ export default function DashboardDosen({ stats, activities, user }: DashboardPro
             text: 'text-emerald-600',
             desc: "Usulan Diajukan"
         },
-        {
-            title: "Hibah Aktif",
-            value: stats.active_grants,
-            icon: <FileText className="w-6 h-6 text-indigo-600" />,
-            color: 'indigo' as const,
-            bg: 'bg-indigo-50',
-            text: 'text-indigo-600',
-            desc: "Sedang Berjalan"
-        },
-        {
-            title: "Total Pendanaan",
-            value: formatIDR(stats.total_funds),
-            icon: <Wallet className="w-6 h-6 text-amber-600" />,
-            color: 'amber' as const,
-            bg: 'bg-amber-50',
-            text: 'text-amber-600',
-            desc: "Dana Diterima"
-        },
     ];
 
     // Helper: Status Badge Logic
@@ -195,7 +177,7 @@ export default function DashboardDosen({ stats, activities, user }: DashboardPro
                                     {stat.icon}
                                 </div>
                                 <div className={`px - 2.5 py - 1 rounded - lg text - [10px] font - bold uppercase tracking - wider ${stat.bg} ${stat.text} `}>
-                                    {new Date().getFullYear()}
+                                    Active
                                 </div>
                             </div>
                             <h3 className="text-3xl font-extrabold text-slate-800 tracking-tight mb-1">

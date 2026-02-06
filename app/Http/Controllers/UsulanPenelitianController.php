@@ -41,11 +41,13 @@ class UsulanPenelitianController extends Controller
                     }
                 });
             })
-            ->whereNotIn('status', ['under_revision_admin', 'revision_dosen']) // Logic existing: hide revising ?? Wait, revision_dosen should be visible to owner?
+            // ->whereNotIn('status', ['under_revision_admin', 'revision_dosen']) // Logic existing: hide revising ?? Wait, revision_dosen should be visible to owner?
             // Note: The original code excluded 'under_revision_admin' and 'revision_dosen' from this main list?? 
             // Usually 'revision_dosen' should be visible in 'Perbaikan' tab or main list? 
             // The original code passed 'revision_dosen' to 'Perbaikan' view separately.
             // Let's keep existing logic for now.
+            // UPDATE: User requested to SHOW revision status in main list.
+
             ->latest()
             ->get()
             ->map(fn($u, $i) => [
@@ -282,6 +284,12 @@ class UsulanPenelitianController extends Controller
 
         if (!$usulan->judul || !$usulan->kelompok_skema) {
             return back()->with('error', 'Data usulan belum lengkap!');
+        }
+
+        // [NEW] Check Member Approval Status
+        $pendingMembers = $usulan->anggotaDosen()->whereIn('status_approval', ['pending', 'rejected'])->count();
+        if ($pendingMembers > 0) {
+            return back()->with('error', 'Terdapat anggota dosen yang belum menyetujui atau menolak undangan. Pastikan semua anggota berstatus Accepted.');
         }
 
         // Only allowed to submit if status is draft or revision_dosen

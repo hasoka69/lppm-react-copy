@@ -17,6 +17,9 @@ class Dosen extends Model
         'prodi', // Added prodi
         'email',
         'no_hp',
+        'scopus_id',
+        'sinta_id',
+        'google_scholar_id',
     ];
 
     protected $dates = [

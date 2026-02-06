@@ -214,14 +214,17 @@ const PageIdentitas: React.FC<PageIdentitasProps> = ({
                                 <label className={styles.label}>2. TKT Saat Ini *</label>
                                 <div style={{ position: 'relative' }}>
                                     <Target size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--secondary)' }} />
-                                    <input
-                                        type="number"
-                                        className={styles.input}
+                                    <select
+                                        className={styles.select}
                                         style={{ paddingLeft: '40px' }}
                                         value={data.tkt_saat_ini}
                                         onChange={(e) => setData('tkt_saat_ini', e.target.value)}
-                                        placeholder="Skala 1-9"
-                                    />
+                                    >
+                                        <option value="">Pilih TKT</option>
+                                        {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => (
+                                            <option key={n} value={n}>TKT {n}</option>
+                                        ))}
+                                    </select>
                                 </div>
                                 {errors.tkt_saat_ini && <span className={styles.error}>{errors.tkt_saat_ini}</span>}
                             </div>
@@ -284,15 +287,7 @@ const PageIdentitas: React.FC<PageIdentitasProps> = ({
                             Klasifikasi & Bidang Fokus
                         </h2>
                         <div className={styles.formGrid}>
-                            <div className={styles.formGroup}>
-                                <label className={styles.label}>6. Kategori SBK *</label>
-                                <select className={styles.select} value={data.kategori_sbk} onChange={(e) => setData("kategori_sbk", e.target.value)}>
-                                    <option value="">Pilih SBK</option>
-                                    <option value="SBK A">SBK A</option>
-                                    <option value="SBK B">SBK B</option>
-                                    <option value="SBK C">SBK C</option>
-                                </select>
-                            </div>
+
 
                             <div className={styles.formGroup}>
                                 <label className={styles.label}>7. Bidang Fokus *</label>
@@ -337,7 +332,7 @@ const PageIdentitas: React.FC<PageIdentitasProps> = ({
                         </h2>
                         <div className={styles.formGrid}>
                             <div className={styles.formGroup}>
-                                <label className={styles.label}>10. Rumpun Ilmu Lvl 1 *</label>
+                                <label className={styles.label}>Level 1 *</label>
                                 <select className={styles.select} value={data.rumpun_ilmu_1} onChange={(e) => setData("rumpun_ilmu_1", e.target.value)}>
                                     <option value="">Pilih Lvl 1</option>
                                     <option value="Ilmu Alam">Ilmu Alam</option>
@@ -347,7 +342,7 @@ const PageIdentitas: React.FC<PageIdentitasProps> = ({
                             </div>
 
                             <div className={styles.formGroup}>
-                                <label className={styles.label}>11. Rumpun Ilmu Lvl 2 *</label>
+                                <label className={styles.label}>Level 2 *</label>
                                 <select className={styles.select} value={data.rumpun_ilmu_2} onChange={(e) => setData("rumpun_ilmu_2", e.target.value)}>
                                     <option value="">Pilih Lvl 2</option>
                                     <option value="Matematika">Matematika</option>
@@ -357,7 +352,7 @@ const PageIdentitas: React.FC<PageIdentitasProps> = ({
                             </div>
 
                             <div className={styles.formGroup}>
-                                <label className={styles.label}>12. Rumpun Ilmu Lvl 3 *</label>
+                                <label className={styles.label}>Level 3 *</label>
                                 <select className={styles.select} value={data.rumpun_ilmu_3} onChange={(e) => setData("rumpun_ilmu_3", e.target.value)}>
                                     <option value="">Pilih Lvl 3</option>
                                     <option value="Aljabar">Aljabar</option>
@@ -395,15 +390,7 @@ const PageIdentitas: React.FC<PageIdentitasProps> = ({
                                 </small>
                             </div>
 
-                            <div className={styles.formGroup}>
-                                <label className={styles.label}>15. Lama Kegiatan (Tahun) *</label>
-                                <select className={styles.select} value={data.lama_kegiatan} onChange={(e) => setData("lama_kegiatan", e.target.value)}>
-                                    <option value="">Pilih Durasi</option>
-                                    <option value="1">1 Tahun</option>
-                                    <option value="2">2 Tahun</option>
-                                    <option value="3">3 Tahun</option>
-                                </select>
-                            </div>
+
                         </div>
                     </div>
                 </div>

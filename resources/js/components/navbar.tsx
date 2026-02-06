@@ -23,6 +23,8 @@ const Navbar = () => {
 
   const navLinks: NavItem[] = [
     { label: 'Home', href: '/' },
+    { label: 'Panduan', href: '#panduan' },
+    { label: 'Pengumuman', href: '#pengumuman' },
     { label: 'Berita', href: '/berita' },
     { label: 'Kontak', href: '#footer' },
   ];

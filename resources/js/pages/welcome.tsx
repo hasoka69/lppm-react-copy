@@ -23,9 +23,11 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-export default function Welcome() {
-  const { auth, setting } = usePage<SharedData>().props;
+const Welcome = ({ auth, pengumuman = [], berita = [] }: { auth: any, pengumuman: any[], berita: any[] }) => {
+  const { setting } = usePage<SharedData>().props;
   const [scrolled, setScrolled] = useState(false);
+  // ... existing code ...
+
 
   const primaryColor = setting?.warna || '#0ea5e9';
   const primaryForeground = '#ffffff';
@@ -58,10 +60,16 @@ export default function Welcome() {
         </div>
 
         <div className="relative z-10 container mx-auto px-6 text-center pb-32">
-          <div className="mc-auto max-w-4xl space-y-8">
+          <div className="mx-auto max-w-4xl space-y-8">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-400/20 backdrop-blur-sm animate-in fade-in slide-in-from-bottom-4 duration-700">
               <span className="w-2 h-2 rounded-full bg-blue-400 animate-ping"></span>
               <span className="text-sm font-medium text-blue-200">Portal Resmi LPPM Asaindo</span>
+            </div>
+
+            <div className="flex justify-center animate-in fade-in zoom-in-95 duration-1000 delay-50">
+              <div className="p-6 bg-white rounded-3xl shadow-[0_0_50px_-12px_rgba(255,255,255,0.3)] ring-4 ring-white/10">
+                <img src="/image/logo-asaindo.png" alt="Logo LPPM" className="h-20 md:h-24 w-auto" />
+              </div>
             </div>
 
             <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight text-white leading-tight animate-in fade-in zoom-in-95 duration-1000 delay-100">
@@ -139,56 +147,77 @@ export default function Welcome() {
             <p className="text-slate-600 max-w-2xl mx-auto">Dapatkan informasi terbaru mengenai jadwal, panduan, dan update penting seputar kegiatan LPPM.</p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[
-              {
-                title: "Pembukaan Hibah 2025",
-                date: "16 Jan 2025",
-                tag: "Penting",
-                desc: "Penerimaan proposal hibah internal tahun anggaran 2025 resmi dibuka.",
-                color: "blue"
-              },
-              {
-                title: "Update Sistem v2.1",
-                date: "14 Jan 2025",
-                tag: "Teknis",
-                desc: "Pembaruan fitur pelaporan kemajuan dan perbaikan bug sistem.",
-                color: "green"
-              },
-              {
-                title: "Deadline Laporan 2024",
-                date: "12 Jan 2025",
-                tag: "Deadline",
-                desc: "Batas akhir unggah laporan akhir kegiatan tahun 2024 adalah 31 Jan.",
-                color: "orange"
-              },
-              {
-                title: "Workshop Proposal",
-                date: "10 Jan 2025",
-                tag: "Event",
-                desc: "Pelatihan penulisan proposal efektif untuk dosen pemula.",
-                color: "purple"
-              },
-            ].map((item, idx) => (
-              <div key={idx} className="group bg-white rounded-2xl p-6 shadow-sm hover:shadow-xl border border-slate-100 transition-all duration-300 hover:-translate-y-1">
-                <div className="flex justify-between items-start mb-4">
-                  <div className={cn("p-2 rounded-lg", `bg-${item.color}-50 text-${item.color}-600`)}>
-                    <Megaphone className="w-5 h-5" />
-                  </div>
-                  <span className={cn("text-xs font-bold px-2 py-1 rounded-full", `bg-${item.color}-100 text-${item.color}-700`)}>
-                    {item.tag}
-                  </span>
-                </div>
-                <span className="text-xs text-slate-400 font-medium">{item.date}</span>
-                <h3 className="text-lg font-bold text-slate-800 mt-1 mb-2 group-hover:text-blue-600 transition-colors">{item.title}</h3>
-                <p className="text-sm text-slate-500 leading-relaxed">
-                  {item.desc}
-                </p>
-                <Link href="#" className="inline-flex items-center gap-1 text-sm font-semibold text-blue-600 mt-4 group-hover:gap-2 transition-all">
-                  Baca Selengkapnya <ArrowRight className="w-4 h-4" />
-                </Link>
+          <div className="grid lg:grid-cols-2 gap-12 items-start">
+            {/* COLUMN 1: PENGUMUMAN (Facebook Style) */}
+            <div className="space-y-6">
+              <div className="flex items-center gap-3 mb-2">
+                <Megaphone className="w-6 h-6 text-blue-600" />
+                <h3 className="text-xl font-bold text-slate-800">Pengumuman Terbaru</h3>
               </div>
-            ))}
+
+              {pengumuman.length > 0 ? (
+                pengumuman.map((item: any, idx: number) => (
+                  <div key={idx} className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 animate-in slide-in-from-bottom-2 duration-500" style={{ animationDelay: `${idx * 100}ms` }}>
+                    <div className="flex items-start gap-4">
+                      <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                        <span className="font-bold text-blue-600">A</span>
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <h4 className="font-bold text-slate-900 text-sm">Admin LPPM</h4>
+                            <p className="text-xs text-slate-500">{new Date(item.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+                          </div>
+                        </div>
+                        <div className="mt-3 text-slate-700 text-sm leading-relaxed whitespace-pre-wrap">
+                          {item.content}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="p-8 text-center bg-white rounded-2xl border border-slate-100 border-dashed">
+                  <p className="text-slate-400">Belum ada pengumuman terbaru.</p>
+                </div>
+              )}
+            </div>
+
+            {/* COLUMN 2: BERITA REAL-DATA */}
+            <div className="space-y-6">
+              <div className="flex items-center gap-3 mb-2">
+                <BookOpen className="w-6 h-6 text-indigo-600" />
+                <h3 className="text-xl font-bold text-slate-800">Berita & Artikel</h3>
+              </div>
+
+              <div className="grid sm:grid-cols-2 gap-4">
+                {berita.length > 0 ? (
+                  berita.map((item: any, idx: number) => (
+                    <div key={idx} className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg border border-slate-100 transition-all duration-300 hover:-translate-y-1">
+                      {item.image && (
+                        <div className="h-32 bg-slate-200 overflow-hidden">
+                          <img src={`/storage/${item.image}`} alt={item.judul} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                        </div>
+                      )}
+                      <div className="p-4">
+                        <span className="text-xs text-indigo-500 font-bold mb-2 block">{item.kategori || 'Berita'}</span>
+                        <h4 className="font-bold text-slate-800 leading-snug group-hover:text-indigo-600 transition-colors line-clamp-2 mb-2">
+                          {item.judul}
+                        </h4>
+                        <div className="flex items-center gap-2 text-xs text-slate-400 mt-2">
+                          <Clock className="w-3 h-3" />
+                          <span>{new Date(item.created_at).toLocaleDateString('id-ID')}</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="col-span-2 p-8 text-center bg-white rounded-2xl border border-slate-100 border-dashed">
+                    <p className="text-slate-400">Belum ada berita terbaru.</p>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -314,3 +343,5 @@ export default function Welcome() {
     </div>
   );
 }
+
+export default Welcome;

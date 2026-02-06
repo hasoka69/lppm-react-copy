@@ -17,7 +17,7 @@ class AnggotaPenelitian extends Model
         'peran',
         'prodi',
         'tugas',
-        'tugas',
+        'status_approval', // Added
     ];
 
     protected $casts = [

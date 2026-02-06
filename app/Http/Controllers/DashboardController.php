@@ -64,8 +64,7 @@ class DashboardController extends Controller
         $pengabdianFunds = $pengabdianQuery->where('status', 'didanai')->sum('dana_disetujui');
 
         // Combined Stats
-        $activeGrants = $penelitianActive + $pengabdianActive;
-        $totalFunds = $penelitianFunds + $pengabdianFunds;
+        // Removed active grants and funds as per request
 
         // Recent Activities
         $recentPenelitian = \App\Models\UsulanPenelitian::where('user_id', $user->id)
@@ -123,8 +122,6 @@ class DashboardController extends Controller
             'stats' => [
                 'total_penelitian' => $totalPenelitian,
                 'total_pengabdian' => $totalPengabdian,
-                'active_grants' => $activeGrants,
-                'total_funds' => $totalFunds,
             ],
             'activities' => $activities,
             'user' => $userData

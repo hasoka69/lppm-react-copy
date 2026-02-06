@@ -12,12 +12,12 @@ class AnggotaPengabdian extends Model
     protected $table = 'anggota_pengabdian';
 
     protected $fillable = [
-        'usulan_id',
+        'dosen_id', // Added
         'nidn',
         'nama',
         'peran',
         'tugas',
-        'status_persetujuan'
+        'status_approval', // Added
     ];
 
     public function usulan()

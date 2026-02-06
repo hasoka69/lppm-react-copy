@@ -237,11 +237,17 @@ class ReviewerController extends Controller
     /**
      * Store the review decision.
      */
+    /**
+     * Store the review decision with granular scoring.
+     */
     public function storeReview(Request $request, $id)
     {
         $request->validate([
             'action' => 'required|in:approve,reject,revise',
-            'comments' => 'required|string|min:10',
+            'comments' => 'nullable|string',
+            'scores' => 'required|array', // Expecting array of { section, score, comments }
+            'scores.*.section' => 'required|string',
+            'scores.*.score' => 'required|numeric|min:0|max:100',
         ]);
 
         $usulan = UsulanPenelitian::where('id', '=', $id, 'and')
@@ -264,7 +270,7 @@ class ReviewerController extends Controller
             ];
 
             // 1. Create Review History
-            ReviewHistory::create([
+            $history = ReviewHistory::create([
                 'usulan_id' => $usulan->id,
                 'usulan_type' => get_class($usulan),
                 'reviewer_id' => Auth::id(),
@@ -274,7 +280,17 @@ class ReviewerController extends Controller
                 'reviewed_at' => now(),
             ]);
 
-            // 2. Update Proposal Status
+            // 2. Save Scores
+            foreach ($request->scores as $item) {
+                \App\Models\ReviewScore::create([
+                    'review_history_id' => $history->id,
+                    'section' => $item['section'],
+                    'score' => $item['score'],
+                    'comments' => $item['comments'] ?? null,
+                ]);
+            }
+
+            // 3. Update Proposal Status
             $usulan->update(['status' => $newStatus]);
         });
 
@@ -353,7 +369,10 @@ class ReviewerController extends Controller
     {
         $request->validate([
             'action' => 'required|in:approve,reject,revise',
-            'comments' => 'required|string|min:10',
+            'comments' => 'nullable|string',
+            'scores' => 'required|array', // Expecting array of { section, score, comments }
+            'scores.*.section' => 'required|string',
+            'scores.*.score' => 'required|numeric|min:0|max:100',
         ]);
 
         $usulan = \App\Models\UsulanPengabdian::where('id', '=', $id, 'and')
@@ -367,7 +386,6 @@ class ReviewerController extends Controller
                 'revise' => 'under_revision_admin'
             ];
             $newStatus = $statusMap[$request->action];
-
             $actionMap = [
                 'approve' => 'reviewer_approved',
                 'reject' => 'reviewer_rejected',
@@ -375,7 +393,7 @@ class ReviewerController extends Controller
             ];
 
             // 1. Create Review History (Polymorphic)
-            ReviewHistory::create([
+            $history = ReviewHistory::create([
                 'usulan_id' => $usulan->id,
                 'usulan_type' => get_class($usulan),
                 'reviewer_id' => Auth::id(),
@@ -385,7 +403,17 @@ class ReviewerController extends Controller
                 'reviewed_at' => now(),
             ]);
 
-            // 2. Update Proposal Status
+            // 2. Save Scores
+            foreach ($request->scores as $item) {
+                \App\Models\ReviewScore::create([
+                    'review_history_id' => $history->id,
+                    'section' => $item['section'],
+                    'score' => $item['score'],
+                    'comments' => $item['comments'] ?? null,
+                ]);
+            }
+
+            // 3. Update Proposal Status
             $usulan->update(['status' => $newStatus]);
         });
 

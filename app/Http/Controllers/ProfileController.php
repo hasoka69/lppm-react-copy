@@ -36,4 +36,33 @@ class ProfileController extends Controller
 
         return back();
     }
+
+    public function update(Request $request)
+    {
+        $user = $request->user();
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'password' => 'nullable|string|min:8', // removed confirmed for simplicity unless UI sends confirmation
+            'scopus_id' => 'nullable|string',
+            'sinta_id' => 'nullable|string',
+            'google_scholar_id' => 'nullable|string',
+        ]);
+
+        $user->name = $request->name;
+        if ($request->filled('password')) {
+            $user->password = bcrypt($request->password);
+        }
+        $user->save();
+
+        if ($user->dosen) {
+            $user->dosen->update([
+                'scopus_id' => $request->scopus_id,
+                'sinta_id' => $request->sinta_id,
+                'google_scholar_id' => $request->google_scholar_id
+            ]);
+        }
+
+        return back()->with('success', 'Profile updated successfully.');
+    }
 }

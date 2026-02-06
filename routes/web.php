@@ -54,6 +54,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Profile Route
     Route::get('/profile', [\App\Http\Controllers\ProfileController::class, 'index'])->name('profile.index');
+    Route::put('/profile', [\App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update');
     Route::post('/profile/photo', [\App\Http\Controllers\ProfileController::class, 'updatePhoto'])->name('profile.photo.update');
 
     // Routes Dosen Penelitian (Ex-Pengajuan)
@@ -249,7 +250,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
 // ==========================================================
 
 Route::get('/', function () {
-    return Inertia::render('welcome');
+    $pengumuman = \App\Models\Pengumuman::where('is_active', true)->latest()->take(3)->get();
+    $berita = \App\Models\Berita::where('status', 'published')->latest()->take(4)->get();
+
+    return Inertia::render('welcome', [
+        'pengumuman' => $pengumuman,
+        'berita' => $berita
+    ]);
 })->name('home');
 
 Route::get('/berita', [\App\Http\Controllers\BeritaController::class, 'indexPublic'])->name('berita.index');
@@ -273,6 +280,9 @@ Route::middleware('auth')->group(function () {
 
         // Berita Management
         Route::resource('berita', \App\Http\Controllers\BeritaController::class);
+
+        // Pengumuman Management
+        Route::resource('pengumuman', \App\Http\Controllers\PengumumanController::class);
 
         // Setting Form
         Route::get('/setting-form', [\App\Http\Controllers\SettingFormController::class, 'index'])->name('setting-form');
@@ -372,6 +382,11 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/api/master/rumpun-ilmu', [\App\Http\Controllers\MasterDataController::class, 'getRumpunIlmu']);
     Route::get('/api/master/provinsi', [\App\Http\Controllers\MasterDataController::class, 'getProvinsi']);
     Route::get('/api/master/kota', [\App\Http\Controllers\MasterDataController::class, 'getKota']);
+
+    // [NEW] Member Approval APIs
+    Route::get('/api/member/invitations', [\App\Http\Controllers\MemberApprovalController::class, 'index']);
+    Route::post('/api/member/{type}/{id}/accept', [\App\Http\Controllers\MemberApprovalController::class, 'accept']);
+    Route::post('/api/member/{type}/{id}/reject', [\App\Http\Controllers\MemberApprovalController::class, 'reject']);
 });
 
 // Middleware 'menu.permission' digunakan untuk melindungi rute yang ada di menu

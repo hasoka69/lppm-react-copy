@@ -151,7 +151,7 @@ export const LuaranList: React.FC<LuaranListProps> = ({
                                     )}
                                 </div>
                                 <div className="text-right ml-4">
-                                    <div className="text-sm text-gray-500 mb-3">Tahun {item.tahun}</div>
+                                    {/* <div className="text-sm text-gray-500 mb-3">Tahun {item.tahun}</div> */}
                                     <div className="flex gap-2">
                                         <button
                                             onClick={() => onEdit(item)}

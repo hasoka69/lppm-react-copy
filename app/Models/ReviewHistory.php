@@ -39,4 +39,12 @@ class ReviewHistory extends Model
     {
         return $this->belongsTo(User::class, 'reviewer_id');
     }
+
+    /**
+     * Get the review scores for this history
+     */
+    public function reviewScores()
+    {
+        return $this->hasMany(ReviewScore::class, 'review_history_id');
+    }
 }

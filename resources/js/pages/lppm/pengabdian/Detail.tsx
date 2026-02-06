@@ -17,8 +17,19 @@ import {
     MapPin,
     Layers,
     Clock,
-    ChevronLeft
+    ChevronLeft,
+    AlertCircle
 } from 'lucide-react';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog"
+import { Label } from "@/components/ui/label"
+import { Input } from "@/components/ui/input"
 
 interface ProposalDetailProps {
     usulan: any;
@@ -64,6 +75,30 @@ export default function AdminPengabdianDetail({ usulan, reviewers }: ProposalDet
             currency: 'IDR',
             minimumFractionDigits: 0
         }).format(number);
+    };
+
+    // [NEW] Contract Modal State
+    const [isContractModalOpen, setIsContractModalOpen] = useState(false);
+    const [contractNumber, setContractNumber] = useState('');
+    const [contractDate, setContractDate] = useState('');
+    const [processingDecision, setProcessingDecision] = useState(false);
+
+    const handleDidanaiSubmit = () => {
+        if (!contractNumber || !contractDate) {
+            // Ideally validation toast here
+            return;
+        }
+        setProcessingDecision(true);
+        router.post(route('lppm.final_decision', { type: 'pengabdian', id: usulan.id }), {
+            decision: 'didanai',
+            nomor_kontrak: contractNumber,
+            tanggal_kontrak: contractDate
+        }, {
+            onFinish: () => {
+                setProcessingDecision(false);
+                setIsContractModalOpen(false);
+            }
+        });
     };
 
     return (
@@ -525,15 +560,17 @@ export default function AdminPengabdianDetail({ usulan, reviewers }: ProposalDet
                             )}
 
                             {/* 3. FINAL DECISION */}
-                            {usulan.status === 'reviewed_approved' && (
+                            {['reviewed_approved', 'resubmitted_revision'].includes(usulan.status) && (
                                 <AdminActionCard
                                     title="Persetujuan LPPM"
                                     icon={<CheckCircle className="w-5 h-5 text-purple-600" />}
-                                    description="Proses penilaian selesai. LPPM memberikan ketetapan akhir pendanaan usulan ini."
+                                    description={usulan.status === 'resubmitted_revision'
+                                        ? 'Usulan telah direvisi. Tentukan status pendanaan.'
+                                        : 'Reviewer telah menyetujui. Tentukan status pendanaan.'}
                                 >
                                     <div className="grid grid-cols-1 gap-3">
                                         <button
-                                            onClick={() => router.post(route('lppm.final_decision', { type: 'pengabdian', id: usulan.id }), { decision: 'didanai' })}
+                                            onClick={() => setIsContractModalOpen(true)}
                                             className="bg-green-600 text-white py-3 rounded-lg text-sm font-bold hover:bg-green-700 shadow-md transition-all"
                                         >
                                             SETUJUI & DANAI SEKARANG
@@ -551,6 +588,55 @@ export default function AdminPengabdianDetail({ usulan, reviewers }: ProposalDet
                         </div>
                     </div>
                 </div>
+
+                {/* Contract Modal */}
+                <Dialog open={isContractModalOpen} onOpenChange={setIsContractModalOpen}>
+                    <DialogContent className="sm:max-w-[425px]">
+                        <DialogHeader>
+                            <DialogTitle>Terbitkan Kontrak</DialogTitle>
+                            <DialogDescription>
+                                Masukkan detail kontrak untuk usulan yang didanai ini.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <div className="grid gap-4 py-4">
+                            <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor="contract_number" className="text-right">
+                                    No. Kontrak
+                                </Label>
+                                <Input
+                                    id="contract_number"
+                                    value={contractNumber}
+                                    onChange={(e) => setContractNumber(e.target.value)}
+                                    className="col-span-3"
+                                    placeholder="Nomor Kontrak..."
+                                />
+                            </div>
+                            <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor="contract_date" className="text-right">
+                                    Tanggal
+                                </Label>
+                                <Input
+                                    id="contract_date"
+                                    type="date"
+                                    value={contractDate}
+                                    onChange={(e) => setContractDate(e.target.value)}
+                                    className="col-span-3"
+                                />
+                            </div>
+                        </div>
+                        <DialogFooter>
+                            <button type="button" className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium hover:bg-gray-50" onClick={() => setIsContractModalOpen(false)}>Batal</button>
+                            <button
+                                type="button"
+                                onClick={handleDidanaiSubmit}
+                                disabled={!contractNumber || !contractDate || processingDecision}
+                                className="px-4 py-2 bg-green-600 text-white rounded-md text-sm font-bold hover:bg-green-700 disabled:opacity-50"
+                            >
+                                {processingDecision ? 'Menyimpan...' : 'Simpan & Danai'}
+                            </button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
             </main>
             <Footer />
         </div>

@@ -15,6 +15,9 @@ interface DosenData {
     email: string;
     prodi: string;
     no_hp?: string;
+    scopus_id?: string;
+    sinta_id?: string;
+    google_scholar_id?: string;
 }
 
 interface ProfileIndexProps {
@@ -91,19 +94,35 @@ export default function ProfileIndex({ auth, dosen_data }: ProfileIndexProps) {
         },
     ];
 
+    // Use useForm to handle all editable fields
+    const { data: formData, setData: setFormData, put, processing: formProcessing, errors: formErrors } = useForm({
+        name: user.name,
+        password: '',
+        password_confirmation: '', // Optional logic
+        scopus_id: dosen?.scopus_id || '',
+        sinta_id: dosen?.sinta_id || '',
+        google_scholar_id: dosen?.google_scholar_id || '',
+    });
+
+    const handleProfileUpdate = (e: React.FormEvent) => {
+        e.preventDefault();
+        put(route('profile.update'), {
+            onSuccess: () => toast.success('Profil berhasil diperbarui'),
+            onError: () => toast.error('Gagal memperbarui profil'),
+        });
+    };
+
     return (
         <AppLayout breadcrumbs={[{ title: 'Profile', href: '/profile' }]} title="Profile Saya" hideSidebar={true}>
             <Head title="Profile Saya" />
 
-            <div className="container mx-auto py-8 max-w-4xl px-4">
+            <div className="container mx-auto py-8 max-w-5xl px-4">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                     {/* Left Column: Photo */}
                     <Card className="md:col-span-1 shadow-md border-t-4 border-t-primary h-fit">
                         <CardHeader className="text-center pb-2">
                             <CardTitle>Foto Profil</CardTitle>
-                            <CardDescription>
-                                Perbarui foto profil anda disini
-                            </CardDescription>
+                            <CardDescription>Perbarui foto profil anda disini</CardDescription>
                         </CardHeader>
                         <CardContent className="flex flex-col items-center gap-6 pt-6">
                             <div className="relative group">
@@ -122,97 +141,116 @@ export default function ProfileIndex({ auth, dosen_data }: ProfileIndexProps) {
                                     <Camera className="w-5 h-5" />
                                 </button>
                             </div>
-
                             <form onSubmit={handleUpload} className="w-full space-y-4">
-                                <input
-                                    type="file"
-                                    ref={fileInputRef}
-                                    className="hidden"
-                                    accept="image/*"
-                                    onChange={handleFileChange}
-                                />
-
+                                <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFileChange} />
                                 {data.photo && (
-                                    <div className="animate-in fade-in slide-in-from-top-2 duration-300">
-                                        <Button
-                                            type="submit"
-                                            className="w-full"
-                                            disabled={processing}
-                                        >
-                                            {processing ? (
-                                                <>
-                                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                                    Menyimpan...
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <Save className="mr-2 h-4 w-4" />
-                                                    Simpan Perubahan
-                                                </>
-                                            )}
-                                        </Button>
-                                        <p className="text-xs text-center text-muted-foreground mt-2">
-                                            Klik simpan untuk menerapkan foto baru
-                                        </p>
-                                    </div>
+                                    <Button type="submit" className="w-full" disabled={processing}>
+                                        {processing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />} Simpan Foto
+                                    </Button>
                                 )}
-
-                                <div className="text-center">
-                                    <p className="text-xs text-muted-foreground">
-                                        Format: JPG, PNG, GIF (Max. 2MB)
-                                    </p>
-                                </div>
                             </form>
                         </CardContent>
                     </Card>
 
-                    {/* Right Column: Details */}
+                    {/* Right Column: Edit Details */}
                     <Card className="md:col-span-2 shadow-md border-t-4 border-t-blue-500">
                         <CardHeader className="pb-4 border-b">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <CardTitle>Informasi Pribadi</CardTitle>
-                                    <CardDescription>
-                                        Data identitas diri dosen
-                                    </CardDescription>
-                                </div>
-                                <div className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider">
-                                    Dosen
+                                    <CardTitle>Edit Profil</CardTitle>
+                                    <CardDescription>Perbarui informasi akun dan identitas dosen anda</CardDescription>
                                 </div>
                             </div>
                         </CardHeader>
                         <CardContent className="pt-6 space-y-6">
-                            <div className="grid gap-6">
-                                {displayData.map((item, index) => (
-                                    <div key={index} className="group relative rounded-lg border p-4 hover:border-blue-200 hover:bg-blue-50/30 transition-colors duration-200">
-                                        <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5 flex items-center gap-2">
-                                            <item.icon className="w-3.5 h-3.5" />
-                                            {item.label}
-                                        </Label>
-                                        <div className="font-medium text-lg text-gray-900 group-hover:text-blue-900 break-words">
-                                            {item.value}
+                            <form onSubmit={handleProfileUpdate} className="space-y-6">
+                                {/* Account Info */}
+                                <div className="space-y-4 border-b pb-6">
+                                    <h3 className="font-semibold text-slate-900 flex items-center gap-2">
+                                        <User className="w-4 h-4 text-primary" /> Informasi Akun
+                                    </h3>
+                                    <div className="grid gap-4">
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="name">Nama Lengkap</Label>
+                                            <Input
+                                                id="name"
+                                                value={formData.name}
+                                                onChange={(e) => setFormData('name', e.target.value)}
+                                            />
+                                            {formErrors.name && <p className="text-red-500 text-xs">{formErrors.name}</p>}
                                         </div>
-                                    </div>
-                                ))}
-                            </div>
-
-                            {!dosen && (
-                                <div className="rounded-md bg-yellow-50 p-4 border border-yellow-200">
-                                    <div className="flex">
-                                        <div className="flex-shrink-0">
-                                            <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
-                                                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                                            </svg>
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="email">Email (Tidak dapat diubah)</Label>
+                                            <Input id="email" value={user.email} disabled className="bg-slate-100" />
                                         </div>
-                                        <div className="ml-3">
-                                            <h3 className="text-sm font-medium text-yellow-800">Data Dosen Tidak Ditemukan</h3>
-                                            <div className="mt-2 text-sm text-yellow-700">
-                                                <p>Akun anda belum terhubung dengan data dosen. Hubungi administrator jika anda adalah dosen namun melihat pesan ini.</p>
-                                            </div>
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="password">Password Baru (Opsional)</Label>
+                                            <Input
+                                                id="password"
+                                                type="password"
+                                                placeholder="Biarkan kosong jika tidak ingin mengubah"
+                                                value={formData.password}
+                                                onChange={(e) => setFormData('password', e.target.value)}
+                                            />
+                                            {formErrors.password && <p className="text-red-500 text-xs">{formErrors.password}</p>}
                                         </div>
                                     </div>
                                 </div>
-                            )}
+
+                                {/* Academic Info */}
+                                <div className="space-y-4">
+                                    <h3 className="font-semibold text-slate-900 flex items-center gap-2">
+                                        <GraduationCap className="w-4 h-4 text-primary" /> Identitas Akademik
+                                    </h3>
+                                    <div className="grid gap-4">
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="grid gap-2">
+                                                <Label>NIDN</Label>
+                                                <Input value={dosen?.nidn || '-'} disabled className="bg-slate-100" />
+                                            </div>
+                                            <div className="grid gap-2">
+                                                <Label>Prodi</Label>
+                                                <Input value={dosen?.prodi || '-'} disabled className="bg-slate-100" />
+                                            </div>
+                                        </div>
+
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="scopus_id">Scopus ID</Label>
+                                            <Input
+                                                id="scopus_id"
+                                                placeholder="Contoh: 57200000000"
+                                                value={formData.scopus_id}
+                                                onChange={(e) => setFormData('scopus_id', e.target.value)}
+                                            />
+                                        </div>
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="sinta_id">Sinta ID</Label>
+                                            <Input
+                                                id="sinta_id"
+                                                placeholder="Contoh: 6000000"
+                                                value={formData.sinta_id}
+                                                onChange={(e) => setFormData('sinta_id', e.target.value)}
+                                            />
+                                        </div>
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="google_scholar_id">Google Scholar ID</Label>
+                                            <Input
+                                                id="google_scholar_id"
+                                                placeholder="Contoh: xxxxxxxAAAAJ"
+                                                value={formData.google_scholar_id}
+                                                onChange={(e) => setFormData('google_scholar_id', e.target.value)}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="flex justify-end pt-4">
+                                    <Button type="submit" disabled={formProcessing}>
+                                        {formProcessing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                                        Simpan Perubahan
+                                    </Button>
+                                </div>
+                            </form>
                         </CardContent>
                     </Card>
                 </div>
