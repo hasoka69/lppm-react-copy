@@ -33,13 +33,16 @@ class UsulanPenelitian extends Model
         'file_substansi',
         'rab_bahan',           // [NEW]
         'rab_pengumpulan_data', // [NEW]
+        'dana_usulan_awal',
         'total_anggaran',
         'status',
         'submitted_at',         // [NEW]
         'current_reviewer_id',  // [NEW]
         'kaprodi_reviewer_id',  // [NEW]
         'dana_disetujui',
+        'dana_disetujui',
         'reviewer_id',
+        'tugas_ketua' // [NEW]
     ];
 
     protected $casts = [

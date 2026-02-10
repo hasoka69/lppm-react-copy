@@ -198,7 +198,7 @@ class KaprodiController extends Controller
                     'judul' => $usulan->judul,
                     'pengusul' => $usulan->ketua->name,
                     'skema' => $usulan->kelompok_skema,
-                    'tahun' => $usulan->tahun_pengusulan, // Note: field might differ
+                    'tahun' => $usulan->tahun_pertama,
                     'status' => $usulan->status,
                     'tanggal' => $usulan->created_at->format('d/m/Y'),
                     'type' => 'pengabdian'
@@ -367,7 +367,7 @@ class KaprodiController extends Controller
                     'judul' => $usulan->judul,
                     'pengusul' => $usulan->ketua->name,
                     'skema' => $usulan->kelompok_skema,
-                    'tahun' => $usulan->tahun_pengusulan,
+                    'tahun' => $usulan->tahun_pertama,
                     'status' => $usulan->status,
                     'tanggal' => $usulan->created_at->format('d/m/Y'),
                     'type' => 'pengabdian'
@@ -397,9 +397,9 @@ class KaprodiController extends Controller
                 return [
                     'id' => $ang->id,
                     'nama_dosen' => $ang->nama, // Nama is stored directly in table, or via Dosen relation
+                    'nidn' => $ang->nidn, // [NEW] Added NIDN
                     'peran' => $ang->peran,
                     'fakultas' => $ang->dosen->fakultas ?? '-',
-                    // Add other needed fields
                 ];
             }),
             'anggotaNonDosen' => $usulan->anggotaNonDosen,

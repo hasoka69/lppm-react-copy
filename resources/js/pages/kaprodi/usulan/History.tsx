@@ -105,7 +105,7 @@ export default function KaprodiUsulanHistory({ usulanList, prodiName }: PageProp
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                                 <Link
-                                                    href={`/kaprodi/review/${usulan.id}`} // Or logic for pengabdian link if necessary
+                                                    href={usulan.type === 'Pengabdian' ? `/kaprodi/review-pengabdian/${usulan.id}` : `/kaprodi/review/${usulan.id}`}
                                                     className="text-gray-600 hover:text-gray-900 inline-flex items-center bg-gray-100 hover:bg-gray-200 px-3 py-1 rounded-md transition"
                                                 >
                                                     <Eye className="w-4 h-4 mr-1" /> Lihat Detail

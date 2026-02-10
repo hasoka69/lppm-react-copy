@@ -23,6 +23,7 @@ import {
     ExternalLink,
     AlertCircle
 } from 'lucide-react';
+import { formatAcademicYear } from '@/utils/academicYear';
 
 // Shadcn UI Imports
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
@@ -175,7 +176,7 @@ export default function AdminPenelitianDetail({ usulan, reviewers, initialScores
                                             {usulan.kelompok_skema || 'Skema Tidak Ada'}
                                         </Badge>
                                         <Badge variant="outline" className="text-gray-600">
-                                            {usulan.tahun_pertama}
+                                            {formatAcademicYear(usulan.tahun_pertama)}
                                         </Badge>
                                         <Badge variant="outline" className="text-gray-600">
                                             {usulan.lama_kegiatan} Tahun
@@ -398,7 +399,6 @@ export default function AdminPenelitianDetail({ usulan, reviewers, initialScores
                                             <table className="min-w-full divide-y divide-gray-200 text-sm">
                                                 <thead className="bg-gray-50 font-medium text-gray-500">
                                                     <tr>
-                                                        <th className="px-4 py-3 text-left text-xs uppercase tracking-wider">Tahun</th>
                                                         <th className="px-4 py-3 text-left text-xs uppercase tracking-wider">Kategori</th>
                                                         <th className="px-4 py-3 text-left text-xs uppercase tracking-wider">Rincian</th>
                                                     </tr>
@@ -406,7 +406,6 @@ export default function AdminPenelitianDetail({ usulan, reviewers, initialScores
                                                 <tbody className="bg-white divide-y divide-gray-100">
                                                     {(usulan.luaran_list || usulan.luaranList)?.map((item: any, idx: number) => (
                                                         <tr key={idx} className="hover:bg-slate-50/50">
-                                                            <td className="px-4 py-3 font-medium text-gray-900 border-r border-gray-50 w-24">Tahun {item.tahun}</td>
                                                             <td className="px-4 py-3 text-gray-700 w-1/3">{item.kategori}</td>
                                                             <td className="px-4 py-3 text-gray-600 text-xs">{item.deskripsi}</td>
                                                         </tr>
@@ -430,7 +429,7 @@ export default function AdminPenelitianDetail({ usulan, reviewers, initialScores
                                 </div>
                                 <ReviewScoringForm
                                     onChange={() => { }}
-                                    maxFunding={Number(usulan?.dana_disetujui || 0) > 0 ? Number(usulan.dana_disetujui) : Number(usulan.total_anggaran)}
+                                    maxFunding={Number(usulan?.dana_usulan_awal || usulan?.total_anggaran || 0)}
                                     initialScores={initialScores}
                                     isReadOnly={true}
                                 />
@@ -512,7 +511,7 @@ export default function AdminPenelitianDetail({ usulan, reviewers, initialScores
                                     <div className="mt-4 grid grid-cols-2 gap-2 text-xs font-semibold text-gray-500">
                                         <div className="bg-gray-50 p-2 rounded text-center border border-gray-100">
                                             RAB USULAN<br />
-                                            <span className="text-gray-900 text-sm">{formatRupiah(usulan.total_anggaran)}</span>
+                                            <span className="text-gray-900 text-sm">{formatRupiah(usulan.dana_usulan_awal || usulan.total_anggaran)}</span>
                                         </div>
                                         <div className="bg-gray-50 p-2 rounded text-center border border-gray-100">
                                             PAGU DISETUJUI<br />

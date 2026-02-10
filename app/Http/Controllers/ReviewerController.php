@@ -267,6 +267,7 @@ class ReviewerController extends Controller
             'scores' => 'required|array', // Expecting array of { section, score, comments }
             'scores.*.section' => 'required|string',
             'scores.*.score' => 'required|numeric|min:0|max:100',
+            'dana_disetujui' => 'nullable|numeric|min:0',
         ]);
 
         $usulan = UsulanPenelitian::where('id', '=', $id, 'and')
@@ -309,8 +310,11 @@ class ReviewerController extends Controller
                 ]);
             }
 
-            // 3. Update Proposal Status
-            $usulan->update(['status' => $newStatus]);
+            // 3. Update Proposal Status & Funding
+            $usulan->update([
+                'status' => $newStatus,
+                'dana_disetujui' => $request->dana_disetujui ?? 0
+            ]);
         });
 
         return redirect()->route('reviewer.usulan.index')->with('success', 'Review berhasil dikirim.');
@@ -410,6 +414,7 @@ class ReviewerController extends Controller
             'scores' => 'required|array', // Expecting array of { section, score, comments }
             'scores.*.section' => 'required|string',
             'scores.*.score' => 'required|numeric|min:0|max:100',
+            'dana_disetujui' => 'nullable|numeric|min:0',
         ]);
 
         $usulan = \App\Models\UsulanPengabdian::where('id', '=', $id, 'and')
@@ -450,8 +455,11 @@ class ReviewerController extends Controller
                 ]);
             }
 
-            // 3. Update Proposal Status
-            $usulan->update(['status' => $newStatus]);
+            // 3. Update Proposal Status & Funding
+            $usulan->update([
+                'status' => $newStatus,
+                'dana_disetujui' => $request->dana_disetujui ?? 0
+            ]);
         });
 
         return redirect()->route('reviewer.usulan.index')->with('success', 'Review Pengabdian berhasil dikirim.');

@@ -44,7 +44,8 @@ const ReviewerPageUsulan: React.FC<ReviewerPageUsulanProps> = ({
         // Note: Year filter is tricky if API doesn't provide year in "tanggal_pengajuan" easily 
         // or if we rely on "tahun_pelaksanaan". 
         // For now, assume we just filter by search, strict year filtering might need parsing "tanggal_pengajuan" (YYYY-MM-DD)
-        return matchesSearch;
+        const yearMatch = selectedYear ? (p.tahun_pelaksanaan?.toString() === selectedYear.value || p.tanggal_pengajuan?.startsWith(selectedYear.value)) : true;
+        return matchesSearch && yearMatch;
     });
 
     const getStatusStyle = (status: string) => {

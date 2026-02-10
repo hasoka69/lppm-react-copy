@@ -78,7 +78,7 @@ export default function KaprodiUsulanReviewPengabdian({ usulan, pengusul, anggot
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
                                         <label className="block text-xs text-gray-500 uppercase font-semibold">Tahun Pelaksanaan</label>
-                                        <p className="text-gray-900">{usulan.tahun_pengusulan} (Lama: {usulan.lama_kegiatan} tahun)</p>
+                                        <p className="text-gray-900">{usulan.tahun_pertama}</p>
                                     </div>
                                     <div>
                                         <label className="block text-xs text-gray-500 uppercase font-semibold">Status</label>
@@ -104,8 +104,9 @@ export default function KaprodiUsulanReviewPengabdian({ usulan, pengusul, anggot
                                 <div>
                                     <h3 className="text-sm font-semibold text-gray-700 mb-2">Ketua Pengusul</h3>
                                     <div className="bg-gray-50 p-3 rounded border border-gray-200">
-                                        <p className="font-medium text-gray-900">{pengusul.nama} ({pengusul.nidn})</p>
-                                        <p className="text-sm text-gray-500">{pengusul.prodi} - {pengusul.email}</p>
+                                        <p className="font-medium text-gray-900">{pengusul.nama}</p>
+                                        <p className="text-sm text-gray-500">Ketua - {pengusul.nidn}</p>
+                                        <p className="text-xs text-gray-400 mt-1">{pengusul.prodi} - {pengusul.email}</p>
                                     </div>
                                 </div>
                                 <div>
@@ -116,8 +117,8 @@ export default function KaprodiUsulanReviewPengabdian({ usulan, pengusul, anggot
                                         <ul className="space-y-2">
                                             {anggota.map((ang: any) => (
                                                 <li key={ang.id} className="bg-gray-50 p-3 rounded border border-gray-200 text-sm">
-                                                    <span className="font-medium">{ang.nama_dosen}</span> ({ang.peran})
-                                                    <span className="block text-gray-500 text-xs">{ang.fakultas}</span>
+                                                    <span className="font-medium block">{ang.nama_dosen}</span>
+                                                    <span className="text-gray-500">Anggota - {ang.nidn || ang.nidn_dosen}</span>
                                                 </li>
                                             ))}
                                         </ul>
@@ -129,8 +130,8 @@ export default function KaprodiUsulanReviewPengabdian({ usulan, pengusul, anggot
                                         <ul className="space-y-2">
                                             {anggotaNonDosen.map((mhs: any) => (
                                                 <li key={mhs.id} className="bg-gray-50 p-3 rounded border border-gray-200 text-sm">
-                                                    <span className="font-medium">{mhs.nama}</span> ({mhs.no_identitas})
-                                                    <span className="block text-gray-500 text-xs capitalize">{mhs.jenis_anggota} - {mhs.peran}</span>
+                                                    <span className="font-medium block">{mhs.nama}</span>
+                                                    <span className="text-gray-500 capitalize">{mhs.role || 'Mahasiswa'} - {mhs.no_identitas}</span>
                                                 </li>
                                             ))}
                                         </ul>
@@ -188,7 +189,6 @@ export default function KaprodiUsulanReviewPengabdian({ usulan, pengusul, anggot
                                     <table className="min-w-full divide-y divide-gray-200 text-sm">
                                         <thead className="bg-gray-50">
                                             <tr>
-                                                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Tahun</th>
                                                 <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Kategori</th>
                                                 <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Deskripsi</th>
                                             </tr>
@@ -196,7 +196,6 @@ export default function KaprodiUsulanReviewPengabdian({ usulan, pengusul, anggot
                                         <tbody className="bg-white divide-y divide-gray-200">
                                             {luaran.map((item: any, idx: number) => (
                                                 <tr key={idx}>
-                                                    <td className="px-4 py-2 whitespace-nowrap">Tahun {item.tahun}</td>
                                                     <td className="px-4 py-2">{item.kategori}</td>
                                                     <td className="px-4 py-2 text-gray-600">{item.deskripsi}</td>
                                                 </tr>
@@ -240,20 +239,25 @@ export default function KaprodiUsulanReviewPengabdian({ usulan, pengusul, anggot
                             <h2 className="text-lg font-bold text-gray-800 mb-4">Keputusan Kaprodi</h2>
 
                             {/* Disabled if already reviewed */}
-                            {['approved_prodi', 'rejected_prodi'].includes(usulan.status) ? (
-                                <div className={`p-4 rounded-lg text-center ${usulan.status === 'approved_prodi' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
-                                    {usulan.status === 'approved_prodi' ? (
+                            {/* Disabled if already reviewed or not in submitted state */}
+                            {usulan.status !== 'submitted' ? (
+                                <div className={`p-4 rounded-lg text-center ${['approved_prodi', 'reviewer_review', 'reviewed', 'didanai', 'completed'].includes(usulan.status) ? 'bg-green-50 text-green-700' :
+                                    ['rejected_prodi', 'ditolak_akhir', 'rejected', 'ditolak'].includes(usulan.status) ? 'bg-red-50 text-red-700' :
+                                        'bg-blue-50 text-blue-700'
+                                    }`}>
+                                    {['approved_prodi', 'reviewer_review', 'reviewed', 'didanai', 'completed'].includes(usulan.status) ? (
                                         <>
                                             <CheckCircle className="w-12 h-12 mx-auto mb-2" />
                                             <p className="font-bold">Usulan Disetujui</p>
+                                            <p className="text-sm mt-2">Status: <span className="capitalize">{usulan.status.replace(/_/g, ' ')}</span></p>
                                         </>
                                     ) : (
                                         <>
                                             <XCircle className="w-12 h-12 mx-auto mb-2" />
-                                            <p className="font-bold">Usulan Ditolak</p>
+                                            <p className="font-bold">Usulan Ditolak / Tidak Aktif</p>
+                                            <p className="text-sm mt-2">Status: <span className="capitalize">{usulan.status.replace(/_/g, ' ')}</span></p>
                                         </>
                                     )}
-                                    <p className="text-sm mt-2">Usulan ini telah Anda validasi.</p>
                                 </div>
                             ) : (
                                 <>

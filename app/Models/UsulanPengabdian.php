@@ -25,17 +25,17 @@ class UsulanPengabdian extends Model
         'rumpun_ilmu_level3_label',
         'kelompok_skema',
         'ruang_lingkup',
-        'tahun_pengusulan', // [NEW]
         'tahun_pertama',
-        'lama_kegiatan',
         'tkt_saat_ini',
         'target_akhir_tkt',
         'file_substansi',
+        'dana_usulan_awal',
         'total_anggaran',
         'status',
         'revision_count',
         'dana_disetujui',
-        'reviewer_id'
+        'reviewer_id',
+        'tugas_ketua' // [NEW] Added for review display
     ];
 
     protected $casts = [

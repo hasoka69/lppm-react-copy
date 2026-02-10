@@ -24,6 +24,7 @@ import {
     Search,
     Percent
 } from 'lucide-react';
+import { formatAcademicYear } from '@/utils/academicYear';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { Toaster } from '@/components/ui/sonner';
@@ -154,11 +155,11 @@ export default function Show({ usulan, logs, months, selectedMonth, isAdminView 
                         <div className="flex flex-col items-end gap-2 shrink-0">
                             <div className="flex items-center gap-2 text-[11px] font-bold text-gray-400 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-100">
                                 <Calendar className="w-3.5 h-3.5" />
-                                TAHUN PELAKSANAAN: {usulan.tahun_pertama}
+                                TAHUN PELAKSANAAN: {formatAcademicYear(usulan.tahun_pertama)}
                             </div>
                             <div className="flex items-center gap-2 text-[11px] font-bold text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-100">
                                 <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />
-                                DANA DISETUJUI: Rp {new Intl.NumberFormat('id-ID').format(usulan.dana_disetujui || 0)}
+                                DANA DISETUJUI: Rp {new Intl.NumberFormat('id-ID').format(usulan.dana_disetujui || usulan.total_anggaran || 0)}
                             </div>
                         </div>
                     </div>

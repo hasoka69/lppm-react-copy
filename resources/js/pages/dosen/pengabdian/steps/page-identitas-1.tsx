@@ -28,17 +28,16 @@ axios.interceptors.request.use((config) => {
 
 interface UsulanData {
     judul: string;
-    tahun_pengusulan: number | string;
     jenis_bidang_fokus: 'tematik' | 'ririn' | '';
     bidang_fokus: string;
     kelompok_skema: string;
     ruang_lingkup: string;
     tahun_pertama: number | string;
-    lama_kegiatan: number | string;
     rumpun_ilmu_level1_id: string | number;
     rumpun_ilmu_level2_id: string | number;
     rumpun_ilmu_level3_id: string | number;
-    [key: string]: string | number;
+    tugas_ketua?: string; // Added tugas_ketua
+    [key: string]: string | number | undefined;
 }
 
 interface PageIdentitasProps {
@@ -91,16 +90,15 @@ const PageIdentitas: React.FC<PageIdentitasProps> = ({
     }
     const { data, setData, post, put, processing, errors } = useForm<UsulanData>({
         judul: usulan?.judul ?? '',
-        tahun_pengusulan: currentYear,
         jenis_bidang_fokus: (usulan?.jenis_bidang_fokus as 'tematik' | 'ririn') ?? '',
         bidang_fokus: usulan?.bidang_fokus ?? '',
         kelompok_skema: usulan?.kelompok_skema ?? '',
         ruang_lingkup: usulan?.ruang_lingkup ?? '',
         tahun_pertama: academicYearCode,
-        lama_kegiatan: usulan?.lama_kegiatan ?? '1',
         rumpun_ilmu_level1_id: usulan?.rumpun_ilmu_level1_id ?? '',
         rumpun_ilmu_level2_id: usulan?.rumpun_ilmu_level2_id ?? '',
         rumpun_ilmu_level3_id: usulan?.rumpun_ilmu_level3_id ?? '',
+        tugas_ketua: usulan?.tugas_ketua ?? '',
     });
 
     const tematikOptions = ['Ketahanan Pangan', 'Kesehatan', 'Pendidikan', 'UMKM & Kewirausahaan', 'Lingkungan', 'Sosial Budaya'];
@@ -144,7 +142,6 @@ const PageIdentitas: React.FC<PageIdentitasProps> = ({
                 'bidang_fokus',
                 'kelompok_skema',
                 'ruang_lingkup',
-                'lama_kegiatan',
                 'rumpun_ilmu_level1_id',
                 'rumpun_ilmu_level2_id',
                 'rumpun_ilmu_level3_id'
@@ -225,13 +222,7 @@ const PageIdentitas: React.FC<PageIdentitasProps> = ({
                                     {errors.judul && <span className={styles.error}>{errors.judul}</span>}
                                 </div>
                             </div>
-                            <div className={styles.formGroup}>
-                                <label className={styles.label}>Tahun Pengusulan</label>
-                                <div className={styles.inputWithIcon}>
-                                    <Calendar size={18} />
-                                    <input type="text" className={styles.input} value={currentYear} disabled readOnly style={{ background: '#f1f5f9', color: '#64748b' }} />
-                                </div>
-                            </div>
+
                             <div className={styles.formGroup}>
                                 <label className={styles.label}>Tahun Akademik (Pelaksanaan) *</label>
                                 <div className={styles.inputWithIcon}>
@@ -307,14 +298,7 @@ const PageIdentitas: React.FC<PageIdentitasProps> = ({
                                 </select>
                             </div>
 
-                            <div className={styles.formGroup}>
-                                <label className={styles.label}>Lama Kegiatan (Tahun) *</label>
-                                <select className={styles.select} value={data.lama_kegiatan} onChange={(e) => setData('lama_kegiatan', e.target.value)}>
-                                    <option value="1">1 Tahun</option>
-                                    <option value="2">2 Tahun</option>
-                                    <option value="3">3 Tahun</option>
-                                </select>
-                            </div>
+
                         </div>
                     </div>
                 </div>
@@ -369,6 +353,8 @@ const PageIdentitas: React.FC<PageIdentitasProps> = ({
                             usulanId={currentUsulanId ?? 0}
                             isPengabdian={true}
                             onCreateDraft={ensureDraftExists}
+                            tugasKetua={data.tugas_ketua}
+                            onChangeTugasKetua={(val: string) => setData('tugas_ketua', val)}
                         />
                     </div>
                 </div>

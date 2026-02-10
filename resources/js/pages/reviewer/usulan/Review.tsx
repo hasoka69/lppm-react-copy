@@ -44,6 +44,7 @@ const ReviewerReview: React.FC<ReviewerReviewProps> = ({ proposal, dosen, isRead
         action: '',
         comments: '',
         scores: [] as any[],
+        dana_disetujui: 0,
     });
 
     const [isConfirming, setIsConfirming] = useState(false);
@@ -52,7 +53,11 @@ const ReviewerReview: React.FC<ReviewerReviewProps> = ({ proposal, dosen, isRead
 
     // Scoring Handler
     const handleScoringChange = (scores: any[], score: number, recommendation: number) => {
-        setData('scores', scores);
+        setData(data => ({
+            ...data,
+            scores: scores,
+            dana_disetujui: recommendation
+        }));
         setTotalScore(score);
     };
 
@@ -356,10 +361,6 @@ const ReviewerReview: React.FC<ReviewerReviewProps> = ({ proposal, dosen, isRead
 
                                                 <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 text-sm">
                                                     <div>
-                                                        <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Tahun Penelitian</label>
-                                                        <p className="font-medium text-gray-800">Tahun ke-{luaran.tahun}</p>
-                                                    </div>
-                                                    <div>
                                                         <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Status Capaian</label>
                                                         <p className="font-medium text-gray-800">{luaran.status || luaran.status_capaian || 'Rencana'}</p>
                                                     </div>
@@ -504,7 +505,7 @@ const ReviewerReview: React.FC<ReviewerReviewProps> = ({ proposal, dosen, isRead
                         <div className="mb-6">
                             <ReviewScoringForm
                                 onChange={handleScoringChange}
-                                maxFunding={Number(usulan?.dana_disetujui || 0) > 0 ? Number(usulan.dana_disetujui) : Number(usulan.total_anggaran)}
+                                maxFunding={Number(usulan?.dana_usulan_awal || usulan?.total_anggaran || 0)}
                                 initialScores={initialScores}
                                 isReadOnly={isReadOnly}
                             />

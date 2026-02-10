@@ -20,13 +20,13 @@ interface ReviewScoringFormProps {
 }
 
 const SECTIONS = [
-    { id: 'judul', label: 'Judul Penelitian', weight: 5 },
-    { id: 'abstrak', label: 'Abstrak', weight: 10 },
+    { id: 'judul', label: 'Judul Usulan', weight: 5 },
+    { id: 'abstrak', label: 'Abstrak / Ringkasan', weight: 10 },
     { id: 'pendahuluan', label: 'Latar Belakang & Pendahuluan', weight: 15 },
-    { id: 'tinjauan_pustaka', label: 'Tinjauan Pustaka', weight: 15 },
-    { id: 'metode', label: 'Metode Penelitian', weight: 25 },
-    { id: 'jadwal', label: 'Jadwal Penelitian', weight: 10 },
-    { id: 'tim', label: 'Kualifikasi Tim Peneliti', weight: 10 },
+    { id: 'tinjauan_pustaka', label: 'Tinjauan Pustaka / Analisis Situasi', weight: 15 },
+    { id: 'metode', label: 'Metode Pelaksanaan', weight: 25 },
+    { id: 'jadwal', label: 'Jadwal Pelaksanaan', weight: 10 },
+    { id: 'tim', label: 'Kualifikasi Tim Pelaksana', weight: 10 },
     { id: 'rab', label: 'Kewajaran RAB', weight: 10 },
 ];
 

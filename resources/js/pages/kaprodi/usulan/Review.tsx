@@ -206,23 +206,30 @@ export default function KaprodiUsulanReview({ usulan, pengusul, anggota, anggota
                                     {/* <CardDescription>Tinjau dan berikan keputusan</CardDescription> */}
                                 </CardHeader>
                                 <CardContent>
-                                    {['approved_prodi', 'rejected_prodi', 'ditolak_akhir'].includes(usulan.status) ? (
-                                        <div className={`p-6 rounded-lg text-center ${usulan.status === 'approved_prodi' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
-                                            {usulan.status === 'approved_prodi' ? (
+                                    {usulan.status !== 'submitted' ? (
+                                        <div className={`p-6 rounded-lg text-center ${['approved_prodi', 'reviewer_review', 'reviewed', 'didanai', 'completed'].includes(usulan.status) ? 'bg-green-50 text-green-700' :
+                                                ['rejected_prodi', 'ditolak_akhir', 'rejected', 'ditolak'].includes(usulan.status) ? 'bg-red-50 text-red-700' :
+                                                    'bg-blue-50 text-blue-700'
+                                            }`}>
+                                            {['approved_prodi', 'reviewer_review', 'reviewed', 'didanai', 'completed'].includes(usulan.status) ? (
                                                 <>
                                                     <div className="mx-auto bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mb-3">
                                                         <CheckCircle className="w-8 h-8 text-green-600" />
                                                     </div>
                                                     <h3 className="font-bold text-lg mb-1">Usulan Disetujui</h3>
-                                                    <p className="text-sm opacity-90">Usulan telah diteruskan ke reviewer.</p>
+                                                    <p className="text-sm opacity-90">
+                                                        Status Saat Ini: <span className="font-semibold capitalize">{usulan.status.replace(/_/g, ' ')}</span>
+                                                    </p>
                                                 </>
                                             ) : (
                                                 <>
                                                     <div className="mx-auto bg-red-100 w-16 h-16 rounded-full flex items-center justify-center mb-3">
                                                         <XCircle className="w-8 h-8 text-red-600" />
                                                     </div>
-                                                    <h3 className="font-bold text-lg mb-1">Usulan Ditolak</h3>
-                                                    <p className="text-sm opacity-90">Pengusul telah diberitahu.</p>
+                                                    <h3 className="font-bold text-lg mb-1">Usulan Ditolak / Tidak Aktif</h3>
+                                                    <p className="text-sm opacity-90">
+                                                        Status Saat Ini: <span className="font-semibold capitalize">{usulan.status.replace(/_/g, ' ')}</span>
+                                                    </p>
                                                 </>
                                             )}
                                         </div>

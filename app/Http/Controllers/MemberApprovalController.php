@@ -33,7 +33,7 @@ class MemberApprovalController extends Controller
                     'id' => $item->id,
                     'type' => 'penelitian',
                     'judul' => $item->usulanPenelitian?->judul ?? 'Judul Tidak Tersedia',
-                    'ketua' => $item->usulanPenelitian?->ketua?->name ?? 'Nama Ketua Tidak Tersedia', // Fixed: nama -> name
+                    'ketua' => $item->usulanPenelitian?->ketua?->name ?? 'Nama Ketua Tidak Tersedia',
                     'created_at' => $item->created_at,
                 ];
             });
@@ -48,12 +48,13 @@ class MemberApprovalController extends Controller
                     'id' => $item->id,
                     'type' => 'pengabdian',
                     'judul' => $item->usulan?->judul ?? 'Judul Tidak Tersedia',
-                    'ketua' => $item->usulan?->ketua?->name ?? 'Nama Ketua Tidak Tersedia', // Fixed: nama -> name
+                    'ketua' => $item->usulan?->ketua?->name ?? 'Nama Ketua Tidak Tersedia',
                     'created_at' => $item->created_at,
                 ];
             });
 
-        $merged = $penelitian->merge($pengabdian)->sortByDesc('created_at')->values();
+        // Merge and sort
+        $merged = $penelitian->concat($pengabdian)->sortByDesc('created_at')->values();
 
         return response()->json([
             'data' => $merged
@@ -107,13 +108,13 @@ class MemberApprovalController extends Controller
 
             if ($usulan && $usulan->status === 'waiting_member_approval') {
                 // Count pending lecturers only
-                $pendingLecturers = $modelClass::where('usulan_id', $usulan->id)
-                    ->where('status_approval', 'pending')
-                    ->count();
+                // Get the correct table/model for querying pending members
+                $pendingLecturers = $type === 'penelitian'
+                    ? AnggotaPenelitian::where('usulan_id', $usulan->id)->where('status_approval', 'pending')->count()
+                    : AnggotaPengabdian::where('usulan_id', $usulan->id)->where('status_approval', 'pending')->count();
 
                 if ($pendingLecturers === 0) {
                     // All lecturers approved -> Advance status
-                    // 'submitted' or 'auto_submitted'? Using 'submitted' for now as per standard flow.
                     $usulan->update(['status' => 'submitted']);
                 }
             }

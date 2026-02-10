@@ -33,7 +33,8 @@ interface UsulanData {
     rumpun_ilmu_3: string;
     prioritas_riset: string;
     tahun_pertama: number | string;
-    [key: string]: string | number;
+    tugas_ketua?: string; // Added tugas_ketua
+    [key: string]: string | number | undefined;
 }
 
 interface PageIdentitasProps {
@@ -92,6 +93,7 @@ const PageIdentitas: React.FC<PageIdentitasProps> = ({
         rumpun_ilmu_3: usulan?.rumpun_ilmu_3 ?? '',
         prioritas_riset: usulan?.prioritas_riset ?? '',
         tahun_pertama: academicYearCode,
+        tugas_ketua: usulan?.tugas_ketua ?? '',
     });
 
     const handleSaveDraft = (e: React.FormEvent) => {
@@ -408,7 +410,12 @@ const PageIdentitas: React.FC<PageIdentitasProps> = ({
                             <Users size={24} className="text-blue-600" />
                             Identitas Tim Pengusul
                         </h2>
-                        <IdentityAnggota usulanId={currentUsulanId} onCreateDraft={ensureDraftExists} />
+                        <IdentityAnggota
+                            usulanId={currentUsulanId ?? 0}
+                            onCreateDraft={ensureDraftExists}
+                            tugasKetua={data.tugas_ketua}
+                            onChangeTugasKetua={(val: string) => setData('tugas_ketua', val)}
+                        />
                     </div>
                 </div>
 

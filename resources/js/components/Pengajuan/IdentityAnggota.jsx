@@ -28,11 +28,11 @@ api.interceptors.request.use((config) => {
     return config;
 });
 
-const IdentityAnggota = ({ usulanId, onCreateDraft, isPengabdian = false }) => {
+const IdentityAnggota = ({ usulanId, onCreateDraft, isPengabdian = false, tugasKetua, onChangeTugasKetua }) => {
     const apiPrefix = isPengabdian ? '/dosen/pengabdian' : '/dosen/penelitian';
     const { props } = usePage();
     const userKetua = props.auth.user;
-    const [tugasKetua, setTugasKetua] = useState('');
+    // const [tugasKetua, setTugasKetua] = useState(''); // Removed local state
     const [anggotaDosen, setAnggotaDosen] = useState([]);
     const [loadingDosen, setLoadingDosen] = useState(false);
     const [formDosenVisible, setFormDosenVisible] = useState(false);
@@ -177,7 +177,13 @@ const IdentityAnggota = ({ usulanId, onCreateDraft, isPengabdian = false }) => {
                         </div>
                         <div className={styles.formGroup}>
                             <label className={styles.label}>Tugas Sebagai Ketua</label>
-                            <textarea rows={2} placeholder="Deskripsikan tanggung jawab anda..." value={tugasKetua} onChange={(e) => setTugasKetua(e.target.value)} className={styles.textarea} />
+                            <textarea
+                                rows={2}
+                                placeholder="Deskripsikan tanggung jawab anda..."
+                                value={tugasKetua || ''}
+                                onChange={(e) => onChangeTugasKetua && onChangeTugasKetua(e.target.value)}
+                                className={styles.textarea}
+                            />
                         </div>
                     </div>
                 </div>

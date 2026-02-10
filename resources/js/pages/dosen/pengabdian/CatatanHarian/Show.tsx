@@ -162,7 +162,7 @@ export default function Show({ usulan, logs, months, selectedMonth, isAdminView 
                             </div>
                             <div className="flex items-center gap-2 text-[11px] font-bold text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-100">
                                 <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />
-                                DANA DISETUJUI: Rp {new Intl.NumberFormat('id-ID').format(usulan.dana_disetujui || 0)}
+                                DANA DISETUJUI: Rp {new Intl.NumberFormat('id-ID').format(usulan.dana_disetujui || usulan.total_anggaran || 0)}
                             </div>
                         </div>
                     </div>

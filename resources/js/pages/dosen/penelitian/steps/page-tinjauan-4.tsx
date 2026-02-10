@@ -265,6 +265,23 @@ const PageTinjauan: React.FC<PageTinjauanProps> = ({
                                 </tr>
                             </thead>
                             <tbody>
+                                {/* Ketua Row */}
+                                <tr style={{ background: '#f0f9ff' }}>
+                                    <td>
+                                        <div style={{ fontWeight: 600 }}>{usulan.user?.name || usulan.ketua?.name || '-'}</div>
+                                        <div style={{ fontSize: '0.75rem', color: '#64748b' }}>
+                                            {usulan.user?.dosen?.nidn || usulan.ketua?.dosen?.nidn || '-'}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span className={styles.badge} style={{ background: '#dbeafe', color: '#1e40af' }}>
+                                            Ketua Pengusul
+                                        </span>
+                                    </td>
+                                    <td style={{ fontSize: '0.875rem' }}>
+                                        {usulan.tugas_ketua || '-'}
+                                    </td>
+                                </tr>
                                 {(usulan.anggota_dosen || usulan.anggotaDosen || []).map((m: any) => (
                                     <tr key={m.id}>
                                         <td>
@@ -324,7 +341,6 @@ const PageTinjauan: React.FC<PageTinjauanProps> = ({
                         <table className={styles.table}>
                             <thead>
                                 <tr>
-                                    <th>Tahun</th>
                                     <th>Kategori</th>
                                     <th>Deskripsi Luaran</th>
                                     <th>Status</th>
@@ -333,7 +349,6 @@ const PageTinjauan: React.FC<PageTinjauanProps> = ({
                             <tbody>
                                 {(usulan.luaran_list || usulan.luaranList || []).map((l: any, idx: number) => (
                                     <tr key={idx}>
-                                        <td>Tahun {l.tahun}</td>
                                         <td style={{ fontWeight: 600 }}>{l.kategori}</td>
                                         <td style={{ fontSize: '0.875rem' }}>{l.deskripsi}</td>
                                         <td>{l.status}</td>
@@ -440,7 +455,7 @@ const PageTinjauan: React.FC<PageTinjauanProps> = ({
                     <button className={styles.secondaryButton} onClick={handlePrintPDF}>
                         <Printer size={18} /> Print Review
                     </button>
-                    {!isReadOnly ? (
+                    {!isReadOnly || (['draft', 'revision_dosen'].includes(usulan.status)) ? (
                         <button
                             className={styles.primaryButton}
                             onClick={handleSubmit}

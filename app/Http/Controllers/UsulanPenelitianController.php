@@ -118,6 +118,7 @@ class UsulanPenelitianController extends Controller
             'rumpun_ilmu_3' => 'nullable|string',
             'prioritas_riset' => 'nullable|string',
             'tahun_pertama' => 'nullable|integer',
+            'tugas_ketua' => 'nullable|string', // [NEW] Added tugas_ketua
         ]);
 
         try {
@@ -184,6 +185,7 @@ class UsulanPenelitianController extends Controller
             'rumpun_ilmu_3' => 'nullable|string',
             'prioritas_riset' => 'nullable|string',
             'tahun_pertama' => 'nullable|integer',
+            'tugas_ketua' => 'nullable|string', // [NEW] Added tugas_ketua
             // [NEW] Handle Makro Riset
             'makro_riset_id' => 'nullable|exists:makro_riset,id',
             // RAB Validation
@@ -219,6 +221,14 @@ class UsulanPenelitianController extends Controller
             } else {
                 // ✅ JANGAN OVERWRITE JIKA TIDAK ADA FILE BARU
                 unset($validated['file_substansi']);
+            }
+
+            // [NEW] Sync dana_usulan_awal with total_anggaran ONLY if status is draft or submitted
+            // If status is revision_dosen (or any other post-review status), we maintain the original dana_usulan_awal
+            if (in_array($usulan->status, ['draft', 'submitted'])) {
+                if (isset($validated['total_anggaran'])) {
+                    $validated['dana_usulan_awal'] = $validated['total_anggaran'];
+                }
             }
 
             // $validated['tahun_pertama'] = 2026; // Removed hardcoding
@@ -437,7 +447,12 @@ class UsulanPenelitianController extends Controller
             'anggotaNonDosen',
             'luaranList',
             'rabItems',
-            'reviewHistories.reviewer'
+            'anggotaDosen',
+            'anggotaNonDosen',
+            'luaranList',
+            'rabItems',
+            'reviewHistories.reviewer',
+            'user.dosen' // [NEW] Needed for Step 4 Confirmation display
         ])->where(function ($query) {
             // We cannot easily filter query by 'user_id' OR relation here without complex query
             // Instead, findOrFail first, then check policy.

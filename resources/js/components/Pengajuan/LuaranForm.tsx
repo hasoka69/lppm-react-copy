@@ -119,29 +119,39 @@ export const LuaranForm: React.FC<LuaranFormProps> = ({
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                         Kategori Luaran <span className="text-red-500">*</span>
                     </label>
-                    <select
-                        name="kategori"
-                        value={formData.kategori}
-                        onChange={handleChange}
-                        disabled={loading || !!fixedKategori}
-                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.kategori ? 'border-red-500' : 'border-gray-300'
-                            }`}
-                    >
-                        <option value="">Pilih Kategori Luaran</option>
-                        {[
-                            'Jurnal Internasional Bereputasi (Scopus/WoS)',
-                            'Jurnal Internasional',
-                            'Jurnal Nasional Terakreditasi (Sinta 1-6)',
-                            'Jurnal Nasional Tidak Terakreditasi',
-                            'Prosiding Internasional',
-                            'Prosiding Nasional',
-                            'Buku (Ajar/Monograf/Referensi)',
-                            'HKI (Paten/Hak Cipta)',
-                            'Lainnya'
-                        ].map((opt) => (
-                            <option key={opt} value={opt}>{opt}</option>
-                        ))}
-                    </select>
+                    {fixedKategori ? (
+                        <input
+                            type="text"
+                            name="kategori"
+                            value={formData.kategori}
+                            disabled={true}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-700"
+                        />
+                    ) : (
+                        <select
+                            name="kategori"
+                            value={formData.kategori}
+                            onChange={handleChange}
+                            disabled={loading}
+                            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${errors.kategori ? 'border-red-500' : 'border-gray-300'
+                                }`}
+                        >
+                            <option value="">Pilih Kategori Luaran</option>
+                            {[
+                                'Jurnal Internasional Bereputasi (Scopus/WoS)',
+                                'Jurnal Internasional',
+                                'Jurnal Nasional Terakreditasi (Sinta 1-6)',
+                                'Jurnal Nasional Tidak Terakreditasi',
+                                'Prosiding Internasional',
+                                'Prosiding Nasional',
+                                'Buku (Ajar/Monograf/Referensi)',
+                                'HKI (Paten/Hak Cipta)',
+                                'Lainnya'
+                            ].map((opt) => (
+                                <option key={opt} value={opt}>{opt}</option>
+                            ))}
+                        </select>
+                    )}
                     {errors.kategori && <p className="text-red-500 text-sm mt-1">{errors.kategori[0]}</p>}
                 </div>
 

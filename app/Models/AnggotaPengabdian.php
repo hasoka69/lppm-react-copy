@@ -12,6 +12,7 @@ class AnggotaPengabdian extends Model
     protected $table = 'anggota_pengabdian';
 
     protected $fillable = [
+        'usulan_id', // Added
         'dosen_id', // Added
         'nidn',
         'nama',

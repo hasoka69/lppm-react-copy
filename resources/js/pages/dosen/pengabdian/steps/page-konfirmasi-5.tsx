@@ -139,7 +139,6 @@ const PageKonfirmasi: React.FC<PageKonfirmasiProps> = ({
                         {renderReviewItem('Skema', usulan.kelompok_skema)}
                         {renderReviewItem('Bidang Fokus', usulan.bidang_fokus)}
                         {renderReviewItem('Tahun Pelaksanaan', formatAcademicYear(usulan.tahun_pertama))}
-                        {renderReviewItem('Lama Kegiatan', `${usulan.lama_kegiatan} Tahun`)}
                     </div>
                 </div>
             </div>
@@ -157,6 +156,17 @@ const PageKonfirmasi: React.FC<PageKonfirmasiProps> = ({
                             </tr>
                         </thead>
                         <tbody>
+                            {/* Ketua Row */}
+                            <tr className="bg-blue-50/50">
+                                <td>
+                                    <div style={{ fontWeight: 600 }}>{usulan.ketua?.name || usulan.user?.name}</div>
+                                    <div style={{ fontSize: '0.75rem', color: '#64748b' }}>
+                                        {usulan.ketua?.dosen?.nidn || usulan.user?.dosen?.nidn || '-'} (Ketua Pengusul)
+                                    </div>
+                                </td>
+                                <td>Ketua</td>
+                                <td style={{ fontSize: '0.875rem' }}>{usulan.tugas_ketua || '-'}</td>
+                            </tr>
                             {(usulan.anggota_dosen || usulan.anggotaDosen || []).map((m: any) => (
                                 <tr key={m.id}>
                                     <td>
@@ -231,7 +241,6 @@ const PageKonfirmasi: React.FC<PageKonfirmasiProps> = ({
                     <table className={styles.table}>
                         <thead>
                             <tr>
-                                <th>Tahun</th>
                                 <th>Kategori Luaran</th>
                                 <th>Deskripsi</th>
                                 <th>Status</th>
@@ -240,7 +249,6 @@ const PageKonfirmasi: React.FC<PageKonfirmasiProps> = ({
                         <tbody>
                             {(usulan.luaran_items || usulan.luaranItems || []).map((l: any) => (
                                 <tr key={l.id}>
-                                    <td>Tahun {l.tahun}</td>
                                     <td style={{ fontWeight: 600 }}>{l.kategori}</td>
                                     <td style={{ fontSize: '0.875rem' }}>{l.deskripsi}</td>
                                     <td>{l.status}</td>
@@ -341,7 +349,7 @@ const PageKonfirmasi: React.FC<PageKonfirmasiProps> = ({
                     <button className={styles.secondaryButton} onClick={onTutupForm} disabled={isSubmitting}>
                         <Save size={18} /> Simpan Draft & Tutup
                     </button>
-                    {!isReadOnly ? (
+                    {!isReadOnly || (['draft', 'revision_dosen'].includes(usulan.status)) ? (
                         <button
                             className={styles.primaryButton}
                             onClick={handleSubmit}

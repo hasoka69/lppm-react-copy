@@ -71,7 +71,6 @@ class UsulanPengabdianController extends Controller
                 'ruang_lingkup' => $latestDraft->ruang_lingkup,
                 'bidang_fokus' => $latestDraft->bidang_fokus,
                 'tahun_pertama' => $latestDraft->tahun_pertama,
-                'lama_kegiatan' => $latestDraft->lama_kegiatan,
             ] : null,
             ...$masterData,
         ]);
@@ -87,7 +86,6 @@ class UsulanPengabdianController extends Controller
     {
         $validated = $request->validate([
             'judul' => 'nullable|string|max:500',
-            'tahun_pengusulan' => 'nullable|integer',
             'kelompok_skema' => 'nullable|string',
         ]);
 
@@ -97,7 +95,6 @@ class UsulanPengabdianController extends Controller
             $usulan = UsulanPengabdian::create([
                 'user_id' => Auth::id(),
                 'status' => 'draft',
-                'tahun_pengusulan' => 2026,
                 'judul' => $validated['judul'] ?? 'Draft Usulan Pengabdian',
                 'kelompok_skema' => $validated['kelompok_skema'] ?? null,
                 'tahun_pertama' => 20261, // Defaulting to 20261 (Ganjil 2025/2026) for new drafts if not specified
@@ -137,7 +134,6 @@ class UsulanPengabdianController extends Controller
 
         $validated = $request->validate([
             'judul' => 'sometimes|nullable|string|max:500',
-            'tahun_pengusulan' => 'sometimes|nullable|integer',
             // 1.2
             'jenis_bidang_fokus' => 'sometimes|nullable|string',
             'bidang_fokus' => 'sometimes|nullable|string',
@@ -145,11 +141,11 @@ class UsulanPengabdianController extends Controller
             'kelompok_skema' => 'sometimes|nullable|string',
             'ruang_lingkup' => 'sometimes|nullable|string',
             'tahun_pertama' => 'sometimes|nullable|integer',
-            'lama_kegiatan' => 'sometimes|nullable|integer',
             // 1.4
             'rumpun_ilmu_level1_id' => 'sometimes|nullable|integer',
             'rumpun_ilmu_level2_id' => 'sometimes|nullable|integer',
             'rumpun_ilmu_level3_id' => 'sometimes|nullable|integer',
+            'tugas_ketua' => 'nullable|string', // [NEW]
 
             'total_anggaran' => 'nullable|numeric',
         ]);
@@ -184,8 +180,14 @@ class UsulanPengabdianController extends Controller
                 unset($data['file_substansi']);
             }
 
-            $data['tahun_pengusulan'] = 2026;
             // $data['tahun_pertama'] = 2026; // Removed hardcoded override
+            // [NEW] Sync dana_usulan_awal with total_anggaran ONLY if status is draft or submitted
+            if (in_array($usulan->status, ['draft', 'submitted'])) {
+                if (isset($data['total_anggaran'])) {
+                    $data['dana_usulan_awal'] = $data['total_anggaran'];
+                }
+            }
+
             $usulan->update($data);
             return back()->with('success', 'Data berhasil diperbarui!');
         } catch (\Exception $e) {
@@ -228,7 +230,8 @@ class UsulanPengabdianController extends Controller
             'luaranItems',
             'rabItems',
             'mitra',
-            'reviewHistories.reviewer'
+            'reviewHistories.reviewer',
+            'ketua.dosen' // [NEW] Needed for Step 5 Confirmation display
         ])->find($usulanId); // Remove direct where('user_id') scope, handle manually
 
         if (!$usulan) {

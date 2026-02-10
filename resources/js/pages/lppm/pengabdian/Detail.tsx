@@ -22,6 +22,7 @@ import {
     ChevronLeft,
     AlertCircle
 } from 'lucide-react';
+import { formatAcademicYear } from '@/utils/academicYear';
 import {
     Dialog,
     DialogContent,
@@ -209,15 +210,10 @@ export default function AdminPengabdianDetail({ usulan, reviewers, initialScores
                                     <div className="flex items-center gap-6">
                                         <div>
                                             <span className="block text-gray-500 text-xs font-medium mb-1">Tahun Pengajuan</span>
-                                            <span className="font-bold text-gray-900">{usulan.tahun_pengusulan || usulan.tahun_pertama || '-'}</span>
+                                            <span className="font-bold text-gray-900">{formatAcademicYear(usulan.tahun_pertama)}</span>
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-6">
-                                        <div className="border-l border-gray-200 pl-6">
-                                            <span className="block text-gray-500 text-xs font-medium mb-1">Lama Kegiatan</span>
-                                            <span className="font-bold text-gray-900">{usulan.lama_kegiatan || 0} Tahun</span>
-                                        </div>
-                                    </div>
+
                                 </div>
                             </div>
                         </section>
@@ -371,16 +367,14 @@ export default function AdminPengabdianDetail({ usulan, reviewers, initialScores
                                     <table className="min-w-full divide-y divide-gray-200 text-sm">
                                         <thead className="bg-gray-50">
                                             <tr>
-                                                <th className="px-3 py-3 text-left text-xs font-semibold text-gray-500">Tahun</th>
-                                                <th className="px-3 py-3 text-left text-xs font-semibold text-gray-500 border-l border-gray-100">Kategori</th>
+                                                <th className="px-3 py-3 text-left text-xs font-semibold text-gray-500">Kategori</th>
                                                 <th className="px-3 py-3 text-left text-xs font-semibold text-gray-500 border-l border-gray-100">Rincian Deskripsi</th>
                                             </tr>
                                         </thead>
                                         <tbody className="bg-white divide-y divide-gray-100">
                                             {(usulan.luaran_items || usulan.luaranItems).map((item: any, idx: number) => (
                                                 <tr key={idx} className="hover:bg-gray-50 transition-colors">
-                                                    <td className="px-3 py-3 whitespace-nowrap font-medium text-gray-900 border-r border-gray-50">Tahun {item.tahun}</td>
-                                                    <td className="px-3 py-3 font-medium text-blue-700 border-l border-gray-50">{item.kategori}</td>
+                                                    <td className="px-3 py-3 font-medium text-blue-700">{item.kategori}</td>
                                                     <td className="px-3 py-3 text-gray-600 text-xs italic border-l border-gray-50">{item.deskripsi}</td>
                                                 </tr>
                                             ))}
@@ -446,7 +440,7 @@ export default function AdminPengabdianDetail({ usulan, reviewers, initialScores
                                 </h2>
                                 <ReviewScoringForm
                                     onChange={() => { }}
-                                    maxFunding={Number(usulan?.dana_disetujui || 0) > 0 ? Number(usulan.dana_disetujui) : Number(usulan.total_anggaran)}
+                                    maxFunding={Number(usulan?.dana_usulan_awal || usulan?.total_anggaran || 0)}
                                     initialScores={initialScores}
                                     isReadOnly={true}
                                 />
@@ -525,7 +519,7 @@ export default function AdminPengabdianDetail({ usulan, reviewers, initialScores
                                     <div className="mt-4 grid grid-cols-2 gap-2 text-xs font-semibold text-gray-500">
                                         <div className="bg-gray-50 p-2 rounded text-center border border-gray-100">
                                             RAB USULAN<br />
-                                            <span className="text-gray-900 text-sm">{formatRupiah(usulan.total_anggaran)}</span>
+                                            <span className="text-gray-900 text-sm">{formatRupiah(usulan.dana_usulan_awal || usulan.total_anggaran)}</span>
                                         </div>
                                         <div className="bg-gray-50 p-2 rounded text-center border border-gray-100">
                                             PAGU DISETUJUI<br />
@@ -579,7 +573,7 @@ export default function AdminPengabdianDetail({ usulan, reviewers, initialScores
                                         <div className="mb-4">
                                             <label className="text-xs font-bold text-gray-500 mb-1 block uppercase">Pagu Dana Disetujui</label>
                                             <div className="relative">
-                                                <div className="absolute left-3 top-2.5 text-sm font-bold text-emerald-600">Rp</div>
+                                                <div className="absolute left-3 top-1 text-sm font-bold text-emerald-600">Rp</div>
                                                 <input
                                                     type="text"
                                                     name="dana_disetujui"
