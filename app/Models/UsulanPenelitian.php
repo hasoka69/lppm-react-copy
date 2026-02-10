@@ -29,7 +29,6 @@ class UsulanPenelitian extends Model
         'rumpun_ilmu_3',
         'prioritas_riset',
         'tahun_pertama',
-        'lama_kegiatan',
         'kelompok_makro_riset',
         'file_substansi',
         'rab_bahan',           // [NEW]

@@ -283,22 +283,22 @@ class AdminLPPMController extends Controller
             'reviewer'
         ])->findOrFail($id);
 
-        // Manually patch missing Dosen relation if NIDN exists (Data Consistency Fix)
-        // This handles cases where anggota_penelitian.dosen_id might be null but nidn is valid
-        foreach ($usulan->anggotaDosen as $anggota) {
-            if (!$anggota->dosen && $anggota->nidn) {
-                $dosen = \App\Models\Dosen::where('nidn', $anggota->nidn)->first();
-                if ($dosen) {
-                    $anggota->setRelation('dosen', $dosen);
-                    // Optional: Update the record permanently if needed, but for now just display
-                    // $anggota->update(['dosen_id' => $dosen->id]); 
-                }
-            }
+        $initialScores = [];
+        $latestReview = \App\Models\ReviewHistory::where('usulan_id', $id)
+            ->where('usulan_type', get_class($usulan))
+            ->where('reviewer_type', 'reviewer')
+            ->latest('reviewed_at')
+            ->first();
+
+        if ($latestReview) {
+            $initialScores = \App\Models\ReviewScore::where('review_history_id', $latestReview->id)->get();
         }
 
         return Inertia::render('lppm/penelitian/Detail', [
             'usulan' => $usulan,
-            'reviewers' => \App\Models\User::whereHas('roles', fn($q) => $q->where('name', 'Reviewer'))->get(['id', 'name'])
+            'reviewers' => \App\Models\User::whereHas('roles', fn($q) => $q->where('name', 'Reviewer'))->get(['id', 'name']),
+            'initialScores' => $initialScores,
+            'isReadOnly' => true
         ]);
     }
 
@@ -315,9 +315,22 @@ class AdminLPPMController extends Controller
             'reviewer'
         ])->findOrFail($id);
 
+        $initialScores = [];
+        $latestReview = \App\Models\ReviewHistory::where('usulan_id', $id)
+            ->where('usulan_type', get_class($usulan))
+            ->where('reviewer_type', 'reviewer')
+            ->latest('reviewed_at')
+            ->first();
+
+        if ($latestReview) {
+            $initialScores = \App\Models\ReviewScore::where('review_history_id', $latestReview->id)->get();
+        }
+
         return Inertia::render('lppm/pengabdian/Detail', [
             'usulan' => $usulan,
-            'reviewers' => \App\Models\User::whereHas('roles', fn($q) => $q->where('name', 'Reviewer'))->get(['id', 'name'])
+            'reviewers' => \App\Models\User::whereHas('roles', fn($q) => $q->where('name', 'Reviewer'))->get(['id', 'name']),
+            'initialScores' => $initialScores,
+            'isReadOnly' => true
         ]);
     }
 
@@ -441,12 +454,11 @@ class AdminLPPMController extends Controller
         if ($request->decision === 'didanai') {
             $updateData['nomor_kontrak'] = $request->nomor_kontrak;
             $updateData['tanggal_kontrak'] = $request->tanggal_kontrak;
-            $updateData['dana_disetujui'] = 7000000; // Force set to 7jt as per request? Or keep existing? 
-            // User said: "ujung ujungnya akan lppm yang menentukan nilai besaran dana"
-            // But also: "karna total dana yang akan di keliuarkan untuk penelitian itu dari lembaganya 7jt"
-            // Let's assume the previous step (Reviewer or Admin revision) set the budget, OR we might need to allow editing here. 
-            // For now, let's NOT override budget unless requested implicitly. 
-            // Wait, existing flow `setBudget` handles budget. 
+
+            // Ensure dana_disetujui is set. If not already set by setBudget, default to total_anggaran
+            if (!$usulan->dana_disetujui || $usulan->dana_disetujui <= 0) {
+                $updateData['dana_disetujui'] = $usulan->getTotalAnggaran() > 0 ? $usulan->getTotalAnggaran() : $usulan->total_anggaran;
+            }
         }
 
         $usulan->update($updateData);

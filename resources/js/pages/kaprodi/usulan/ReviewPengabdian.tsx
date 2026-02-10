@@ -31,7 +31,7 @@ export default function KaprodiUsulanReviewPengabdian({ usulan, pengusul, anggot
 
     return (
         <div className="min-h-screen bg-gray-50 font-sans">
-            <Head title={`Review Usulan Pengabdian: ${usulan.judul}`} />
+            <Head title={`Validasi Usulan Pengabdian: ${usulan.judul}`} />
             <Header />
 
             <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
@@ -45,7 +45,7 @@ export default function KaprodiUsulanReviewPengabdian({ usulan, pengusul, anggot
                         Daftar Usulan
                     </Link>
                     <ChevronRight className="w-4 h-4 mx-2" />
-                    <span className="font-semibold text-gray-700">Review Pengabdian</span>
+                    <span className="font-semibold text-gray-700">Validasi Pengabdian</span>
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -253,7 +253,7 @@ export default function KaprodiUsulanReviewPengabdian({ usulan, pengusul, anggot
                                             <p className="font-bold">Usulan Ditolak</p>
                                         </>
                                     )}
-                                    <p className="text-sm mt-2">Usulan ini telah Anda review.</p>
+                                    <p className="text-sm mt-2">Usulan ini telah Anda validasi.</p>
                                 </div>
                             ) : (
                                 <>

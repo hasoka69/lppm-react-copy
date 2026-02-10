@@ -179,6 +179,9 @@ class UsulanPengabdianController extends Controller
                 }
                 $path = $request->file('file_substansi')->store('substansi_pengabdian', 'public');
                 $data['file_substansi'] = $path;
+            } else {
+                // ✅ JANGAN OVERWRITE JIKA TIDAK ADA FILE BARU
+                unset($data['file_substansi']);
             }
 
             $data['tahun_pengusulan'] = 2026;
@@ -303,9 +306,6 @@ class UsulanPengabdianController extends Controller
 
         // [NEW] Check Member Approval Status
         $pendingMembers = $usulan->anggotaDosen()->whereIn('status_approval', ['pending', 'rejected'])->count();
-        if ($pendingMembers > 0) {
-            return back()->with('error', 'Terdapat anggota dosen yang belum menyetujui atau menolak undangan. Pastikan semua anggota berstatus Accepted.');
-        }
 
         // Only allowed to submit if status is draft or revision_dosen
         if (!in_array($usulan->status, ['draft', 'revision_dosen'])) {
@@ -314,7 +314,20 @@ class UsulanPengabdianController extends Controller
 
         try {
             $oldStatus = $usulan->status;
-            $newStatus = ($oldStatus === 'revision_dosen') ? 'resubmitted_revision' : 'submitted';
+
+            if ($pendingMembers > 0) {
+                // If there are pending members, set status to 'waiting_member_approval'
+                $newStatus = 'waiting_member_approval';
+                $message = 'Usulan berhasil disubmit. Menunggu persetujuan anggota dosen sebelum diteruskan ke Kaprodi.';
+                $action = 'submit_waiting';
+                $comment = 'Usulan disubmit oleh Ketua. Menunggu persetujuan anggota.';
+            } else {
+                // Determine new status based on previous status
+                $newStatus = ($oldStatus === 'revision_dosen') ? 'resubmitted_revision' : 'submitted';
+                $message = 'Usulan berhasil diajukan!';
+                $action = ($newStatus === 'resubmitted_revision') ? 'resubmit_revision' : 'submit';
+                $comment = ($newStatus === 'resubmitted_revision') ? 'Revisi berhasil diajukan oleh Dosen.' : 'Usulan diajukan oleh Dosen.';
+            }
 
             Log::info('Validation Passed. Updating status to ' . $newStatus);
             $usulan->update([
@@ -328,13 +341,13 @@ class UsulanPengabdianController extends Controller
                 'usulan_type' => get_class($usulan),
                 'reviewer_id' => Auth::id(),
                 'reviewer_type' => 'dosen',
-                'action' => $newStatus === 'resubmitted_revision' ? 'resubmit_revision' : 'submit',
-                'comments' => $newStatus === 'resubmitted_revision' ? 'Revisi berhasil diajukan oleh Dosen.' : 'Usulan diajukan oleh Dosen.',
+                'action' => $action,
+                'comments' => $comment,
                 'reviewed_at' => now(),
             ]);
 
             return redirect()->route('dosen.pengabdian.index')
-                ->with('success', 'Usulan Berhasil Diajukan!');
+                ->with('success', $message);
         } catch (\Exception $e) {
             Log::error('Submission Error: ' . $e->getMessage());
             return back()->with('error', 'Gagal mengajukan usulan: ' . $e->getMessage());

@@ -15,6 +15,8 @@ interface ScoreItem {
 interface ReviewScoringFormProps {
     onChange: (scores: ScoreItem[], totalScore: number, recommendation: number) => void;
     maxFunding?: number; // Default 7,000,000
+    initialScores?: ScoreItem[];
+    isReadOnly?: boolean;
 }
 
 const SECTIONS = [
@@ -28,8 +30,25 @@ const SECTIONS = [
     { id: 'rab', label: 'Kewajaran RAB', weight: 10 },
 ];
 
-const ReviewScoringForm: React.FC<ReviewScoringFormProps> = ({ onChange, maxFunding = 7000000 }) => {
-    const [scores, setScores] = useState<ScoreItem[]>(SECTIONS.map(s => ({ section: s.id, score: 0, comments: '' })));
+const ReviewScoringForm: React.FC<ReviewScoringFormProps> = ({ onChange, maxFunding = 7000000, initialScores, isReadOnly }) => {
+    const [scores, setScores] = useState<ScoreItem[]>(() => {
+        if (initialScores && initialScores.length > 0) {
+            return SECTIONS.map(s => {
+                const found = initialScores.find(is => is.section === s.id);
+                return found || { section: s.id, score: 0, comments: '' };
+            });
+        }
+        return SECTIONS.map(s => ({ section: s.id, score: 0, comments: '' }));
+    });
+
+    useEffect(() => {
+        if (initialScores && initialScores.length > 0) {
+            setScores(SECTIONS.map(s => {
+                const found = initialScores.find(is => is.section === s.id);
+                return found || { section: s.id, score: 0, comments: '' };
+            }));
+        }
+    }, [initialScores]);
 
     useEffect(() => {
         let calculatedScore = 0;
@@ -86,15 +105,19 @@ const ReviewScoringForm: React.FC<ReviewScoringFormProps> = ({ onChange, maxFund
                                             className="w-20 h-8 text-right font-mono"
                                             value={scoreItem?.score || 0}
                                             onChange={(e) => handleScoreChange(section.id, Number(e.target.value))}
+                                            readOnly={isReadOnly}
+                                            disabled={isReadOnly}
                                         />
                                         <span className="text-xs text-gray-400">/ 100</span>
                                     </div>
                                 </div>
                                 <Textarea
-                                    placeholder={`Catatan untuk ${section.label}...`}
+                                    placeholder={isReadOnly ? "" : `Catatan untuk ${section.label}...`}
                                     className="h-16 text-xs resize-none"
                                     value={scoreItem?.comments || ''}
                                     onChange={(e) => handleCommentChange(section.id, e.target.value)}
+                                    readOnly={isReadOnly}
+                                    disabled={isReadOnly}
                                 />
                             </div>
                         );

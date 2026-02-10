@@ -138,87 +138,118 @@ const Welcome = ({ auth, pengumuman = [], berita = [] }: { auth: any, pengumuman
         </div>
       </section>
 
-      {/* ANNOUNCEMENTS SECTION */}
-      <section className="py-20 bg-slate-50">
-        <div className="container mx-auto px-6">
-          <div className="text-center mb-16">
-            <span className="text-blue-600 font-semibold tracking-wider uppercase text-sm">Informasi Terkini</span>
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mt-2 mb-4">Pengumuman & Berita</h2>
-            <p className="text-slate-600 max-w-2xl mx-auto">Dapatkan informasi terbaru mengenai jadwal, panduan, dan update penting seputar kegiatan LPPM.</p>
-          </div>
+      {/* ANNOUNCEMENTS & NEWS SECTION */}
+      <section className="py-20 bg-slate-50 overflow-hidden">
+        <div className="container mx-auto px-6 space-y-20">
 
-          <div className="grid lg:grid-cols-2 gap-12 items-start">
-            {/* COLUMN 1: PENGUMUMAN (Facebook Style) */}
-            <div className="space-y-6">
-              <div className="flex items-center gap-3 mb-2">
-                <Megaphone className="w-6 h-6 text-blue-600" />
-                <h3 className="text-xl font-bold text-slate-800">Pengumuman Terbaru</h3>
-              </div>
+          {/* PENGUMUMAN SECTION (GRID OF 3) */}
+          <div className="space-y-8">
+            <div className="text-center">
+              <span className="text-blue-600 font-semibold tracking-wider uppercase text-sm">Informasi Terkini</span>
+              <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mt-2">Pengumuman Terbaru</h2>
+              <div className="w-20 h-1.5 bg-blue-600 mx-auto mt-4 rounded-full"></div>
+            </div>
 
+            <div className="grid md:grid-cols-3 gap-8">
               {pengumuman.length > 0 ? (
                 pengumuman.map((item: any, idx: number) => (
-                  <div key={idx} className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 animate-in slide-in-from-bottom-2 duration-500" style={{ animationDelay: `${idx * 100}ms` }}>
-                    <div className="flex items-start gap-4">
-                      <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
-                        <span className="font-bold text-blue-600">A</span>
+                  <div key={idx} className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow relative overflow-hidden group">
+                    <div className="absolute top-0 left-0 w-1 h-full bg-blue-500 transform scale-y-0 group-hover:scale-y-100 transition-transform duration-300 origin-bottom"></div>
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 font-bold">
+                        <Megaphone className="w-5 h-5" />
                       </div>
-                      <div className="flex-1">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <h4 className="font-bold text-slate-900 text-sm">Admin LPPM</h4>
-                            <p className="text-xs text-slate-500">{new Date(item.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
-                          </div>
-                        </div>
-                        <div className="mt-3 text-slate-700 text-sm leading-relaxed whitespace-pre-wrap">
-                          {item.content}
-                        </div>
+                      <div>
+                        <span className="text-xs text-slate-500 block">Admin LPPM</span>
+                        <span className="text-xs font-bold text-slate-700">{new Date(item.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
                       </div>
+                    </div>
+                    <div className="text-slate-700 leading-relaxed text-sm line-clamp-6">
+                      {item.content}
                     </div>
                   </div>
                 ))
               ) : (
-                <div className="p-8 text-center bg-white rounded-2xl border border-slate-100 border-dashed">
-                  <p className="text-slate-400">Belum ada pengumuman terbaru.</p>
+                <div className="col-span-3 text-center py-12 bg-white rounded-2xl border border-dashed border-slate-200">
+                  <p className="text-slate-400">Belum ada pengumuman saat ini.</p>
                 </div>
               )}
             </div>
+          </div>
 
-            {/* COLUMN 2: BERITA REAL-DATA */}
-            <div className="space-y-6">
-              <div className="flex items-center gap-3 mb-2">
-                <BookOpen className="w-6 h-6 text-indigo-600" />
-                <h3 className="text-xl font-bold text-slate-800">Berita & Artikel</h3>
+          {/* BERITA SECTION (HORIZONTAL SLIDER) */}
+          <div className="space-y-8">
+            <div className="flex items-end justify-between">
+              <div>
+                <h2 className="text-3xl font-bold text-slate-900 flex items-center gap-3">
+                  <BookOpen className="w-8 h-8 text-indigo-600" />
+                  Berita & Artikel
+                </h2>
+                <p className="text-slate-500 mt-2">Kabar terbaru seputar kegiatan penelitian dan pengabdian.</p>
               </div>
+              <Link href="/berita" className="hidden md:flex items-center gap-2 text-indigo-600 font-bold hover:gap-3 transition-all">
+                Lihat Semua <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
 
-              <div className="grid sm:grid-cols-2 gap-4">
+            {/* Slider Container */}
+            <div className="relative group">
+              {/* Gradient Masks */}
+              <div className="absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-slate-50 to-transparent z-10 pointer-events-none"></div>
+              <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-slate-50 to-transparent z-10 pointer-events-none"></div>
+
+              <div className="flex overflow-x-auto gap-6 pb-8 snap-x snap-mandatory hide-scrollbar" style={{ scrollPaddingLeft: '1.5rem', scrollPaddingRight: '1.5rem' }}>
                 {berita.length > 0 ? (
                   berita.map((item: any, idx: number) => (
-                    <div key={idx} className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg border border-slate-100 transition-all duration-300 hover:-translate-y-1">
-                      {item.image && (
-                        <div className="h-32 bg-slate-200 overflow-hidden">
-                          <img src={`/storage/${item.image}`} alt={item.judul} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
-                        </div>
-                      )}
-                      <div className="p-4">
-                        <span className="text-xs text-indigo-500 font-bold mb-2 block">{item.kategori || 'Berita'}</span>
-                        <h4 className="font-bold text-slate-800 leading-snug group-hover:text-indigo-600 transition-colors line-clamp-2 mb-2">
-                          {item.judul}
-                        </h4>
-                        <div className="flex items-center gap-2 text-xs text-slate-400 mt-2">
-                          <Clock className="w-3 h-3" />
-                          <span>{new Date(item.created_at).toLocaleDateString('id-ID')}</span>
+                    <Link
+                      key={idx}
+                      href={`/berita/${item.slug}`}
+                      className="flex-shrink-0 w-[300px] md:w-[350px] snap-center bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group/card"
+                    >
+                      <div className="h-48 overflow-hidden relative">
+                        {item.gambar ? (
+                          <img src={`${item.gambar}`} alt={item.judul} className="w-full h-full object-cover group-hover/card:scale-110 transition-transform duration-700" />
+                        ) : (
+                          <div className="w-full h-full bg-slate-100 flex items-center justify-center text-slate-300">
+                            <FileText className="w-12 h-12" />
+                          </div>
+                        )}
+                        <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold text-indigo-600 shadow-sm">
+                          {item.kategori || 'Berita'}
                         </div>
                       </div>
-                    </div>
+                      <div className="p-5">
+                        <div className="flex items-center gap-2 text-xs text-slate-400 mb-3">
+                          <Calendar className="w-3.5 h-3.5" />
+                          <span>{new Date(item.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                        </div>
+                        <h3 className="font-bold text-lg text-slate-800 leading-snug mb-3 line-clamp-2 group-hover/card:text-indigo-600 transition-colors">
+                          {item.judul}
+                        </h3>
+                        <p className="text-slate-500 text-sm line-clamp-2 mb-4">
+                          {item.ringkasan || item.konten?.substring(0, 100).replace(/<[^>]*>/g, '') || 'Baca selengkapnya...'}
+                        </p>
+                        <span className="text-sm font-bold text-indigo-600 flex items-center gap-1 group-hover/card:gap-2 transition-all">
+                          Baca Selengkapnya <ArrowRight className="w-4 h-4" />
+                        </span>
+                      </div>
+                    </Link>
                   ))
                 ) : (
-                  <div className="col-span-2 p-8 text-center bg-white rounded-2xl border border-slate-100 border-dashed">
+                  <div className="w-full text-center py-12 bg-white rounded-2xl border border-dashed border-slate-200">
                     <p className="text-slate-400">Belum ada berita terbaru.</p>
                   </div>
                 )}
               </div>
             </div>
+
+            <div className="md:hidden text-center">
+              <Link href="/berita" className="inline-flex items-center gap-2 text-indigo-600 font-bold">
+                Lihat Semua Berita <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
           </div>
+
         </div>
       </section>
 

@@ -29,11 +29,11 @@ class ReviewerController extends Controller
         // Let's stick to simple Status counts for now as it's faster.
 
         $pendingPenelitian = UsulanPenelitian::where('reviewer_id', $user->id)
-            ->whereIn('status', ['reviewer_assigned', 'resubmitted_revision'])
+            ->whereIn('status', ['reviewer_assigned'])
             ->count();
 
         $pendingPengabdian = \App\Models\UsulanPengabdian::where('reviewer_id', $user->id) // Assuming assignment column exists/used
-            ->whereIn('status', ['reviewer_assigned', 'resubmitted_revision', 'approved_prodi']) // 'approved_prodi' might be 'pool' or 'assigned'
+            ->whereIn('status', ['reviewer_assigned', 'approved_prodi']) // 'approved_prodi' might be 'pool' or 'assigned'
             ->count();
 
         $totalPending = $pendingPenelitian + $pendingPengabdian;
@@ -107,7 +107,7 @@ class ReviewerController extends Controller
         // 1. Penelitian
         $usulanPenelitian = UsulanPenelitian::with(['user.dosen'])
             ->where('reviewer_id', '=', $user->id, 'and')
-            ->whereIn('status', ['reviewer_assigned', 'resubmitted_revision'])
+            ->whereIn('status', ['reviewer_assigned'])
             ->latest()
             ->get()
             ->map(fn($item) => [
@@ -125,7 +125,7 @@ class ReviewerController extends Controller
         // 2. Pengabdian
         $usulanPengabdian = \App\Models\UsulanPengabdian::with(['ketua.dosen'])
             ->where('reviewer_id', '=', $user->id, 'and')
-            ->whereIn('status', ['reviewer_assigned', 'resubmitted_revision'])
+            ->whereIn('status', ['reviewer_assigned'])
             ->latest()
             ->get()
             ->map(fn($item) => [
@@ -191,7 +191,7 @@ class ReviewerController extends Controller
                     'comments' => $review->comments,
                     'reviewed_at' => $review->reviewed_at ? \Carbon\Carbon::parse($review->reviewed_at)->format('d M Y H:i') : '-',
                     'status_usulan' => $review->usulan->status,
-                    'type' => str_contains($review->usulan_type, 'Pengabdian') ? 'Pengabdian' : 'Penelitian'
+                    'type' => str_contains($review->usulan_type, 'Pengabdian') ? 'pengabdian' : 'penelitian'
                 ];
             })
             ->filter(); // Remove nulls
@@ -228,9 +228,28 @@ class ReviewerController extends Controller
             })
             ->firstOrFail();
 
+        $isReadOnly = request()->query('mode') === 'view';
+        $initialScores = [];
+
+        if ($isReadOnly) {
+            // Fetch the latest review history for this reviewer and usulan
+            $latestHistory = ReviewHistory::where('usulan_id', $id)
+                ->where('usulan_type', get_class($usulan))
+                ->where('reviewer_id', $user->id)
+                ->where('reviewer_type', 'reviewer')
+                ->latest('reviewed_at')
+                ->first();
+
+            if ($latestHistory) {
+                $initialScores = \App\Models\ReviewScore::where('review_history_id', $latestHistory->id)->get();
+            }
+        }
+
         return Inertia::render('reviewer/usulan/Review', [
             'proposal' => $usulan,
             'dosen' => $usulan->user->dosen, // Ketua info
+            'isReadOnly' => $isReadOnly,
+            'initialScores' => $initialScores
         ]);
     }
 
@@ -354,6 +373,22 @@ class ReviewerController extends Controller
         $dosenData['name'] = $usulan->ketua->name; // User name
         $dosenData['fakultas'] = $usulan->ketua->dosen->fakultas ?? '-'; // Handle optional fakultas
 
+        $isReadOnly = request()->query('mode') === 'view';
+        $initialScores = [];
+
+        if ($isReadOnly) {
+            $latestHistory = ReviewHistory::where('usulan_id', $id)
+                ->where('usulan_type', get_class($usulan))
+                ->where('reviewer_id', $user->id)
+                ->where('reviewer_type', 'reviewer')
+                ->latest('reviewed_at')
+                ->first();
+
+            if ($latestHistory) {
+                $initialScores = \App\Models\ReviewScore::where('review_history_id', $latestHistory->id)->get();
+            }
+        }
+
         return Inertia::render('reviewer/usulan/ReviewPengabdian', [
             'proposal' => $usulan,
             'dosen' => $dosenData, // Pass modified data
@@ -361,7 +396,9 @@ class ReviewerController extends Controller
             'anggotaNonDosen' => $usulan->anggotaNonDosen,
             'rabItem' => $usulan->rabItems,
             'luaran' => $usulan->luaranItems, // [NEW] Pass explicitly
-            'totalAnggaran' => $usulan->getTotalAnggaran()
+            'totalAnggaran' => $usulan->getTotalAnggaran(),
+            'isReadOnly' => $isReadOnly,
+            'initialScores' => $initialScores
         ]);
     }
 

@@ -33,7 +33,7 @@ class MemberApprovalController extends Controller
                     'id' => $item->id,
                     'type' => 'penelitian',
                     'judul' => $item->usulanPenelitian?->judul ?? 'Judul Tidak Tersedia',
-                    'ketua' => $item->usulanPenelitian?->ketua?->nama ?? 'Nama Ketua Tidak Tersedia',
+                    'ketua' => $item->usulanPenelitian?->ketua?->name ?? 'Nama Ketua Tidak Tersedia', // Fixed: nama -> name
                     'created_at' => $item->created_at,
                 ];
             });
@@ -48,7 +48,7 @@ class MemberApprovalController extends Controller
                     'id' => $item->id,
                     'type' => 'pengabdian',
                     'judul' => $item->usulan?->judul ?? 'Judul Tidak Tersedia',
-                    'ketua' => $item->usulan?->ketua?->nama ?? 'Nama Ketua Tidak Tersedia',
+                    'ketua' => $item->usulan?->ketua?->name ?? 'Nama Ketua Tidak Tersedia', // Fixed: nama -> name
                     'created_at' => $item->created_at,
                 ];
             });
@@ -100,7 +100,22 @@ class MemberApprovalController extends Controller
             $usulan = $type === 'penelitian' ? $anggota->usulanPenelitian : $anggota->usulan;
             if ($usulan && $usulan->status !== 'draft') {
                 $usulan->update(['status' => 'draft']);
-                // Create logic to maybe notify the owner? For now just silent revert.
+            }
+        } elseif ($status === 'accepted') {
+            // Check if all *LECTURER* members have approved
+            $usulan = $type === 'penelitian' ? $anggota->usulanPenelitian : $anggota->usulan;
+
+            if ($usulan && $usulan->status === 'waiting_member_approval') {
+                // Count pending lecturers only
+                $pendingLecturers = $modelClass::where('usulan_id', $usulan->id)
+                    ->where('status_approval', 'pending')
+                    ->count();
+
+                if ($pendingLecturers === 0) {
+                    // All lecturers approved -> Advance status
+                    // 'submitted' or 'auto_submitted'? Using 'submitted' for now as per standard flow.
+                    $usulan->update(['status' => 'submitted']);
+                }
             }
         }
 

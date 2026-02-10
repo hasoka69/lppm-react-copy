@@ -92,7 +92,6 @@ class UsulanPenelitianController extends Controller
                 'rumpun_ilmu_3' => $latestDraft->rumpun_ilmu_3,
                 'prioritas_riset' => $latestDraft->prioritas_riset,
                 'tahun_pertama' => $latestDraft->tahun_pertama,
-                'lama_kegiatan' => $latestDraft->lama_kegiatan,
             ] : null,
             'makroRisetList' => DB::table('makro_riset')->where('aktif', true)->get(), // ✅ TAMBAHAN
             ...$masterData,
@@ -119,7 +118,6 @@ class UsulanPenelitianController extends Controller
             'rumpun_ilmu_3' => 'nullable|string',
             'prioritas_riset' => 'nullable|string',
             'tahun_pertama' => 'nullable|integer',
-            'lama_kegiatan' => 'nullable|integer',
         ]);
 
         try {
@@ -186,7 +184,6 @@ class UsulanPenelitianController extends Controller
             'rumpun_ilmu_3' => 'nullable|string',
             'prioritas_riset' => 'nullable|string',
             'tahun_pertama' => 'nullable|integer',
-            'lama_kegiatan' => 'nullable|integer',
             // [NEW] Handle Makro Riset
             'makro_riset_id' => 'nullable|exists:makro_riset,id',
             // RAB Validation
@@ -219,6 +216,9 @@ class UsulanPenelitianController extends Controller
                 }
                 $path = $request->file('file_substansi')->store('substansi', 'public');
                 $validated['file_substansi'] = $path;
+            } else {
+                // ✅ JANGAN OVERWRITE JIKA TIDAK ADA FILE BARU
+                unset($validated['file_substansi']);
             }
 
             // $validated['tahun_pertama'] = 2026; // Removed hardcoding
@@ -286,12 +286,6 @@ class UsulanPenelitianController extends Controller
             return back()->with('error', 'Data usulan belum lengkap!');
         }
 
-        // [NEW] Check Member Approval Status
-        $pendingMembers = $usulan->anggotaDosen()->whereIn('status_approval', ['pending', 'rejected'])->count();
-        if ($pendingMembers > 0) {
-            return back()->with('error', 'Terdapat anggota dosen yang belum menyetujui atau menolak undangan. Pastikan semua anggota berstatus Accepted.');
-        }
-
         // Only allowed to submit if status is draft or revision_dosen
         if (!in_array($usulan->status, ['draft', 'revision_dosen'])) {
             return back()->with('error', 'Usulan tidak dalam tahap pengajuan/revisi.');
@@ -300,8 +294,22 @@ class UsulanPenelitianController extends Controller
         try {
             $oldStatus = $usulan->status;
 
-            // Logic: if draft -> submitted, if revision_dosen -> resubmitted_revision
-            $newStatus = ($oldStatus === 'revision_dosen') ? 'resubmitted_revision' : 'submitted';
+            // [NEW] Check Member Approval Status
+            $pendingMembers = $usulan->anggotaDosen()->whereIn('status_approval', ['pending', 'rejected'])->count();
+
+            if ($pendingMembers > 0) {
+                // If there are pending members, set status to 'waiting_member_approval'
+                $newStatus = 'waiting_member_approval';
+                $message = 'Usulan berhasil disubmit. Menunggu persetujuan anggota dosen sebelum diteruskan ke Kaprodi.';
+                $action = 'submit_waiting';
+                $comment = 'Usulan disubmit oleh Ketua. Menunggu persetujuan anggota.';
+            } else {
+                // Determine new status based on previous status
+                $newStatus = ($oldStatus === 'revision_dosen') ? 'resubmitted_revision' : 'submitted';
+                $message = 'Usulan berhasil diajukan!';
+                $action = ($newStatus === 'resubmitted_revision') ? 'resubmit_revision' : 'submit';
+                $comment = ($newStatus === 'resubmitted_revision') ? 'Revisi berhasil diajukan oleh Dosen.' : 'Usulan diajukan oleh Dosen.';
+            }
 
             $usulan->update([
                 'status' => $newStatus,
@@ -314,13 +322,13 @@ class UsulanPenelitianController extends Controller
                 'usulan_type' => get_class($usulan),
                 'reviewer_id' => Auth::id(),
                 'reviewer_type' => 'dosen',
-                'action' => $newStatus === 'resubmitted_revision' ? 'resubmit_revision' : 'submit',
-                'comments' => $newStatus === 'resubmitted_revision' ? 'Revisi berhasil diajukan oleh Dosen.' : 'Usulan diajukan oleh Dosen.',
+                'action' => $action,
+                'comments' => $comment,
                 'reviewed_at' => now(),
             ]);
 
             return redirect()->route('dosen.penelitian.index')
-                ->with('success', 'Usulan berhasil diajukan!');
+                ->with('success', $message);
         } catch (\Exception $e) {
             return back()->with('error', 'Gagal mengajukan usulan: ' . $e->getMessage());
         }

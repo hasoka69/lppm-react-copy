@@ -85,7 +85,7 @@ export default function DashboardKaprodi({ program, summary, proposals, activiti
 
     const stats = [
         {
-            title: "Menunggu Review",
+            title: "Menunggu Validasi",
             value: summary.waiting_review,
             icon: Clock,
             color: 'blue',
@@ -94,7 +94,7 @@ export default function DashboardKaprodi({ program, summary, proposals, activiti
             desc: "Usulan baru masuk"
         },
         {
-            title: "Diteruskan",
+            title: "Telah Divalidasi",
             value: summary.forwarded,
             icon: CheckCircle2,
             color: 'emerald',
@@ -151,7 +151,7 @@ export default function DashboardKaprodi({ program, summary, proposals, activiti
                                     className="px-6 py-3 bg-white text-blue-900 rounded-2xl font-bold shadow-lg shadow-blue-900/20 hover:bg-blue-50 active:scale-95 transition-all flex items-center justify-center gap-2"
                                 >
                                     <FileText className="w-4 h-4" />
-                                    Mulai Review Usulan
+                                    Mulai Validasi Usulan
                                 </Link>
                                 <div className="flex items-center justify-center gap-4 text-sm font-semibold text-blue-200/60">
                                     <span>{new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
@@ -191,7 +191,7 @@ export default function DashboardKaprodi({ program, summary, proposals, activiti
                                 <div className="p-8 border-b border-gray-50 flex flex-col md:flex-row md:items-center justify-between gap-4">
                                     <div>
                                         <h3 className="text-xl font-bold text-gray-900">Usulan Terbaru</h3>
-                                        <p className="text-gray-400 text-xs font-bold uppercase tracking-wider mt-1">Belum direview</p>
+                                        <p className="text-gray-400 text-xs font-bold uppercase tracking-wider mt-1">Belum divalidasi</p>
                                     </div>
                                     <div className="flex items-center gap-3">
                                         <div className="relative group/search">
@@ -254,7 +254,7 @@ export default function DashboardKaprodi({ program, summary, proposals, activiti
                                                             href={p.type === 'Pengabdian' ? `/kaprodi/review-pengabdian/${p.id}` : `/kaprodi/review/${p.id}`}
                                                             className="inline-flex items-center gap-2 px-4 py-2 bg-white border-2 border-blue-600 text-blue-600 rounded-xl text-xs font-bold hover:bg-blue-600 hover:text-white transition-all shadow-sm hover:shadow-blue-200"
                                                         >
-                                                            Review
+                                                            Validasi
                                                             <ArrowUpRight className="w-3.5 h-3.5" />
                                                         </Link>
                                                     </td>
@@ -266,7 +266,7 @@ export default function DashboardKaprodi({ program, summary, proposals, activiti
                                                             <div className="p-4 bg-gray-50 rounded-full">
                                                                 <Activity className="w-6 h-6 opacity-40" />
                                                             </div>
-                                                            <p className="text-sm font-medium">Tidak ada usulan baru yang perlu direview.</p>
+                                                            <p className="text-sm font-medium">Tidak ada usulan baru yang perlu divalidasi.</p>
                                                         </div>
                                                     </td>
                                                 </tr>

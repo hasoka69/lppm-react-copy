@@ -54,7 +54,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Profile Route
     Route::get('/profile', [\App\Http\Controllers\ProfileController::class, 'index'])->name('profile.index');
-    Route::put('/profile', [\App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update');
+    Route::patch('/profile', [\App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update_data');
     Route::post('/profile/photo', [\App\Http\Controllers\ProfileController::class, 'updatePhoto'])->name('profile.photo.update');
 
     // Routes Dosen Penelitian (Ex-Pengajuan)
@@ -251,7 +251,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 Route::get('/', function () {
     $pengumuman = \App\Models\Pengumuman::where('is_active', true)->latest()->take(3)->get();
-    $berita = \App\Models\Berita::where('status', 'published')->latest()->take(4)->get();
+    $berita = \App\Models\Berita::where('status', 'published')->latest()->take(5)->get();
 
     return Inertia::render('welcome', [
         'pengumuman' => $pengumuman,
@@ -261,6 +261,7 @@ Route::get('/', function () {
 
 Route::get('/berita', [\App\Http\Controllers\BeritaController::class, 'indexPublic'])->name('berita.index');
 Route::get('/berita/{slug}', [\App\Http\Controllers\BeritaController::class, 'showPublic'])->name('berita.show');
+Route::get('/pengumuman', [\App\Http\Controllers\PengumumanController::class, 'indexPublic'])->name('pengumuman.public.index');
 
 // Otentikasi dihandle di routes/auth.php (already included at bottom)
 

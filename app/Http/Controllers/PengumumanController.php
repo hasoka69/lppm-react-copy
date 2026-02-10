@@ -59,4 +59,12 @@ class PengumumanController extends Controller
         $pengumuman->delete();
         return back()->with('success', 'Pengumuman berhasil dihapus');
     }
+
+    public function indexPublic()
+    {
+        $pengumuman = Pengumuman::where('is_active', true)->latest()->paginate(9);
+        return Inertia::render('pengumuman/Index', [
+            'pengumuman' => $pengumuman
+        ]);
+    }
 }

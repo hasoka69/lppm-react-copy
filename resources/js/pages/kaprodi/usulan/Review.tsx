@@ -35,7 +35,7 @@ export default function KaprodiUsulanReview({ usulan, pengusul, anggota, anggota
 
     return (
         <div className="min-h-screen bg-gray-50/50 font-sans">
-            <Head title={`Review Usulan: ${usulan.judul}`} />
+            <Head title={`Validasi Usulan: ${usulan.judul}`} />
             <Header />
 
             <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
@@ -49,7 +49,7 @@ export default function KaprodiUsulanReview({ usulan, pengusul, anggota, anggota
                         Daftar Usulan
                     </Link>
                     <ChevronRight className="w-4 h-4 mx-2" />
-                    <span className="font-semibold text-foreground">Review Usulan</span>
+                    <span className="font-semibold text-foreground">Validasi Usulan</span>
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -229,7 +229,7 @@ export default function KaprodiUsulanReview({ usulan, pengusul, anggota, anggota
                                     ) : (
                                         <div className="space-y-6">
                                             <div className="p-4 bg-blue-50 text-blue-800 rounded-md text-sm leading-relaxed border border-blue-100">
-                                                <p className="font-medium mb-1">Instruksi Review:</p>
+                                                <p className="font-medium mb-1">Instruksi Validasi:</p>
                                                 Silakan tinjau kelengkapan berkas dan kesesuaian usulan dengan roadmap penelitian program studi sebelum memberikan persetujuan.
                                             </div>
 

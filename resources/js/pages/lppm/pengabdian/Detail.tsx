@@ -3,6 +3,8 @@ import { Link, Head, router } from '@inertiajs/react';
 declare var route: any;
 import Header from '@/components/Header';
 import Footer from '@/components/footer';
+import { Toaster, toast } from 'sonner';
+import ReviewScoringForm from '@/components/ReviewScoringForm';
 import {
     Home,
     ChevronRight,
@@ -34,6 +36,8 @@ import { Input } from "@/components/ui/input"
 interface ProposalDetailProps {
     usulan: any;
     reviewers: any[];
+    initialScores?: any[];
+    isReadOnly?: boolean;
 }
 
 function AdminActionCard({ title, icon, description, children }: { title: string, icon: any, description: string, children: React.ReactNode }) {
@@ -68,13 +72,29 @@ function ExpandableText({ text, limit = 150 }: { text: string, limit?: number })
     );
 }
 
-export default function AdminPengabdianDetail({ usulan, reviewers }: ProposalDetailProps) {
-    const formatRupiah = (number: number) => {
-        return new Intl.NumberFormat('id-ID', {
-            style: 'currency',
-            currency: 'IDR',
-            minimumFractionDigits: 0
-        }).format(number);
+export default function AdminPengabdianDetail({ usulan, reviewers, initialScores = [], isReadOnly = false }: ProposalDetailProps) {
+    const formatRupiah = (number: any, withPrefix = true) => {
+        const value = typeof number === 'string' ? parseFloat(number) : number;
+        const formatted = new Intl.NumberFormat('id-ID', {
+            style: 'decimal',
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0
+        }).format(value || 0);
+
+        return withPrefix ? `Rp ${formatted}` : formatted;
+    };
+
+    // State for budget input formatting
+    const [paguDisp, setPaguDisp] = useState(formatRupiah(usulan.dana_disetujui || usulan.total_anggaran, false));
+
+    const handlePaguChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        let val = e.target.value.replace(/\D/g, '');
+        if (val) {
+            const formatted = new Intl.NumberFormat('id-ID').format(parseInt(val));
+            setPaguDisp(formatted);
+        } else {
+            setPaguDisp('');
+        }
     };
 
     // [NEW] Contract Modal State
@@ -417,6 +437,22 @@ export default function AdminPengabdianDetail({ usulan, reviewers }: ProposalDet
                             )}
                         </section>
 
+                        {/* 5. PENILAIAN REVIEWER (READ-ONLY) */}
+                        {initialScores && initialScores.length > 0 && (
+                            <section className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                                <h2 className="text-lg font-bold text-gray-900 mb-6 border-b border-gray-100 pb-2 flex items-center">
+                                    <CheckCircle className="w-5 h-5 mr-2 text-green-600" />
+                                    Hasil Penilaian Reviewer
+                                </h2>
+                                <ReviewScoringForm
+                                    onChange={() => { }}
+                                    maxFunding={Number(usulan?.dana_disetujui || 0) > 0 ? Number(usulan.dana_disetujui) : Number(usulan.total_anggaran)}
+                                    initialScores={initialScores}
+                                    isReadOnly={true}
+                                />
+                            </section>
+                        )}
+
                         {/* 6. HISTORY */}
                         <section className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                             <h2 className="text-lg font-bold text-gray-900 mb-6 border-b border-gray-100 pb-2 flex items-center">
@@ -492,7 +528,7 @@ export default function AdminPengabdianDetail({ usulan, reviewers }: ProposalDet
                                             <span className="text-gray-900 text-sm">{formatRupiah(usulan.total_anggaran)}</span>
                                         </div>
                                         <div className="bg-gray-50 p-2 rounded text-center border border-gray-100">
-                                            RAB FINAL<br />
+                                            PAGU DISETUJUI<br />
                                             <span className="text-green-700 text-sm">{formatRupiah(usulan.dana_disetujui || 0)}</span>
                                         </div>
                                     </div>
@@ -537,20 +573,25 @@ export default function AdminPengabdianDetail({ usulan, reviewers }: ProposalDet
                                         e.preventDefault();
                                         const data = new FormData(e.currentTarget);
                                         router.post(route('lppm.set_budget', { type: 'pengabdian', id: usulan.id }), {
-                                            dana_disetujui: data.get('dana_disetujui'),
-                                            notes: data.get('notes')
+                                            dana_disetujui: paguDisp.replace(/\./g, '')
                                         });
                                     }}>
                                         <div className="mb-4">
-                                            <label className="text-xs font-bold text-gray-500 mb-1 block uppercase">PAGU DANA DISETUJUI</label>
+                                            <label className="text-xs font-bold text-gray-500 mb-1 block uppercase">Pagu Dana Disetujui</label>
                                             <div className="relative">
-                                                <div className="absolute left-3 top-1 text-sm font-bold text-emerald-600">RP.</div>
-                                                <input type="number" name="dana_disetujui" defaultValue={usulan.total_anggaran} className="w-full pl-10 text-sm font-bold border-gray-200 rounded-lg focus:ring-emerald-500 bg-emerald-50/20" />
+                                                <div className="absolute left-3 top-2.5 text-sm font-bold text-emerald-600">Rp</div>
+                                                <input
+                                                    type="text"
+                                                    name="dana_disetujui"
+                                                    value={paguDisp}
+                                                    onChange={handlePaguChange}
+                                                    className="w-full pl-10 text-sm font-bold border-gray-200 rounded-lg focus:ring-emerald-500 bg-emerald-50/20"
+                                                    placeholder="Contoh: 10.000.000"
+                                                />
                                             </div>
-                                        </div>
-                                        <div className="mb-4">
-                                            <label className="text-xs font-bold text-gray-500 mb-1 block uppercase">CATATAN REVISI KHUSUS</label>
-                                            <textarea name="notes" className="w-full text-sm font-medium border-gray-200 rounded-lg h-28 focus:ring-emerald-500 bg-gray-50" placeholder="Sebutkan item RAB yang harus dihapus atau diubah..."></textarea>
+                                            <p className="text-[10px] text-gray-400 mt-1 italic">
+                                                * Maksimal dana sesuai RAB: {formatRupiah(usulan.total_anggaran)}
+                                            </p>
                                         </div>
                                         <button type="submit" className="w-full bg-emerald-600 text-white py-3 rounded-lg text-sm font-bold hover:bg-emerald-700 shadow-md">
                                             REQUEST REVISI DOSEN

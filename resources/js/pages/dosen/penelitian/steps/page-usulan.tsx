@@ -240,14 +240,6 @@ const PageUsulan: React.FC<PageUsulanProps> = ({
                                                             </>
                                                         ) : (
                                                             <>
-                                                                <DropdownMenuItem className="rounded-md cursor-default flex items-center justify-between">
-                                                                    <span className="flex items-center">
-                                                                        <Eye className="mr-3 h-4 w-4 text-slate-500" /> Lihat Detail
-                                                                    </span>
-                                                                    <span className="text-xs font-semibold text-gray-500 bg-gray-100 px-2 py-1 rounded border border-gray-200">
-                                                                        Anggota
-                                                                    </span>
-                                                                </DropdownMenuItem>
                                                                 <DropdownMenuItem
                                                                     onClick={() => onViewUsulan?.(u)}
                                                                     className="rounded-md cursor-pointer"

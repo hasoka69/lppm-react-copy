@@ -1,5 +1,5 @@
 import React from 'react';
-import { Head, usePage } from '@inertiajs/react';
+import { Head, usePage, Link } from '@inertiajs/react';
 import Header from '../../../components/Header';
 
 interface ReviewHistory {
@@ -12,6 +12,7 @@ interface ReviewHistory {
     comments: string;
     reviewed_at: string;
     status_usulan: string;
+    type: 'penelitian' | 'pengabdian';
 }
 
 interface PageProps {
@@ -74,7 +75,7 @@ const ReviewerPenilaianIndex: React.FC = () => {
                                         <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Keputusan</th>
                                         <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Review</th>
                                         <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status Usulan</th>
-                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Catatan</th>
+                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody className="bg-white divide-y divide-gray-200">
@@ -82,7 +83,7 @@ const ReviewerPenilaianIndex: React.FC = () => {
                                         <tr key={item.id} className="hover:bg-gray-50 transition-colors duration-150">
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{index + 1}</td>
                                             <td className="px-6 py-4">
-                                                <div className="text-sm font-medium text-gray-900 max-w-md" title={item.judul}>
+                                                <div className="text-sm font-medium text-gray-900 max-w-md line-clamp-2" title={item.judul}>
                                                     {item.judul}
                                                 </div>
                                             </td>
@@ -99,10 +100,16 @@ const ReviewerPenilaianIndex: React.FC = () => {
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 {getStatusBadge(item.status_usulan)}
                                             </td>
-                                            <td className="px-6 py-4">
-                                                <div className="text-sm text-gray-600 max-w-xs truncate" title={item.comments}>
-                                                    {item.comments}
-                                                </div>
+                                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                                <Link
+                                                    href={item.type === 'penelitian'
+                                                        ? route('reviewer.usulan.show', item.usulan_id)
+                                                        : route('reviewer.usulan_pengabdian.show', item.usulan_id)}
+                                                    data={{ mode: 'view' }}
+                                                    className="text-blue-600 hover:text-blue-900 bg-blue-50 px-3 py-1 rounded-md transition-colors"
+                                                >
+                                                    Lihat Detail
+                                                </Link>
                                             </td>
                                         </tr>
                                     ))}

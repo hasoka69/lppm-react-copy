@@ -3,6 +3,8 @@ declare var route: any;
 import { Link, Head, router } from '@inertiajs/react';
 import Header from '@/components/Header';
 import Footer from '@/components/footer';
+import { Toaster, toast } from 'sonner';
+import ReviewScoringForm from '@/components/ReviewScoringForm';
 import {
     Home,
     ChevronRight,
@@ -44,6 +46,8 @@ import { Input } from "@/components/ui/input"
 interface ProposalDetailProps {
     usulan: any;
     reviewers: any[];
+    initialScores?: any[];
+    isReadOnly?: boolean;
 }
 
 function ExpandableText({ text, limit = 150 }: { text: string, limit?: number }) {
@@ -65,13 +69,29 @@ function ExpandableText({ text, limit = 150 }: { text: string, limit?: number })
     );
 }
 
-export default function AdminPenelitianDetail({ usulan, reviewers }: ProposalDetailProps) {
-    const formatRupiah = (number: number) => {
-        return new Intl.NumberFormat('id-ID', {
-            style: 'currency',
-            currency: 'IDR',
-            minimumFractionDigits: 0
-        }).format(number);
+export default function AdminPenelitianDetail({ usulan, reviewers, initialScores = [], isReadOnly = false }: ProposalDetailProps) {
+    const formatRupiah = (number: any, includeSymbol = true) => {
+        const value = typeof number === 'string' ? parseFloat(number) : number;
+        const formatted = new Intl.NumberFormat('id-ID', {
+            style: 'decimal',
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0
+        }).format(value || 0);
+
+        return includeSymbol ? `Rp ${formatted}` : formatted;
+    };
+
+    // State for budget input formatting
+    const [paguDisp, setPaguDisp] = useState(formatRupiah(usulan.dana_disetujui || usulan.total_anggaran, false));
+
+    const handlePaguChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        let val = e.target.value.replace(/\D/g, '');
+        if (val) {
+            const formatted = new Intl.NumberFormat('id-ID').format(parseInt(val));
+            setPaguDisp(formatted);
+        } else {
+            setPaguDisp('');
+        }
     };
 
     // [NEW] Contract Modal State
@@ -139,7 +159,12 @@ export default function AdminPenelitianDetail({ usulan, reviewers }: ProposalDet
                                         <CardTitle className="text-lg font-bold text-gray-800">Identitas Usulan</CardTitle>
                                         <CardDescription>Informasi dasar mengenai usulan penelitian yang diajukan.</CardDescription>
                                     </div>
-                                    <Badge variant="outline" className="font-mono text-xs">ID: {usulan.id}</Badge>
+                                    <div className="flex items-center gap-2">
+                                        <Badge variant="outline" className="font-mono text-xs">ID: {usulan.id}</Badge>
+                                        <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 uppercase text-[10px]">
+                                            Mode: Administrator
+                                        </Badge>
+                                    </div>
                                 </div>
                             </CardHeader>
                             <CardContent className="pt-6 space-y-6">
@@ -396,6 +421,22 @@ export default function AdminPenelitianDetail({ usulan, reviewers }: ProposalDet
                             </CardContent>
                         </Card>
 
+                        {/* 5. PENILAIAN REVIEWER (READ-ONLY) */}
+                        {initialScores && initialScores.length > 0 && (
+                            <div className="space-y-4">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <CheckCircle className="w-5 h-5 text-green-600" />
+                                    <h2 className="text-xl font-bold text-gray-900">Hasil Penilaian Reviewer</h2>
+                                </div>
+                                <ReviewScoringForm
+                                    onChange={() => { }}
+                                    maxFunding={Number(usulan?.dana_disetujui || 0) > 0 ? Number(usulan.dana_disetujui) : Number(usulan.total_anggaran)}
+                                    initialScores={initialScores}
+                                    isReadOnly={true}
+                                />
+                            </div>
+                        )}
+
                         {/* 4. RAB SUMMARY */}
                         <Card className="border-gray-200 shadow-sm overflow-hidden">
                             <CardHeader className="bg-white border-b border-gray-100 pb-4">
@@ -404,7 +445,7 @@ export default function AdminPenelitianDetail({ usulan, reviewers }: ProposalDet
                                     <div className="flex flex-col items-end gap-1">
                                         {usulan.dana_disetujui > 0 && (
                                             <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                                                Disetujui: {formatRupiah(usulan.dana_disetujui)}
+                                                Disetujui: {formatRupiah(usulan.dana_disetujui, false)}
                                             </Badge>
                                         )}
                                         <Badge variant="default" className="bg-green-600 hover:bg-green-700">
@@ -451,180 +492,216 @@ export default function AdminPenelitianDetail({ usulan, reviewers }: ProposalDet
                     </div>
 
                     {/* RIGHT COLUMN: ACTION PANEL */}
-                    <div className="lg:col-span-1 space-y-6">
-                        {/* Status Card */}
-                        <Card className="border-gray-200 shadow-md">
-                            <CardHeader className="bg-gray-900 text-white rounded-t-lg py-4">
-                                <CardTitle className="text-sm font-bold flex items-center uppercase tracking-wider text-white">
-                                    <Info className="w-4 h-4 mr-2 text-blue-400" /> Status Usulan
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent className="pt-6 text-center">
-                                <Badge variant={usulan.status === 'didanai' ? 'default' : usulan.status.includes('reject') || usulan.status.includes('tolak') ? 'destructive' : 'secondary'} className="text-sm py-1.5 px-4 uppercase tracking-wide mb-4">
-                                    {usulan.status.replace(/_/g, ' ')}
-                                </Badge>
-
-                                <div className="text-left space-y-4 border-t pt-4">
-                                    <div>
-                                        <span className="text-xs text-muted-foreground block mb-0.5">Diajukan Tanggal</span>
-                                        <p className="text-sm font-medium text-gray-900">{new Date(usulan.created_at).toLocaleDateString('id-ID', { dateStyle: 'long' })}</p>
+                    <div className="lg:col-span-1">
+                        <div className="space-y-6 sticky top-24">
+                            {/* Status Dashboard Overlay */}
+                            <div className="bg-white rounded-xl shadow-lg border-2 border-gray-900 overflow-hidden">
+                                <div className="bg-gray-900 px-6 py-4">
+                                    <h3 className="text-white text-xs font-bold uppercase tracking-wide flex items-center">
+                                        <Target className="w-3 h-3 mr-2 text-yellow-500" /> Tahapan Saat Ini
+                                    </h3>
+                                </div>
+                                <div className="p-6">
+                                    <div className={`p-3 rounded-lg text-center font-bold text-sm shadow-sm border
+                                        ${usulan.status === 'didanai' ? 'bg-green-100 text-green-900 border-green-300' :
+                                            usulan.status.includes('reject') || usulan.status.includes('tolak') ? 'bg-red-100 text-red-900 border-red-300' :
+                                                'bg-blue-100 text-blue-900 border-blue-300'
+                                        }`}>
+                                        {usulan.status.toUpperCase().replace(/_/g, ' ')}
                                     </div>
-                                    <div>
-                                        <span className="text-xs text-muted-foreground block mb-0.5">Reviewer Terpilih</span>
-                                        {usulan.reviewer ? (
-                                            <div className="flex items-center mt-1">
-                                                <Avatar className="h-6 w-6 mr-2">
-                                                    <AvatarFallback className="text-[10px] bg-blue-100 text-blue-700">{usulan.reviewer.name.charAt(0)}</AvatarFallback>
-                                                </Avatar>
-                                                <p className="text-sm font-medium text-gray-900">{usulan.reviewer.name}</p>
-                                            </div>
+                                    <div className="mt-4 grid grid-cols-2 gap-2 text-xs font-semibold text-gray-500">
+                                        <div className="bg-gray-50 p-2 rounded text-center border border-gray-100">
+                                            RAB USULAN<br />
+                                            <span className="text-gray-900 text-sm">{formatRupiah(usulan.total_anggaran)}</span>
+                                        </div>
+                                        <div className="bg-gray-50 p-2 rounded text-center border border-gray-100">
+                                            PAGU DISETUJUI<br />
+                                            <span className="text-green-700 text-sm">{formatRupiah(usulan.dana_disetujui || 0)}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {/* Status Card */}
+                            <Card className="border-gray-200 shadow-md">
+                                <CardHeader className="bg-gray-900 text-white rounded-t-lg py-4">
+                                    <CardTitle className="text-sm font-bold flex items-center uppercase tracking-wider text-white">
+                                        <Info className="w-4 h-4 mr-2 text-blue-400" /> Status Usulan
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="pt-6 text-center">
+                                    <Badge variant={usulan.status === 'didanai' ? 'default' : usulan.status.includes('reject') || usulan.status.includes('tolak') ? 'destructive' : 'secondary'} className="text-sm py-1.5 px-4 uppercase tracking-wide mb-4">
+                                        {usulan.status.replace(/_/g, ' ')}
+                                    </Badge>
+
+                                    <div className="text-left space-y-4 border-t pt-4">
+                                        <div>
+                                            <span className="text-xs text-muted-foreground block mb-0.5">Diajukan Tanggal</span>
+                                            <p className="text-sm font-medium text-gray-900">{new Date(usulan.created_at).toLocaleDateString('id-ID', { dateStyle: 'long' })}</p>
+                                        </div>
+                                        <div>
+                                            <span className="text-xs text-muted-foreground block mb-0.5">Reviewer Terpilih</span>
+                                            {usulan.reviewer ? (
+                                                <div className="flex items-center mt-1">
+                                                    <Avatar className="h-6 w-6 mr-2">
+                                                        <AvatarFallback className="text-[10px] bg-blue-100 text-blue-700">{usulan.reviewer.name.charAt(0)}</AvatarFallback>
+                                                    </Avatar>
+                                                    <p className="text-sm font-medium text-gray-900">{usulan.reviewer.name}</p>
+                                                </div>
+                                            ) : (
+                                                <p className="text-sm text-gray-500 italic">Belum ditunjuk</p>
+                                            )}
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+
+                            {/* HISTORY REVIEW */}
+                            <Card className="border-gray-200 shadow-sm">
+                                <CardHeader className="border-b border-gray-100 py-4">
+                                    <CardTitle className="text-base font-bold text-gray-800">Riwayat & Log</CardTitle>
+                                </CardHeader>
+                                <CardContent className="pt-6 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
+                                    <div className="space-y-6 pl-2">
+                                        {((usulan.review_histories || usulan.reviewHistories) && (usulan.review_histories || usulan.reviewHistories).length > 0) ? (
+                                            (usulan.review_histories || usulan.reviewHistories).map((h: any, i: number) => (
+                                                <div key={i} className="relative pl-6 border-l border-gray-200 last:border-0">
+                                                    <div className={`absolute -left-1.5 top-0 w-3 h-3 rounded-full border-2 border-white ${h.action.includes('reject') ? 'bg-red-500' :
+                                                        h.action.includes('approve') || h.action.includes('didanai') ? 'bg-green-500' :
+                                                            'bg-blue-500'
+                                                        }`}></div>
+                                                    <div className="mb-1">
+                                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-0.5">
+                                                            {new Date(h.reviewed_at || h.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                                                        </span>
+                                                        <h4 className="text-sm font-bold text-gray-900 leading-tight">
+                                                            {h.action.replace(/_/g, ' ')}
+                                                        </h4>
+                                                    </div>
+                                                    <p className="text-xs text-gray-600 mb-2">
+                                                        Oleh: <span className="font-semibold">{h.reviewer?.name || h.reviewer_type?.replace(/_/g, ' ')}</span>
+                                                    </p>
+                                                    {h.comments && (
+                                                        <div className="text-xs text-gray-600 bg-gray-50 p-3 rounded-md border border-gray-100 italic">
+                                                            <ExpandableText text={h.comments} limit={100} />
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            ))
                                         ) : (
-                                            <p className="text-sm text-gray-500 italic">Belum ditunjuk</p>
+                                            <div className="text-center py-6 text-gray-400">
+                                                <Clock className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                                                <p className="text-xs">Belum ada aktivitas.</p>
+                                            </div>
                                         )}
                                     </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-
-                        {/* HISTORY REVIEW */}
-                        <Card className="border-gray-200 shadow-sm">
-                            <CardHeader className="border-b border-gray-100 py-4">
-                                <CardTitle className="text-base font-bold text-gray-800">Riwayat & Log</CardTitle>
-                            </CardHeader>
-                            <CardContent className="pt-6 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
-                                <div className="space-y-6 pl-2">
-                                    {((usulan.review_histories || usulan.reviewHistories) && (usulan.review_histories || usulan.reviewHistories).length > 0) ? (
-                                        (usulan.review_histories || usulan.reviewHistories).map((h: any, i: number) => (
-                                            <div key={i} className="relative pl-6 border-l border-gray-200 last:border-0">
-                                                <div className={`absolute -left-1.5 top-0 w-3 h-3 rounded-full border-2 border-white ${h.action.includes('reject') ? 'bg-red-500' :
-                                                    h.action.includes('approve') || h.action.includes('didanai') ? 'bg-green-500' :
-                                                        'bg-blue-500'
-                                                    }`}></div>
-                                                <div className="mb-1">
-                                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-0.5">
-                                                        {new Date(h.reviewed_at || h.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: '2-digit', hour: '2-digit', minute: '2-digit' })}
-                                                    </span>
-                                                    <h4 className="text-sm font-bold text-gray-900 leading-tight">
-                                                        {h.action.replace(/_/g, ' ')}
-                                                    </h4>
-                                                </div>
-                                                <p className="text-xs text-gray-600 mb-2">
-                                                    Oleh: <span className="font-semibold">{h.reviewer?.name || h.reviewer_type?.replace(/_/g, ' ')}</span>
-                                                </p>
-                                                {h.comments && (
-                                                    <div className="text-xs text-gray-600 bg-gray-50 p-3 rounded-md border border-gray-100 italic">
-                                                        <ExpandableText text={h.comments} limit={100} />
-                                                    </div>
-                                                )}
-                                            </div>
-                                        ))
-                                    ) : (
-                                        <div className="text-center py-6 text-gray-400">
-                                            <Clock className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                                            <p className="text-xs">Belum ada aktivitas.</p>
-                                        </div>
-                                    )}
-                                </div>
-                            </CardContent>
-                        </Card>
-
-                        {/* ACTIONS */}
-                        {/* 1. ASSIGN REVIEWER */}
-                        {['approved_prodi', 'reviewer_assigned'].includes(usulan.status) && (
-                            <Card className="border-blue-200 shadow-sm bg-blue-50/50">
-                                <CardHeader className="pb-2">
-                                    <CardTitle className="text-sm font-bold text-blue-800 flex items-center">
-                                        <User className="w-4 h-4 mr-2" /> Tunjuk Reviewer
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <form onSubmit={(e) => {
-                                        e.preventDefault();
-                                        const data = new FormData(e.currentTarget);
-                                        router.post(route('lppm.assign_reviewer', { type: 'penelitian', id: usulan.id }), {
-                                            reviewer_id: data.get('reviewer_id')
-                                        });
-                                    }}>
-                                        <select name="reviewer_id" defaultValue={usulan.reviewer_id} className="w-full text-sm border-gray-300 rounded-md mb-3 focus:ring-blue-500 focus:border-blue-500">
-                                            <option value="">-- Cari Reviewer --</option>
-                                            {reviewers?.map((r: any) => (
-                                                <option key={r.id} value={r.id}>{r.name}</option>
-                                            ))}
-                                        </select>
-                                        <Button type="submit" className="w-full">
-                                            Tunjuk & Kirim Akses
-                                        </Button>
-                                    </form>
                                 </CardContent>
                             </Card>
-                        )}
 
-                        {/* 2. SET BUDGET (Admin Revision Request) */}
-                        {usulan.status === 'under_revision_admin' && (
-                            <Card className="border-emerald-200 shadow-sm bg-emerald-50/50">
-                                <CardHeader className="pb-2">
-                                    <CardTitle className="text-sm font-bold text-emerald-800 flex items-center">
-                                        <DollarSign className="w-4 h-4 mr-2" /> Tentukan Pagu Dana
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <form onSubmit={(e) => {
-                                        e.preventDefault();
-                                        const data = new FormData(e.currentTarget);
-                                        router.post(route('lppm.set_budget', { type: 'penelitian', id: usulan.id }), {
-                                            dana_disetujui: data.get('dana_disetujui'),
-                                            notes: data.get('notes')
-                                        });
-                                    }}>
-                                        <div className="space-y-3">
-                                            <div>
-                                                <label className="text-[10px] font-bold text-emerald-700 uppercase">Pagu Dana Disetujui (Rp)</label>
-                                                <input type="number" name="dana_disetujui" defaultValue={usulan.total_anggaran} className="w-full text-sm border-gray-300 rounded-md mt-1" />
-                                            </div>
-                                            <div>
-                                                <label className="text-[10px] font-bold text-emerald-700 uppercase">Catatan Revisi</label>
-                                                <Textarea name="notes" placeholder="Catatan untuk dosen..." className="mt-1 bg-white" />
-                                            </div>
-                                            <Button type="submit" variant="default" className="w-full bg-emerald-600 hover:bg-emerald-700">
-                                                Simpan & Minta Revisi
+                            {/* ACTIONS */}
+                            {/* 1. ASSIGN REVIEWER */}
+                            {['approved_prodi', 'reviewer_assigned'].includes(usulan.status) && (
+                                <Card className="border-blue-200 shadow-sm bg-blue-50/50">
+                                    <CardHeader className="pb-2">
+                                        <CardTitle className="text-sm font-bold text-blue-800 flex items-center">
+                                            <User className="w-4 h-4 mr-2" /> Tunjuk Reviewer
+                                        </CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <form onSubmit={(e) => {
+                                            e.preventDefault();
+                                            const data = new FormData(e.currentTarget);
+                                            router.post(route('lppm.assign_reviewer', { type: 'penelitian', id: usulan.id }), {
+                                                reviewer_id: data.get('reviewer_id')
+                                            });
+                                        }}>
+                                            <select name="reviewer_id" defaultValue={usulan.reviewer_id} className="w-full text-sm border-gray-300 rounded-md mb-3 focus:ring-blue-500 focus:border-blue-500">
+                                                <option value="">-- Cari Reviewer --</option>
+                                                {reviewers?.map((r: any) => (
+                                                    <option key={r.id} value={r.id}>{r.name}</option>
+                                                ))}
+                                            </select>
+                                            <Button type="submit" className="w-full">
+                                                Tunjuk & Kirim Akses
                                             </Button>
-                                        </div>
-                                    </form>
-                                </CardContent>
-                            </Card>
-                        )}
+                                        </form>
+                                    </CardContent>
+                                </Card>
+                            )}
 
-                        {/* 3. FINAL DECISION */}
-                        {['reviewed_approved', 'resubmitted_revision'].includes(usulan.status) && (
-                            <Card className="border-purple-200 shadow-sm bg-white overflow-hidden ring-1 ring-purple-500">
-                                <CardHeader className="bg-purple-50 border-b border-purple-100 pb-3">
-                                    <CardTitle className="text-sm font-bold text-purple-900 flex items-center">
-                                        <CheckCircle className="w-4 h-4 mr-2" /> Keputusan Akhir LPPM
-                                    </CardTitle>
-                                    <CardDescription className="text-xs text-purple-700">
-                                        {usulan.status === 'resubmitted_revision'
-                                            ? 'Usulan telah direvisi. Tentukan status pendanaan.'
-                                            : 'Reviewer telah menyetujui. Tentukan status pendanaan.'}
-                                    </CardDescription>
-                                </CardHeader>
-                                <CardContent className="pt-4 grid grid-cols-2 gap-3">
-                                    <Button
-                                        onClick={() => setIsContractModalOpen(true)}
-                                        className="bg-green-600 hover:bg-green-700 text-white font-bold"
-                                    >
-                                        DIDANAI
-                                    </Button>
-                                    <Button
-                                        onClick={() => router.post(route('lppm.final_decision', { type: 'penelitian', id: usulan.id }), { decision: 'ditolak_akhir' })}
-                                        variant="destructive"
-                                        className="font-bold"
-                                    >
-                                        TOLAK
-                                    </Button>
-                                </CardContent>
-                            </Card>
-                        )}
+                            {/* 2. SET BUDGET (Admin Revision Request) */}
+                            {usulan.status === 'under_revision_admin' && (
+                                <Card className="border-emerald-200 shadow-sm bg-emerald-50/50">
+                                    <CardHeader className="pb-2">
+                                        <CardTitle className="text-sm font-bold text-emerald-800 flex items-center">
+                                            <DollarSign className="w-4 h-4 mr-2" /> Tentukan Pagu Dana
+                                        </CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <form onSubmit={(e) => {
+                                            e.preventDefault();
+                                            const data = new FormData(e.currentTarget);
+                                            router.post(route('lppm.set_budget', { type: 'penelitian', id: usulan.id }), {
+                                                dana_disetujui: paguDisp.replace(/\./g, '')
+                                            });
+                                        }}>
+                                            <div className="space-y-3">
+                                                <div>
+                                                    <label className="text-[10px] font-bold text-emerald-700 uppercase">Pagu Dana Disetujui (Rp)</label>
+                                                    <div className="relative mt-1">
+                                                        <span className="absolute left-3 top-1 text-gray-500 text-sm font-bold">Rp</span>
+                                                        <input
+                                                            type="text"
+                                                            name="dana_disetujui"
+                                                            value={paguDisp}
+                                                            onChange={handlePaguChange}
+                                                            className="w-full pl-10 text-sm border-gray-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500 font-bold"
+                                                            placeholder="Contoh: 10.000.000"
+                                                        />
+                                                    </div>
+                                                    <p className="text-[10px] text-gray-400 mt-1 italic italic">
+                                                        * Maksimal dana sesuai RAB: {formatRupiah(usulan.total_anggaran)}
+                                                    </p>
+                                                </div>
+                                                <Button type="submit" variant="default" className="w-full bg-emerald-600 hover:bg-emerald-700">
+                                                    Simpan & Minta Revisi
+                                                </Button>
+                                            </div>
+                                        </form>
+                                    </CardContent>
+                                </Card>
+                            )}
 
+                            {/* 3. FINAL DECISION */}
+                            {['reviewed_approved', 'resubmitted_revision'].includes(usulan.status) && (
+                                <Card className="border-purple-200 shadow-sm bg-white overflow-hidden ring-1 ring-purple-500">
+                                    <CardHeader className="bg-purple-50 border-b border-purple-100 pb-3">
+                                        <CardTitle className="text-sm font-bold text-purple-900 flex items-center">
+                                            <CheckCircle className="w-4 h-4 mr-2" /> Keputusan Akhir LPPM
+                                        </CardTitle>
+                                        <CardDescription className="text-xs text-purple-700">
+                                            {usulan.status === 'resubmitted_revision'
+                                                ? 'Usulan telah direvisi. Tentukan status pendanaan.'
+                                                : 'Reviewer telah menyetujui. Tentukan status pendanaan.'}
+                                        </CardDescription>
+                                    </CardHeader>
+                                    <CardContent className="pt-4 grid grid-cols-2 gap-3">
+                                        <Button
+                                            onClick={() => setIsContractModalOpen(true)}
+                                            className="bg-green-600 hover:bg-green-700 text-white font-bold"
+                                        >
+                                            DIDANAI
+                                        </Button>
+                                        <Button
+                                            onClick={() => router.post(route('lppm.final_decision', { type: 'penelitian', id: usulan.id }), { decision: 'ditolak_akhir' })}
+                                            variant="destructive"
+                                            className="font-bold"
+                                        >
+                                            TOLAK
+                                        </Button>
+                                    </CardContent>
+                                </Card>
+                            )}
+                        </div>
                     </div>
                 </div>
 
@@ -671,8 +748,8 @@ export default function AdminPenelitianDetail({ usulan, reviewers }: ProposalDet
                         </DialogFooter>
                     </DialogContent>
                 </Dialog>
-            </main>
+            </main >
             <Footer />
-        </div>
+        </div >
     );
 }

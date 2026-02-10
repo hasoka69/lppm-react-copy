@@ -41,13 +41,18 @@ class ProfileController extends Controller
     {
         $user = $request->user();
 
-        $request->validate([
+        $rules = [
             'name' => 'required|string|max:255',
-            'password' => 'nullable|string|min:8', // removed confirmed for simplicity unless UI sends confirmation
             'scopus_id' => 'nullable|string',
             'sinta_id' => 'nullable|string',
             'google_scholar_id' => 'nullable|string',
-        ]);
+        ];
+
+        if ($request->filled('password')) {
+            $rules['password'] = 'required|string|min:8';
+        }
+
+        $validated = $request->validate($rules);
 
         $user->name = $request->name;
         if ($request->filled('password')) {

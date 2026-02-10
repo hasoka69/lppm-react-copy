@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Head, usePage, router } from '@inertiajs/react'; // Updated import source if needed, usually @inertiajs/react
-import Layout from '@/layouts/AdminLayout'; // Assuming AdminLayout exists
+import AppLayout from '@/layouts/app-layout'; // Updated import
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -23,10 +23,10 @@ import {
 } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
 import { Pencil, Trash2, Plus, Megaphone } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner'; // Updated import
 
 export default function PengumumanIndex({ pengumuman }: { pengumuman: any[] }) {
-    const { toast } = useToast();
+    // const { toast } = useToast(); // Removed legacy hook
     const [isOpen, setIsOpen] = useState(false);
     const [editingItem, setEditingItem] = useState<any>(null);
     const [formData, setFormData] = useState({ content: '', is_active: true });
@@ -39,7 +39,7 @@ export default function PengumumanIndex({ pengumuman }: { pengumuman: any[] }) {
                     setIsOpen(false);
                     setEditingItem(null);
                     resetForm();
-                    toast({ title: 'Berhasil', description: 'Pengumuman diperbarui' });
+                    toast.success('Berhasil', { description: 'Pengumuman diperbarui' });
                 }
             });
         } else {
@@ -47,7 +47,7 @@ export default function PengumumanIndex({ pengumuman }: { pengumuman: any[] }) {
                 onSuccess: () => {
                     setIsOpen(false);
                     resetForm();
-                    toast({ title: 'Berhasil', description: 'Pengumuman ditambahkan' });
+                    toast.success('Berhasil', { description: 'Pengumuman ditambahkan' });
                 }
             });
         }
@@ -56,7 +56,7 @@ export default function PengumumanIndex({ pengumuman }: { pengumuman: any[] }) {
     const handleDelete = (id: number) => {
         if (confirm('Apakah anda yakin ingin menghapus pengumuman ini?')) {
             router.delete(`/lppm/pengumuman/${id}`, {
-                onSuccess: () => toast({ title: 'Berhasil', description: 'Pengumuman dihapus' })
+                onSuccess: () => toast.success('Berhasil', { description: 'Pengumuman dihapus' })
             });
         }
     };
@@ -72,8 +72,13 @@ export default function PengumumanIndex({ pengumuman }: { pengumuman: any[] }) {
         setEditingItem(null);
     };
 
+    const breadcrumbs = [
+        { title: 'Dashboard', href: '/lppm/dashboard' },
+        { title: 'Manajemen Pengumuman', href: '/lppm/pengumuman' },
+    ];
+
     return (
-        <Layout>
+        <AppLayout breadcrumbs={breadcrumbs} title="Manajemen Pengumuman">
             <Head title="Manajemen Pengumuman" />
 
             <div className="container mx-auto py-6 space-y-6">
@@ -82,6 +87,7 @@ export default function PengumumanIndex({ pengumuman }: { pengumuman: any[] }) {
                         <h1 className="text-2xl font-bold tracking-tight text-slate-900">Manajemen Pengumuman</h1>
                         <p className="text-slate-500">Kelola pengumuman yang akan tampil di halaman depan.</p>
                     </div>
+
                     <Dialog open={isOpen} onOpenChange={(open) => {
                         setIsOpen(open);
                         if (!open) resetForm();
@@ -177,6 +183,6 @@ export default function PengumumanIndex({ pengumuman }: { pengumuman: any[] }) {
                     </CardContent>
                 </Card>
             </div>
-        </Layout>
+        </AppLayout>
     );
 }

@@ -13,6 +13,7 @@ interface Usulan {
     tahun: number;
     status: string;
     tanggal: string;
+    type?: string;
 }
 
 interface PageProps {
@@ -23,7 +24,7 @@ interface PageProps {
 export default function KaprodiUsulanHistory({ usulanList, prodiName }: PageProps) {
     return (
         <div className="min-h-screen bg-gray-50 font-sans">
-            <Head title="Riwayat Review Usulan" />
+            <Head title="Riwayat Validasi Usulan" />
             <Header />
 
             <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
@@ -33,15 +34,15 @@ export default function KaprodiUsulanHistory({ usulanList, prodiName }: PageProp
                         <Home className="w-4 h-4 mr-1" /> Dashboard
                     </Link>
                     <ChevronRight className="w-4 h-4 mx-2" />
-                    <span className="font-semibold text-gray-700">Riwayat Review ({prodiName})</span>
+                    <span className="font-semibold text-gray-700">Riwayat Validasi ({prodiName})</span>
                 </div>
 
                 <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                     <div className="flex justify-between items-center mb-6">
                         <div>
-                            <h1 className="text-2xl font-bold text-gray-800">Riwayat Review Usulan</h1>
+                            <h1 className="text-2xl font-bold text-gray-800">Riwayat Validasi Usulan</h1>
                             <p className="text-gray-500 mt-1">
-                                Berikut adalah daftar usulan penelitian yang telah Anda review.
+                                Berikut adalah daftar usulan penelitian yang telah Anda validasi.
                             </p>
                         </div>
                     </div>
@@ -63,7 +64,7 @@ export default function KaprodiUsulanHistory({ usulanList, prodiName }: PageProp
                                 {usulanList.length === 0 ? (
                                     <tr>
                                         <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
-                                            Belum ada riwayat review.
+                                            Belum ada riwayat validasi.
                                         </td>
                                     </tr>
                                 ) : (

@@ -88,6 +88,7 @@ interface Proposal {
     mitra?: Mitra[];
     rabItems?: RabItem[];
     dana_disetujui?: number;
+    total_anggaran?: number;
     luaranItems?: Luaran[];
 }
 
@@ -99,10 +100,12 @@ interface PageProps {
     rabItem: RabItem[];
     luaran: Luaran[];
     totalAnggaran: number;
+    isReadOnly?: boolean;
+    initialScores?: any[];
     [key: string]: unknown;
 }
 
-export default function ReviewPengabdian({ proposal, dosen, mitra = [], anggotaNonDosen = [], rabItem = [], luaran = [], totalAnggaran = 0 }: PageProps) {
+export default function ReviewPengabdian({ proposal, dosen, mitra = [], anggotaNonDosen = [], rabItem = [], luaran = [], totalAnggaran = 0, isReadOnly = false, initialScores = [] }: PageProps) {
     const { data, setData, post, processing, errors } = useForm({
         action: '',
         comments: '',
@@ -163,15 +166,18 @@ export default function ReviewPengabdian({ proposal, dosen, mitra = [], anggotaN
 
             <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
                 <div className="mb-6">
-                    <Link href="/reviewer/usulan" className="inline-flex items-center text-sm text-gray-500 hover:text-blue-600 transition-colors">
+                    <Link
+                        href={isReadOnly ? route('reviewer.penilaian.index') : "/reviewer/usulan"}
+                        className="inline-flex items-center text-sm text-gray-500 hover:text-blue-600 transition-colors"
+                    >
                         <ChevronLeft className="w-4 h-4 mr-1" />
-                        Kembali ke Daftar Usulan
+                        Kembali ke {isReadOnly ? 'Riwayat' : 'Daftar Usulan'}
                     </Link>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                     {/* LEFT COLUMN: PROPOSAL CONTENT */}
-                    <div className="lg:col-span-2 space-y-8">
+                    <div className="lg:col-span-8 space-y-8">
 
                         {/* 1. IDENTITAS */}
                         <section className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
@@ -397,46 +403,52 @@ export default function ReviewPengabdian({ proposal, dosen, mitra = [], anggotaN
                         </section>
                     </div>
 
-                    {/* RIGHT COLUMN: ACTION FORM */}
-                    <div className="lg:col-span-1 space-y-6">
-                        <ReviewScoringForm
-                            onChange={handleScoringChange}
-                            maxFunding={7000000}
-                        />
-
-                        <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6 sticky top-24">
-                            <h3 className="text-lg font-bold text-gray-900 mb-4 border-b pb-2 flex items-center">
-                                <span className="bg-blue-100 text-blue-700 text-xs w-6 h-6 flex items-center justify-center rounded-full mr-2">6</span>
-                                Keputusan Reviewer
-                            </h3>
-                            <form className="space-y-6">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">Komentar Global / Kesimpulan</label>
-                                    <textarea
-                                        rows={6}
-                                        className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
-                                        placeholder="Berikan masukan substansial, alasan penolakan, atau kesimpulan..."
-                                        value={data.comments}
-                                        onChange={(e) => setData('comments', e.target.value)}
-                                    ></textarea>
-                                    {errors.comments && <p className="text-red-500 text-xs mt-1">{errors.comments}</p>}
-                                </div>
-                                <div className="space-y-3">
-                                    {proposal.status === 'resubmitted_revision' && (
-                                        <button type="button" onClick={() => handleActionClick('approve')} disabled={processing} className="w-full flex justify-center items-center px-4 py-3 border border-transparent rounded-md shadow-sm text-sm font-bold text-white bg-green-600 hover:bg-green-700 disabled:opacity-50 transition-all">
-                                            <CheckCircle className="w-5 h-5 mr-2" /> Setujui Proposal
-                                        </button>
-                                    )}
-                                    <button type="button" onClick={() => handleActionClick('revise')} disabled={processing} className="w-full flex justify-center items-center px-4 py-3 border border-transparent rounded-md shadow-sm text-sm font-bold text-white bg-orange-500 hover:bg-orange-600 disabled:opacity-50 transition-all">
-                                        <AlertCircle className="w-5 h-5 mr-2" /> Minta Revisi
-                                    </button>
-                                    <button type="button" onClick={() => handleActionClick('reject')} disabled={processing} className="w-full flex justify-center items-center px-4 py-3 border border-transparent rounded-md shadow-sm text-sm font-bold text-white bg-red-600 hover:bg-red-700 disabled:opacity-50 transition-all">
-                                        <XCircle className="w-5 h-5 mr-2" /> Tolak Permanen
-                                    </button>
-                                </div>
-                            </form>
-                            <p className="mt-4 text-xs text-center text-gray-500">Dengan mengirimkan keputusan, Anda menyatakan telah mereview dengan objektif.</p>
+                    {/* RIGHT COLUMN: STICKY REVIEW FORM */}
+                    <div className="lg:col-span-4 sticky top-24">
+                        <div className="mb-6">
+                            <ReviewScoringForm
+                                onChange={handleScoringChange}
+                                maxFunding={Number(proposal?.dana_disetujui || 0) > 0 ? Number(proposal.dana_disetujui) : Number(proposal.total_anggaran)}
+                                initialScores={initialScores}
+                                isReadOnly={isReadOnly}
+                            />
                         </div>
+
+                        {!isReadOnly && (
+                            <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6">
+                                <h3 className="text-lg font-bold text-gray-900 mb-4 border-b pb-2 flex items-center">
+                                    <span className="bg-blue-100 text-blue-700 text-xs w-6 h-6 flex items-center justify-center rounded-full mr-2">6</span>
+                                    Keputusan Reviewer
+                                </h3>
+                                <form className="space-y-6">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">Komentar Global / Kesimpulan</label>
+                                        <textarea
+                                            rows={6}
+                                            className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
+                                            placeholder="Berikan masukan substansial, alasan penolakan, atau kesimpulan..."
+                                            value={data.comments}
+                                            onChange={(e) => setData('comments', e.target.value)}
+                                        ></textarea>
+                                        {errors.comments && <p className="text-red-500 text-xs mt-1">{errors.comments}</p>}
+                                    </div>
+                                    <div className="space-y-3">
+                                        {proposal.status === 'resubmitted_revision' && (
+                                            <button type="button" onClick={() => handleActionClick('approve')} disabled={processing} className="w-full flex justify-center items-center px-4 py-3 border border-transparent rounded-md shadow-sm text-sm font-bold text-white bg-green-600 hover:bg-green-700 disabled:opacity-50 transition-all">
+                                                <CheckCircle className="w-5 h-5 mr-2" /> Setujui Proposal
+                                            </button>
+                                        )}
+                                        <button type="button" onClick={() => handleActionClick('revise')} disabled={processing} className="w-full flex justify-center items-center px-4 py-3 border border-transparent rounded-md shadow-sm text-sm font-bold text-white bg-orange-500 hover:bg-orange-600 disabled:opacity-50 transition-all">
+                                            <AlertCircle className="w-5 h-5 mr-2" /> Minta Revisi
+                                        </button>
+                                        <button type="button" onClick={() => handleActionClick('reject')} disabled={processing} className="w-full flex justify-center items-center px-4 py-3 border border-transparent rounded-md shadow-sm text-sm font-bold text-white bg-red-600 hover:bg-red-700 disabled:opacity-50 transition-all">
+                                            <XCircle className="w-5 h-5 mr-2" /> Tolak Permanen
+                                        </button>
+                                    </div>
+                                </form>
+                                <p className="mt-4 text-xs text-center text-gray-500">Dengan mengirimkan keputusan, Anda menyatakan telah mereview dengan objektif.</p>
+                            </div>
+                        )}
                     </div>
                 </div>
 

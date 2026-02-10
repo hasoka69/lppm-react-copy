@@ -95,7 +95,7 @@ export default function ProfileIndex({ auth, dosen_data }: ProfileIndexProps) {
     ];
 
     // Use useForm to handle all editable fields
-    const { data: formData, setData: setFormData, put, processing: formProcessing, errors: formErrors } = useForm({
+    const { data: formData, setData: setFormData, patch, processing: formProcessing, errors: formErrors } = useForm({
         name: user.name,
         password: '',
         password_confirmation: '', // Optional logic
@@ -106,9 +106,12 @@ export default function ProfileIndex({ auth, dosen_data }: ProfileIndexProps) {
 
     const handleProfileUpdate = (e: React.FormEvent) => {
         e.preventDefault();
-        put(route('profile.update'), {
+        patch(route('profile.update_data'), {
             onSuccess: () => toast.success('Profil berhasil diperbarui'),
-            onError: () => toast.error('Gagal memperbarui profil'),
+            onError: (err) => {
+                console.error("Profile Update Error:", err);
+                toast.error('Gagal memperbarui profil: ' + (Object.values(err)[0] || 'Periksa input anda'));
+            },
         });
     };
 

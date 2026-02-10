@@ -37,11 +37,11 @@ class LuaranPengabdianController extends Controller
         }
 
         $validated = $request->validate([
-            'tahun' => 'required|integer|min:1|max:5',
             'kategori' => 'required|string|max:100',
             'deskripsi' => 'required|string|min:10',
             'status' => 'nullable|in:Rencana,Dalam Proses,Selesai',
             'keterangan' => 'nullable|string',
+            'is_wajib' => 'required|boolean',
         ]);
 
         try {
@@ -79,11 +79,11 @@ class LuaranPengabdianController extends Controller
         }
 
         $validated = $request->validate([
-            'tahun' => 'sometimes|required|integer|min:1|max:5',
             'kategori' => 'sometimes|required|string|max:100',
             'deskripsi' => 'sometimes|required|string|min:10',
             'status' => 'nullable|in:Rencana,Dalam Proses,Selesai',
             'keterangan' => 'nullable|string',
+            'is_wajib' => 'sometimes|boolean',
         ]);
 
         try {

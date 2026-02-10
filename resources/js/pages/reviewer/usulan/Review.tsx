@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { Head, useForm, Link } from '@inertiajs/react';
-import { formatAcademicYear } from '@/utils/academicYear'; // Added import
+import { formatAcademicYear } from '@/utils/academicYear';
 import Header from '@/components/Header';
 import Footer from '@/components/footer';
+import ReviewScoringForm from '@/components/ReviewScoringForm';
 import {
     ChevronLeft,
     FileText,
@@ -16,7 +17,6 @@ import {
     BookOpen,
     Clock,
     Download,
-    Maximize2,
     DollarSign,
     GraduationCap
 } from 'lucide-react';
@@ -28,24 +28,33 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 interface ReviewerReviewProps {
     proposal: any;
     dosen: any;
+    isReadOnly?: boolean;
+    initialScores?: any[];
 }
 
-const ReviewerReview: React.FC<ReviewerReviewProps> = ({ proposal, dosen }) => {
+const ReviewerReview: React.FC<ReviewerReviewProps> = ({ proposal, dosen, isReadOnly = false, initialScores = [] }) => {
     const usulan = proposal || {};
 
     // Form State
     const { data, setData, post, processing, errors } = useForm({
         action: '',
         comments: '',
+        scores: [] as any[],
     });
 
     const [isConfirming, setIsConfirming] = useState(false);
     const [actionType, setActionType] = useState<'approve' | 'reject' | 'revise' | null>(null);
+    const [totalScore, setTotalScore] = useState(0);
+
+    // Scoring Handler
+    const handleScoringChange = (scores: any[], score: number, recommendation: number) => {
+        setData('scores', scores);
+        setTotalScore(score);
+    };
 
     // Helpers
     const handleActionClick = (type: 'approve' | 'reject' | 'revise') => {
@@ -104,9 +113,12 @@ const ReviewerReview: React.FC<ReviewerReviewProps> = ({ proposal, dosen }) => {
                 {/* Header Section */}
                 <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
-                        <Link href="/reviewer/usulan" className="inline-flex items-center text-sm font-medium text-gray-500 hover:text-blue-600 transition-colors mb-2">
+                        <Link
+                            href={isReadOnly ? route('reviewer.penilaian.index') : "/reviewer/usulan"}
+                            className="inline-flex items-center text-sm font-medium text-gray-500 hover:text-blue-600 transition-colors mb-2"
+                        >
                             <ChevronLeft className="w-4 h-4 mr-1" />
-                            Kembali ke Daftar
+                            Kembali ke {isReadOnly ? 'Riwayat' : 'Daftar'}
                         </Link>
                         <h1 className="text-2xl font-bold text-gray-900 tracking-tight leading-tight">
                             Review Usulan Penelitian
@@ -483,77 +495,90 @@ const ReviewerReview: React.FC<ReviewerReviewProps> = ({ proposal, dosen }) => {
                                 </div>
                             </CardContent>
                         </Card>
+
+
                     </div>
 
                     {/* RIGHT COLUMN: STICKY REVIEW FORM */}
                     <div className="lg:col-span-4 sticky top-24">
-                        <Card className="border-gray-200 shadow-lg border-t-4 border-t-blue-600 overflow-hidden">
-                            <CardHeader className="bg-gray-50/50 pb-4 border-b border-gray-100">
-                                <CardTitle className="text-lg font-bold text-gray-900">Form Keputusan</CardTitle>
-                                <CardDescription>
-                                    Berikan penilaian dan keputusan Anda terhadap usulan ini.
-                                </CardDescription>
-                            </CardHeader>
+                        <div className="mb-6">
+                            <ReviewScoringForm
+                                onChange={handleScoringChange}
+                                maxFunding={Number(usulan?.dana_disetujui || 0) > 0 ? Number(usulan.dana_disetujui) : Number(usulan.total_anggaran)}
+                                initialScores={initialScores}
+                                isReadOnly={isReadOnly}
+                            />
+                        </div>
 
-                            <CardContent className="p-6 space-y-6">
-                                <div className="space-y-2">
-                                    <label className="text-sm font-bold text-gray-700">Catatan Reviewer</label>
-                                    <Textarea
-                                        placeholder="Tuliskan komentar substansial, masukan perbaikan, atau alasan penolakan..."
-                                        className="min-h-[200px] text-sm resize-none focus-visible:ring-blue-500"
-                                        value={data.comments}
-                                        onChange={(e) => setData('comments', e.target.value)}
-                                    />
-                                    {errors.comments && <p className="text-xs text-red-500 font-medium mt-1">{errors.comments}</p>}
-                                    <p className="text-[11px] text-gray-400">
-                                        *Komentar wajib diisi jika ada perbaikan atau penolakan.
-                                    </p>
-                                </div>
+                        {!isReadOnly && (
+                            <Card className="border-gray-200 shadow-lg border-t-4 border-t-blue-600 overflow-hidden">
+                                <CardHeader className="bg-gray-50/50 pb-4 border-b border-gray-100">
+                                    <CardTitle className="text-lg font-bold text-gray-900">Form Keputusan</CardTitle>
+                                    <CardDescription>
+                                        Berikan penilaian dan keputusan Anda terhadap usulan ini.
+                                    </CardDescription>
+                                </CardHeader>
 
-                                <Separator />
+                                <CardContent className="p-6 space-y-6">
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-bold text-gray-700">Catatan Reviewer</label>
+                                        <Textarea
+                                            placeholder="Tuliskan komentar substansial, masukan perbaikan, atau alasan penolakan..."
+                                            className="min-h-[200px] text-sm resize-none focus-visible:ring-blue-500"
+                                            value={data.comments}
+                                            onChange={(e) => setData('comments', e.target.value)}
+                                        />
+                                        {errors.comments && <p className="text-xs text-red-500 font-medium mt-1">{errors.comments}</p>}
+                                        <p className="text-[11px] text-gray-400">
+                                            *Komentar wajib diisi jika ada perbaikan atau penolakan.
+                                        </p>
+                                    </div>
 
-                                <div className="space-y-3">
-                                    {/* Phase 2 Check: Only show Approve if status is resubmitted_revision */}
-                                    {usulan.status === 'resubmitted_revision' && (
+                                    <Separator />
+
+                                    <div className="space-y-3">
+                                        {/* Phase 2 Check: Only show Approve if status is resubmitted_revision */}
+                                        {usulan.status === 'resubmitted_revision' && (
+                                            <Button
+                                                type="button"
+                                                onClick={() => handleActionClick('approve')}
+                                                disabled={processing}
+                                                className="w-full bg-green-600 hover:bg-green-700 text-white justify-start"
+                                            >
+                                                <CheckCircle className="w-4 h-4 mr-2" />
+                                                Setujui Proposal
+                                            </Button>
+                                        )}
+
                                         <Button
                                             type="button"
-                                            onClick={() => handleActionClick('approve')}
+                                            onClick={() => handleActionClick('revise')}
                                             disabled={processing}
-                                            className="w-full bg-green-600 hover:bg-green-700 text-white justify-start"
+                                            className="w-full bg-blue-600 hover:bg-blue-700 text-white justify-start"
                                         >
-                                            <CheckCircle className="w-4 h-4 mr-2" />
-                                            Setujui Proposal
+                                            <AlertCircle className="w-4 h-4 mr-2" />
+                                            Minta Revisi / Kirim Masukan
                                         </Button>
-                                    )}
 
-                                    <Button
-                                        type="button"
-                                        onClick={() => handleActionClick('revise')}
-                                        disabled={processing}
-                                        className="w-full bg-blue-600 hover:bg-blue-700 text-white justify-start"
-                                    >
-                                        <AlertCircle className="w-4 h-4 mr-2" />
-                                        Minta Revisi / Kirim Masukan
-                                    </Button>
-
-                                    <Button
-                                        type="button"
-                                        onClick={() => handleActionClick('reject')}
-                                        disabled={processing}
-                                        variant="destructive"
-                                        className="w-full justify-start"
-                                    >
-                                        <XCircle className="w-4 h-4 mr-2" />
-                                        Tolak Permanen
-                                    </Button>
-                                </div>
-                            </CardContent>
-                            <CardFooter className="bg-gray-50 p-4 border-t border-gray-100">
-                                <p className="text-[10px] text-center w-full text-gray-400 leading-tight">
-                                    Keputusan Anda bersifat final untuk tahap ini. Pastikan telah membaca seluruh dokumen.
-                                </p>
-                            </CardFooter>
-                        </Card>
+                                        <Button
+                                            type="button"
+                                            onClick={() => handleActionClick('reject')}
+                                            disabled={processing}
+                                            variant="destructive"
+                                            className="w-full justify-start"
+                                        >
+                                            <XCircle className="w-4 h-4 mr-2" />
+                                            Tolak Permanen
+                                        </Button>
+                                    </div>
+                                </CardContent>
+                                <CardFooter className="bg-gray-50 p-4 border-t border-gray-100">
+                                    <p className="text-[10px] text-center w-full text-gray-400 leading-tight">
+                                        Keputusan Anda bersifat final untuk tahap ini. Pastikan telah membaca seluruh dokumen.
+                                    </p>
+                                </CardFooter>
+                            </Card>
+                        )}
                     </div>
                 </div>
 
@@ -576,10 +601,10 @@ const ReviewerReview: React.FC<ReviewerReviewProps> = ({ proposal, dosen }) => {
                                 </h3>
                                 <p className="text-gray-600 mt-2 text-sm">
                                     {actionType === 'approve'
-                                        ? 'Anda yakin menyetujui proposal ini? Status akan berubah menjadi Disetujui dan lanjut ke tahap berikutnya.'
+                                        ? `Anda yakin menyetujui proposal ini dengan skor ${totalScore.toFixed(2)}? Status akan berubah menjadi Disetujui.`
                                         : actionType === 'revise'
                                             ? 'Kirim masukan/permintaan revisi? Hasil review akan dikirim ke Admin LPPM untuk diproses selanjutnya.'
-                                            : 'Anda yakin menolak usulan ini? Tindakan ini tidak dapat dibatalkan.'}
+                                            : `Anda yakin menolak usulan ini (Skor: ${totalScore.toFixed(2)})? Tindakan ini tidak dapat dibatalkan.`}
                                 </p>
                             </div>
 

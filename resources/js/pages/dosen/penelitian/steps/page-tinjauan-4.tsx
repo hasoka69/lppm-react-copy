@@ -78,7 +78,7 @@ const PageTinjauan: React.FC<PageTinjauanProps> = ({
                 onSuccess: (page) => {
                     const flash = (page.props as any).flash;
                     if (flash?.success) {
-                        alert(flash.success);
+                        // Alert removed for smoother transition
                         onKonfirmasi?.();
                     } else if (flash?.error) {
                         alert(`Gagal: ${flash.error}`);
@@ -221,7 +221,6 @@ const PageTinjauan: React.FC<PageTinjauanProps> = ({
                                     <span style={{ fontWeight: 700, fontSize: '0.875rem', color: '#475569' }}>Skema & Durasi</span>
                                 </div>
                                 {renderReviewItem('Kelompok Skema', usulan.kelompok_skema)}
-                                {renderReviewItem('Lama Kegiatan', `${usulan.lama_kegiatan} Tahun`)}
                                 {renderReviewItem('Tahun Pertama', formatAcademicYear(usulan.tahun_pertama))}
                             </div>
 

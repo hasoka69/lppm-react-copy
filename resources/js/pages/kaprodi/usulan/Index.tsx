@@ -125,8 +125,8 @@ export default function KaprodiUsulanIndex({ penelitianList = [], pengabdianList
                                                             usulan.status === 'rejected_prodi' ? 'bg-red-100 text-red-800' :
                                                                 'bg-gray-100 text-gray-800'
                                                     }`}>
-                                                    {usulan.status === 'submitted' && 'Menunggu Tinjauan'}
-                                                    {usulan.status === 'approved_prodi' && 'Disetujui Prodi'}
+                                                    {usulan.status === 'submitted' && 'Menunggu Validasi'}
+                                                    {usulan.status === 'approved_prodi' && 'Telah Divalidasi'}
                                                     {usulan.status === 'rejected_prodi' && 'Ditolak Prodi'}
                                                     {!['submitted', 'approved_prodi', 'rejected_prodi'].includes(usulan.status) && usulan.status}
                                                 </span>
@@ -139,7 +139,7 @@ export default function KaprodiUsulanIndex({ penelitianList = [], pengabdianList
                                                     }
                                                     className="text-blue-600 hover:text-blue-900 inline-flex items-center"
                                                 >
-                                                    <Eye className="w-4 h-4 mr-1" /> Review
+                                                    <Eye className="w-4 h-4 mr-1" /> Validasi
                                                 </Link>
                                             </td>
                                         </tr>

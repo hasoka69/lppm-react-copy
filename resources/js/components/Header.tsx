@@ -38,6 +38,7 @@ const ROLE_MENU: Record<string, NavItem[]> = {
             items: [
                 { href: "/lppm/users", label: "Manajemen Pengguna" },
                 { href: "/lppm/berita", label: "Manajemen Berita" },
+                { href: "/lppm/pengumuman", label: "Manajemen Pengumuman" },
                 { href: "/lppm/data", label: "Master Data" },
                 { href: "/lppm/periods", label: "Periode Kegiatan" },
                 { href: "/lppm/reviewers", label: "Plotting Reviewer" },
@@ -98,8 +99,7 @@ const ROLE_MENU: Record<string, NavItem[]> = {
     kaprodi: [
         { href: "/kaprodi/dashboard", label: "Dashboard" },
         { href: "/kaprodi/usulan", label: "Usulan Masuk" },
-        { href: "/kaprodi/review-saya", label: "Review Saya" },
-        { href: "/kaprodi/riwayat-review", label: "Riwayat Review" },
+        { href: "/kaprodi/riwayat-review", label: "Riwayat Validasi" },
     ],
 };
 

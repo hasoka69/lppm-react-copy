@@ -36,6 +36,33 @@ class AnggotaApprovalController extends Controller
             'approval_comment' => null
         ]);
 
+        // [NEW] Auto-forward logic
+        // Check if parent proposal is in 'waiting_member_approval' state
+        if ($usulan->status === 'waiting_member_approval') {
+            $pendingCount = $usulan->anggotaDosen()
+                ->where('status_approval', '!=', 'approved')
+                ->count();
+
+            if ($pendingCount === 0) {
+                // All approved! Promote to submitted
+                $usulan->update([
+                    'status' => 'submitted',
+                    // submitted_at already set during initial submit
+                ]);
+
+                // Create History
+                \App\Models\ReviewHistory::create([
+                    'usulan_id' => $usulan->id,
+                    'usulan_type' => get_class($usulan),
+                    'reviewer_id' => null, // System action
+                    'reviewer_type' => 'system',
+                    'action' => 'auto_submitted',
+                    'comments' => 'Semua anggota dosen telah menyetujui. Usulan diteruskan ke Kaprodi.',
+                    'reviewed_at' => now(),
+                ]);
+            }
+        }
+
         return response()->json([
             'message' => 'Anggota approved successfully',
             'data' => $anggota

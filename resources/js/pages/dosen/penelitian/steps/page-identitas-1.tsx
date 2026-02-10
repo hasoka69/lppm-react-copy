@@ -33,7 +33,6 @@ interface UsulanData {
     rumpun_ilmu_3: string;
     prioritas_riset: string;
     tahun_pertama: number | string;
-    lama_kegiatan: number | string;
     [key: string]: string | number;
 }
 
@@ -93,7 +92,6 @@ const PageIdentitas: React.FC<PageIdentitasProps> = ({
         rumpun_ilmu_3: usulan?.rumpun_ilmu_3 ?? '',
         prioritas_riset: usulan?.prioritas_riset ?? '',
         tahun_pertama: academicYearCode,
-        lama_kegiatan: usulan?.lama_kegiatan ?? '',
     });
 
     const handleSaveDraft = (e: React.FormEvent) => {
@@ -135,8 +133,7 @@ const PageIdentitas: React.FC<PageIdentitasProps> = ({
             'rumpun_ilmu_1',
             'rumpun_ilmu_2',
             'rumpun_ilmu_3',
-            'prioritas_riset',
-            'lama_kegiatan'
+            'prioritas_riset'
         ];
 
         const emptyFields = requiredFields.filter(field => !data[field]);
@@ -287,7 +284,19 @@ const PageIdentitas: React.FC<PageIdentitasProps> = ({
                             Klasifikasi & Bidang Fokus
                         </h2>
                         <div className={styles.formGrid}>
-
+                            <div className={styles.formGroup}>
+                                <label className={styles.label}>6. Kategori SBK *</label>
+                                <select
+                                    className={styles.select}
+                                    value={data.kategori_sbk}
+                                    onChange={(e) => setData("kategori_sbk", e.target.value)}
+                                >
+                                    <option value="">Pilih Kategori SBK</option>
+                                    <option value="SBK Riset Dasar">SBK Riset Dasar</option>
+                                    <option value="SBK Riset Terapan">SBK Riset Terapan</option>
+                                    <option value="SBK Riset Pengembangan">SBK Riset Pengembangan</option>
+                                </select>
+                            </div>
 
                             <div className={styles.formGroup}>
                                 <label className={styles.label}>7. Bidang Fokus *</label>
@@ -334,7 +343,7 @@ const PageIdentitas: React.FC<PageIdentitasProps> = ({
                             <div className={styles.formGroup}>
                                 <label className={styles.label}>Level 1 *</label>
                                 <select className={styles.select} value={data.rumpun_ilmu_1} onChange={(e) => setData("rumpun_ilmu_1", e.target.value)}>
-                                    <option value="">Pilih Lvl 1</option>
+                                    <option value="">Pilih Level 1</option>
                                     <option value="Ilmu Alam">Ilmu Alam</option>
                                     <option value="Ilmu Sosial">Ilmu Sosial</option>
                                     <option value="Ilmu Humaniora">Ilmu Humaniora</option>
@@ -344,7 +353,7 @@ const PageIdentitas: React.FC<PageIdentitasProps> = ({
                             <div className={styles.formGroup}>
                                 <label className={styles.label}>Level 2 *</label>
                                 <select className={styles.select} value={data.rumpun_ilmu_2} onChange={(e) => setData("rumpun_ilmu_2", e.target.value)}>
-                                    <option value="">Pilih Lvl 2</option>
+                                    <option value="">Pilih Level 2</option>
                                     <option value="Matematika">Matematika</option>
                                     <option value="Fisika">Fisika</option>
                                     <option value="Kimia">Kimia</option>
@@ -354,7 +363,7 @@ const PageIdentitas: React.FC<PageIdentitasProps> = ({
                             <div className={styles.formGroup}>
                                 <label className={styles.label}>Level 3 *</label>
                                 <select className={styles.select} value={data.rumpun_ilmu_3} onChange={(e) => setData("rumpun_ilmu_3", e.target.value)}>
-                                    <option value="">Pilih Lvl 3</option>
+                                    <option value="">Pilih Level 3</option>
                                     <option value="Aljabar">Aljabar</option>
                                     <option value="Geometri">Geometri</option>
                                     <option value="Statistika">Statistika</option>
@@ -389,8 +398,6 @@ const PageIdentitas: React.FC<PageIdentitasProps> = ({
                                     Otomatis mengikuti Tahun Akademik berjalan (Kode: {data.tahun_pertama})
                                 </small>
                             </div>
-
-
                         </div>
                     </div>
                 </div>

@@ -11,7 +11,7 @@ class LuaranPengabdian extends Model
 
     protected $fillable = [
         'usulan_id',
-        'tahun',
+        'usulan_id',
         'kategori',
         'deskripsi',
         'is_wajib',

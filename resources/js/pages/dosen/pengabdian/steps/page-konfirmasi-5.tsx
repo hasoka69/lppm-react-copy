@@ -79,7 +79,7 @@ const PageKonfirmasi: React.FC<PageKonfirmasiProps> = ({
             onSuccess: (page) => {
                 const flash = (page.props as any).flash;
                 if (flash?.success) {
-                    alert(flash.success);
+                    // Alert removed for smoother transition
                     onKonfirmasi?.();
                 } else if (flash?.error) {
                     alert(`Gagal: ${flash.error}`);
