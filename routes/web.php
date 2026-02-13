@@ -22,6 +22,8 @@ use App\Http\Controllers\UsulanPengabdianController;
 use App\Http\Controllers\RabItemPengabdianController;
 use App\Http\Controllers\AnggotaPengabdianController;
 use App\Http\Controllers\AnggotaNonDosenPengabdianController;
+use App\Http\Controllers\TemplateDokumenController;
+use App\Http\Controllers\ContractController;
 
 // Group untuk authenticated users
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -285,6 +287,10 @@ Route::middleware('auth')->group(function () {
         // Pengumuman Management
         Route::resource('pengumuman', \App\Http\Controllers\PengumumanController::class);
 
+        // Template Dokumen
+        Route::resource('template-dokumen', \App\Http\Controllers\TemplateDokumenController::class);
+        Route::post('template-dokumen/{id}/toggle', [\App\Http\Controllers\TemplateDokumenController::class, 'toggleStatus'])->name('template-dokumen.toggle');
+
         // Setting Form
         Route::get('/setting-form', [\App\Http\Controllers\SettingFormController::class, 'index'])->name('setting-form');
         Route::put('/setting-form/{id}', [\App\Http\Controllers\SettingFormController::class, 'update'])->name('setting-form.update');
@@ -366,6 +372,10 @@ Route::middleware('auth')->group(function () {
 
     // Dashboard Dosen
     Route::get('/dosen/dashboard', [\App\Http\Controllers\DashboardController::class, 'dosen'])->middleware('can:dashboard-dosen-view')->name('dosen.dashboard');
+
+    // Contract Management (Auth accessible)
+    Route::put('lppm/kontrak/{type}/{id}', [ContractController::class, 'update'])->name('lppm.kontrak.update');
+    Route::get('lppm/kontrak/{type}/{id}/generate', [ContractController::class, 'generate'])->name('lppm.kontrak.generate');
 });
 
 

@@ -20,6 +20,7 @@ export interface Usulan {
     tahun_pelaksanaan: number;
     peran: string;
     status: string;
+    nomor_kontrak?: any;
 }
 
 export interface UsulanData extends Usulan {

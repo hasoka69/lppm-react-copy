@@ -21,6 +21,7 @@ export interface Usulan {
     makro_riset: string;
     peran: string;
     status: string;
+    nomor_kontrak?: any;
 }
 
 export interface UsulanData extends Usulan {

@@ -57,15 +57,12 @@ interface Props {
 
 export default function Detail({ usulan, laporan_kemajuan, outputs, isAdminView = false }: Props) {
     const { flash }: any = usePage().props;
-    const [step, setStep] = useState(1);
     const fileLaporanRef = useRef<HTMLInputElement>(null);
-    const fileSptbRef = useRef<HTMLInputElement>(null);
 
     const { data, setData, post, processing, errors } = useForm({
         ringkasan: laporan_kemajuan?.ringkasan || '',
         keyword: laporan_kemajuan?.keyword || '',
         file_laporan: null as File | null,
-        file_sptb: null as File | null,
     });
 
     useEffect(() => {
@@ -124,7 +121,7 @@ export default function Detail({ usulan, laporan_kemajuan, outputs, isAdminView 
                     className="space-y-8"
                 >
                     {/* Header Section */}
-                    <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                    <div className="flex flex-col gap-6">
                         <div className="space-y-1">
                             <Link
                                 href={isAdminView ? route('lppm.penelitian.laporan-kemajuan') : route('dosen.penelitian.laporan-kemajuan.index')}
@@ -138,245 +135,157 @@ export default function Detail({ usulan, laporan_kemajuan, outputs, isAdminView 
                             <p className="text-gray-500 text-[13px] font-medium uppercase tracking-[0.05em]">Modul Penelitian</p>
                         </div>
 
-                        {/* Step Indicator */}
-                        <div className="flex items-center gap-3 bg-white px-6 py-2.5 rounded-2xl shadow-sm border border-gray-100">
-                            {[
-                                { id: 1, label: 'Laporan % Ringkasan' },
-                                { id: 2, label: 'SPTB % Unggah' }
-                            ].map((s) => (
-                                <React.Fragment key={s.id}>
-                                    <div className="flex items-center gap-2">
-                                        <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-[11px] font-bold transition-all ${step >= s.id ? 'bg-blue-600 text-white shadow-md shadow-blue-100' : 'bg-gray-100 text-gray-400'}`}>
-                                            {s.id}
-                                        </div>
-                                        <span className={`text-[11px] font-bold uppercase tracking-wider ${step >= s.id ? 'text-blue-600' : 'text-gray-400'}`}>{s.label}</span>
-                                    </div>
-                                    {s.id === 1 && <div className={`w-8 h-px ${step > 1 ? 'bg-blue-600' : 'bg-gray-200'}`} />}
-                                </React.Fragment>
-                            ))}
+                        {/* Proposal Summary Card */}
+                        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 flex flex-col md:flex-row items-center justify-between gap-6 relative group overflow-hidden w-full">
+                            <div className="absolute top-0 left-0 w-1.5 h-full bg-blue-600" />
+                            <div className="flex-1 space-y-3">
+                                <div className="flex items-center gap-3">
+                                    <span className="px-2.5 py-0.5 bg-blue-50 text-blue-600 text-[11px] font-bold rounded-md border border-blue-100">Penelitian</span>
+                                    <span className="text-gray-300">|</span>
+                                    <span className="text-gray-400 text-[11px] font-medium tracking-wide uppercase">{usulan.kelompok_skema}</span>
+                                </div>
+                                <h2 className="text-xl font-bold text-gray-900 leading-snug">
+                                    {usulan.judul}
+                                </h2>
+                                <div className="flex items-center gap-2 text-[11px] font-bold text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-100 w-fit">
+                                    <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />
+                                    DANA DISETUJUI: Rp {new Intl.NumberFormat('id-ID').format(usulan.dana_disetujui || usulan.total_anggaran || 0)}
+                                </div>
+                            </div>
+                            <div className="flex flex-col items-end gap-2 shrink-0">
+                                <div className={`px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest ${laporan_kemajuan?.status === 'Submitted' ? 'bg-emerald-500 text-white border-emerald-600' : 'bg-amber-50 text-amber-600 border border-amber-100'}`}>
+                                    Status: {laporan_kemajuan?.status === 'Submitted' ? 'Sudah Final' : 'Draft / Belum Final'}
+                                </div>
+                                <div className="text-[11px] font-bold text-gray-400 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-100">
+                                    Tahun: {formatAcademicYear(usulan.tahun_pertama)}
+                                </div>
+                            </div>
                         </div>
-                    </div>
 
-                    {/* Proposal Summary Card */}
-                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 flex flex-col md:flex-row items-center justify-between gap-6 relative group overflow-hidden">
-                        <div className="absolute top-0 left-0 w-1.5 h-full bg-blue-600" />
-                        <div className="flex-1 space-y-3">
-                            <div className="flex items-center gap-3">
-                                <span className="px-2.5 py-0.5 bg-blue-50 text-blue-600 text-[11px] font-bold rounded-md border border-blue-100">Penelitian</span>
-                                <span className="text-gray-300">|</span>
-                                <span className="text-gray-400 text-[11px] font-medium tracking-wide uppercase">{usulan.kelompok_skema}</span>
-                            </div>
-                            <h2 className="text-xl font-bold text-gray-900 leading-snug">
-                                {usulan.judul}
-                            </h2>
-                            <div className="flex items-center gap-2 text-[11px] font-bold text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-100 w-fit">
-                                <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />
-                                DANA DISETUJUI: Rp {new Intl.NumberFormat('id-ID').format(usulan.dana_disetujui || usulan.total_anggaran || 0)}
-                            </div>
-                        </div>
-                        <div className="flex flex-col items-end gap-2 shrink-0">
-                            <div className={`px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest ${laporan_kemajuan?.status === 'Submitted' ? 'bg-emerald-500 text-white border-emerald-600' : 'bg-amber-50 text-amber-600 border border-amber-100'}`}>
-                                Status: {laporan_kemajuan?.status === 'Submitted' ? 'Sudah Final' : 'Draft / Belum Final'}
-                            </div>
-                            <div className="text-[11px] font-bold text-gray-400 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-100">
-                                Tahun: {formatAcademicYear(usulan.tahun_pertama)}
-                            </div>
-                        </div>
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-10">
-                        {step === 1 && (
-                            <motion.div
-                                initial={{ opacity: 0, x: 20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                className="space-y-8"
-                            >
-                                {/* Metadata Section */}
-                                <section className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                                    <div className="p-6 border-b border-gray-50 bg-gray-50/30">
-                                        <h3 className="text-sm font-bold text-gray-700 flex items-center gap-2">
-                                            <FileSearch className="w-4 h-4 text-blue-500" />
-                                            Data Laporan & Ringkasan
-                                        </h3>
-                                    </div>
-                                    <div className="p-10 space-y-8">
-                                        <div className="space-y-3">
-                                            <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">Ringkasan Penelitian (Laporan Kemajuan)</label>
-                                            <div className="relative">
-                                                <textarea
-                                                    className="w-full bg-gray-50 border-gray-100 rounded-xl focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500 py-4 px-6 text-sm font-medium min-h-[180px] transition-all leading-relaxed"
-                                                    value={data.ringkasan}
-                                                    onChange={e => setData('ringkasan', e.target.value)}
-                                                    placeholder="Tuliskan ringkasan hasil penelitian selama periode ini..."
-                                                    required
-                                                />
-                                                <div className="absolute bottom-4 right-4 text-[10px] font-bold text-gray-300">
-                                                    {data.ringkasan.length} Karakter
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                            <div className="space-y-3">
-                                                <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">Kata Kunci (Pisahkan dengan koma)</label>
-                                                <input
-                                                    type="text"
-                                                    className="w-full bg-gray-50 border-gray-100 rounded-xl focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500 py-3.5 px-6 text-sm font-semibold transition-all"
-                                                    value={data.keyword}
-                                                    onChange={e => setData('keyword', e.target.value)}
-                                                    placeholder="Contoh: AI, Pendidikan, Teknologi"
-                                                    required
-                                                />
-                                            </div>
-
-                                            <div className="space-y-3">
-                                                <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">Unggah Berkas Laporan (PDF)</label>
-                                                <div className="flex gap-2">
-                                                    <input type="file" ref={fileLaporanRef} className="hidden" onChange={e => setData('file_laporan', e.target.files?.[0] || null)} accept=".pdf" />
-                                                    <button type="button" onClick={() => fileLaporanRef.current?.click()} className="flex-1 bg-gray-50 border border-gray-100 rounded-xl px-5 py-3.5 text-sm font-bold text-gray-600 hover:bg-white hover:border-blue-500 hover:text-blue-600 transition-all text-left flex items-center justify-between">
-                                                        <span className="truncate">{data.file_laporan ? data.file_laporan.name : 'Pilih Berkas PDF'}</span>
-                                                        <Upload className="w-4 h-4 opacity-40" />
-                                                    </button>
-                                                    {laporan_kemajuan?.file_laporan && (
-                                                        <a href={`/storage/${laporan_kemajuan.file_laporan}`} target="_blank" className="bg-blue-50 text-blue-600 px-4 py-3.5 rounded-xl border border-blue-100 hover:bg-blue-100 transition-all flex items-center">
-                                                            <Download className="w-4 h-4" />
-                                                        </a>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </section>
-
-                                {/* Luaran Section */}
-                                <section className="space-y-6">
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-1 h-6 bg-blue-600 rounded-full" />
-                                            <h3 className="text-xl font-bold text-gray-900 tracking-tight">Capaian Luaran <span className="text-blue-600">Terjanjikan</span></h3>
-                                        </div>
-                                        <div className="text-[11px] font-bold text-gray-400 uppercase tracking-widest bg-white px-4 py-2 rounded-xl border border-gray-100 shadow-sm">
-                                            Total: {outputs.length} Item
-                                        </div>
-                                    </div>
-
-                                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                                        <div className="overflow-x-auto">
-                                            <table className="w-full text-left">
-                                                <thead>
-                                                    <tr className="bg-gray-50/50 border-b border-gray-50">
-                                                        <th className="px-8 py-5 text-[11px] font-bold text-gray-400 uppercase tracking-wider w-16 text-center">No</th>
-                                                        <th className="px-8 py-5 text-[11px] font-bold text-gray-400 uppercase tracking-wider">Kategori Luaran</th>
-                                                        <th className="px-8 py-5 text-[11px] font-bold text-gray-400 uppercase tracking-wider">Target & Deskripsi</th>
-                                                        <th className="px-8 py-5 text-[11px] font-bold text-gray-400 uppercase tracking-wider w-40 text-center">Aksi</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody className="divide-y divide-gray-50">
-                                                    {outputs.map((output, idx) => (
-                                                        <OutputRow key={output.id} output={output} index={idx + 1} isReadOnly={isAdminView} />
-                                                    ))}
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </div>
-                                </section>
-
-                                <div className="flex justify-end pt-6">
-                                    <button
-                                        type="button"
-                                        onClick={() => setStep(2)}
-                                        className="px-12 py-4 bg-blue-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-blue-100 hover:bg-blue-700 transition-all flex items-center gap-3"
-                                    >
-                                        Lanjutkan ke SPTB
-                                        <ArrowRight className="w-4 h-4" />
-                                    </button>
+                        <motion.div
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            className="space-y-8"
+                        >
+                            {/* Metadata Section */}
+                            <section className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                                <div className="p-6 border-b border-gray-50 bg-gray-50/30">
+                                    <h3 className="text-sm font-bold text-gray-700 flex items-center gap-2">
+                                        <FileSearch className="w-4 h-4 text-blue-500" />
+                                        Data Laporan & Ringkasan
+                                    </h3>
                                 </div>
-                            </motion.div>
-                        )}
-
-                        {step === 2 && (
-                            <motion.div
-                                initial={{ opacity: 0, x: -20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                className="space-y-8"
-                            >
-                                <section className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                                    <div className="p-6 border-b border-gray-50 bg-gray-50/30">
-                                        <h3 className="text-sm font-bold text-gray-700 flex items-center gap-2">
-                                            <Save className="w-4 h-4 text-emerald-500" />
-                                            Surat Pernyataan Tanggung Jawab Belanja (SPTB)
-                                        </h3>
-                                    </div>
-
-                                    <div className="p-10 space-y-10">
-                                        <div className="bg-emerald-50/50 border border-emerald-100 rounded-2xl p-6 flex items-start gap-5">
-                                            <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center text-emerald-600 shadow-sm border border-emerald-100">
-                                                <Info className="w-6 h-6" />
-                                            </div>
-                                            <div className="space-y-1">
-                                                <h4 className="text-sm font-bold text-emerald-900">Petunjuk Pengunggahan SPTB</h4>
-                                                <p className="text-[13px] text-emerald-700/80 leading-relaxed max-w-2xl font-medium">
-                                                    Unggah berkas SPTB yang telah ditandatangani dan distempel. Pastikan dokumen dalam format PDF dengan ukuran maksimal 10MB. Dokumen ini wajib sebelum melakukan finalisasi laporan.
-                                                </p>
+                                <div className="p-10 space-y-8">
+                                    <div className="space-y-3">
+                                        <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">Ringkasan Penelitian (Laporan Kemajuan)</label>
+                                        <div className="relative">
+                                            <textarea
+                                                className="w-full bg-gray-50 border-gray-100 rounded-xl focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500 py-4 px-6 text-sm font-medium min-h-[180px] transition-all leading-relaxed"
+                                                value={data.ringkasan}
+                                                onChange={e => setData('ringkasan', e.target.value)}
+                                                placeholder="Tuliskan ringkasan hasil penelitian selama periode ini..."
+                                                required
+                                            />
+                                            <div className="absolute bottom-4 right-4 text-[10px] font-bold text-gray-300">
+                                                {data.ringkasan.length} Karakter
                                             </div>
                                         </div>
+                                    </div>
 
-                                        <div className="max-w-xl space-y-3">
-                                            <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">Unggah Berkas SPTB (PDF)</label>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                        <div className="space-y-3">
+                                            <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">Kata Kunci (Pisahkan dengan koma)</label>
+                                            <input
+                                                type="text"
+                                                className="w-full bg-gray-50 border-gray-100 rounded-xl focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500 py-3.5 px-6 text-sm font-semibold transition-all"
+                                                value={data.keyword}
+                                                onChange={e => setData('keyword', e.target.value)}
+                                                placeholder="Contoh: AI, Pendidikan, Teknologi"
+                                                required
+                                            />
+                                        </div>
+
+                                        <div className="space-y-3">
+                                            <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">Unggah Berkas Laporan (PDF)</label>
                                             <div className="flex gap-2">
-                                                <input type="file" ref={fileSptbRef} className="hidden" onChange={e => setData('file_sptb', e.target.files?.[0] || null)} accept=".pdf" />
-                                                <button type="button" onClick={() => fileSptbRef.current?.click()} className="flex-1 bg-gray-50 border border-gray-100 rounded-xl px-5 py-3.5 text-sm font-bold text-gray-600 hover:bg-white hover:border-emerald-500 hover:text-emerald-600 transition-all text-left flex items-center justify-between">
-                                                    <span className="truncate">{data.file_sptb ? data.file_sptb.name : 'Pilih Berkas SPTB'}</span>
+                                                <input type="file" ref={fileLaporanRef} className="hidden" onChange={e => setData('file_laporan', e.target.files?.[0] || null)} accept=".pdf" />
+                                                <button type="button" onClick={() => fileLaporanRef.current?.click()} className="flex-1 bg-gray-50 border border-gray-100 rounded-xl px-5 py-3.5 text-sm font-bold text-gray-600 hover:bg-white hover:border-blue-500 hover:text-blue-600 transition-all text-left flex items-center justify-between">
+                                                    <span className="truncate">{data.file_laporan ? data.file_laporan.name : 'Pilih Berkas PDF'}</span>
                                                     <Upload className="w-4 h-4 opacity-40" />
                                                 </button>
-                                                {laporan_kemajuan?.file_sptb && (
-                                                    <a href={`/storage/${laporan_kemajuan.file_sptb}`} target="_blank" className="bg-emerald-50 text-emerald-600 px-4 py-3.5 rounded-xl border border-emerald-100 hover:bg-emerald-100 transition-all flex items-center">
+                                                {laporan_kemajuan?.file_laporan && (
+                                                    <a href={`/storage/${laporan_kemajuan.file_laporan}`} target="_blank" className="bg-blue-50 text-blue-600 px-4 py-3.5 rounded-xl border border-blue-100 hover:bg-blue-100 transition-all flex items-center">
                                                         <Download className="w-4 h-4" />
                                                     </a>
                                                 )}
                                             </div>
                                         </div>
                                     </div>
-                                </section>
+                                </div>
+                            </section>
 
-                                <div className="flex justify-between items-center pt-6">
-                                    <button
-                                        type="button"
-                                        onClick={() => setStep(1)}
-                                        className="px-8 py-4 bg-white border border-gray-200 text-gray-500 rounded-xl text-sm font-bold hover:bg-gray-50 transition-all flex items-center gap-2"
-                                    >
-                                        <ArrowLeft className="w-4 h-4" />
-                                        Kembali ke Laporan
-                                    </button>
-
-                                    <div className="flex gap-4">
-                                        {!isAdminView && (
-                                            <>
-                                                <button
-                                                    type="submit"
-                                                    disabled={processing}
-                                                    className="px-8 py-4 bg-white border-2 border-blue-600 text-blue-600 rounded-xl text-sm font-bold hover:bg-blue-50 transition-all shadow-sm"
-                                                >
-                                                    {processing ? 'Menyimpan...' : 'Simpan Draft'}
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => {
-                                                        if (confirm('Review kembali semua data. Setelah finalisasi, data tidak dapat diubah. Lanjutkan?')) {
-                                                            post(route('dosen.penelitian.laporan-kemajuan.submit', usulan.id));
-                                                        }
-                                                    }}
-                                                    className="px-12 py-4 bg-blue-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all flex items-center gap-3"
-                                                >
-                                                    Finalisasi Laporan
-                                                    <CheckCircle2 className="w-4 h-4" />
-                                                </button>
-                                            </>
-                                        )}
+                            {/* Luaran Section */}
+                            <section className="space-y-6">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-1 h-6 bg-blue-600 rounded-full" />
+                                        <h3 className="text-xl font-bold text-gray-900 tracking-tight">Capaian Luaran <span className="text-blue-600">Terjanjikan</span></h3>
+                                    </div>
+                                    <div className="text-[11px] font-bold text-gray-400 uppercase tracking-widest bg-white px-4 py-2 rounded-xl border border-gray-100 shadow-sm">
+                                        Total: {outputs.length} Item
                                     </div>
                                 </div>
-                            </motion.div>
-                        )}
+
+                                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                                    <div className="overflow-x-auto">
+                                        <table className="w-full text-left">
+                                            <thead>
+                                                <tr className="bg-gray-50/50 border-b border-gray-50">
+                                                    <th className="px-8 py-5 text-[11px] font-bold text-gray-400 uppercase tracking-wider w-16 text-center">No</th>
+                                                    <th className="px-8 py-5 text-[11px] font-bold text-gray-400 uppercase tracking-wider">Kategori Luaran</th>
+                                                    <th className="px-8 py-5 text-[11px] font-bold text-gray-400 uppercase tracking-wider">Target & Deskripsi</th>
+                                                    <th className="px-8 py-5 text-[11px] font-bold text-gray-400 uppercase tracking-wider w-40 text-center">Aksi</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-gray-50">
+                                                {outputs.map((output, idx) => (
+                                                    <OutputRow key={output.id} output={output} index={idx + 1} isReadOnly={isAdminView} />
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <div className="flex gap-4 justify-end pt-6">
+                                {!isAdminView && (
+                                    <>
+                                        <button
+                                            type="submit"
+                                            disabled={processing}
+                                            className="px-8 py-4 bg-white border-2 border-blue-600 text-blue-600 rounded-xl text-sm font-bold hover:bg-blue-50 transition-all shadow-sm"
+                                        >
+                                            {processing ? 'Menyimpan...' : 'Simpan Draft'}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                if (confirm('Review kembali semua data. Setelah finalisasi, data tidak dapat diubah. Lanjutkan?')) {
+                                                    post(route('dosen.penelitian.laporan-kemajuan.submit', usulan.id));
+                                                }
+                                            }}
+                                            className="px-12 py-4 bg-blue-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all flex items-center gap-3"
+                                        >
+                                            Finalisasi Laporan
+                                            <CheckCircle2 className="w-4 h-4" />
+                                        </button>
+                                    </>
+                                )}
+                            </div>
+                        </motion.div>
                     </form>
                     <Toaster />
                 </motion.div>
@@ -434,7 +343,7 @@ function OutputRow({ output, index, isReadOnly }: { output: any, index: number, 
                         <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-md uppercase tracking-wider border border-blue-100">
                             {output.kategori}
                         </span>
-                        <div className={`mt-2 inline-flex items-center px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest ${output.status === 'Published' || output.status === 'Accepted' ? 'bg-emerald-500 text-white' : output.status === 'Draft' || output.status === 'Rencana' ? 'bg-amber-500 text-white' : 'bg-blue-600 text-white'}`}>
+                        <div className={`mt-2 inline-flex items-center px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest ${output.status === 'Published' || output.status === 'LOA' ? 'bg-emerald-500 text-white' : 'bg-blue-600 text-white'}`}>
                             {output.status}
                         </div>
                     </div>
@@ -529,11 +438,9 @@ function OutputRow({ output, index, isReadOnly }: { output: any, index: number, 
                                             <div className="space-y-2">
                                                 <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">Status Capaian</label>
                                                 <select className="w-full bg-gray-50 border-gray-100 rounded-xl py-3.5 px-6 text-sm font-bold focus:ring-4 focus:ring-blue-500/5" value={data.status} onChange={e => setData('status', e.target.value)}>
-                                                    <option value="Rencana">Rencana</option>
-                                                    <option value="Draft">Draft</option>
-                                                    <option value="Submitted">Submitted</option>
-                                                    <option value="In Review">In Review</option>
-                                                    <option value="Accepted">Accepted</option>
+                                                    <option value="Submit">Submit</option>
+                                                    <option value="Under Review">Under Review</option>
+                                                    <option value="LOA">LOA</option>
                                                     <option value="Published">Published</option>
                                                 </select>
                                             </div>

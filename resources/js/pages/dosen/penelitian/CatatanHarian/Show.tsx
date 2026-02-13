@@ -40,12 +40,10 @@ const containerVariants = {
 interface Props {
     usulan: any;
     logs: any[];
-    months: string[];
-    selectedMonth: string;
     isAdminView?: boolean;
 }
 
-export default function Show({ usulan, logs, months, selectedMonth, isAdminView = false }: Props) {
+export default function Show({ usulan, logs, isAdminView = false }: Props) {
     const { flash }: any = usePage().props;
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingLog, setEditingLog] = useState<any>(null);
@@ -55,16 +53,11 @@ export default function Show({ usulan, logs, months, selectedMonth, isAdminView 
         if (flash.error) toast.error(flash.error);
     }, [flash]);
 
-    const handleMonthChange = (month: string) => {
-        router.visit(route('dosen.penelitian.catatan-harian.show', {
-            id: usulan.id,
-            month: month
-        }), { preserveState: true });
-    };
+
 
     const handleDelete = (id: number) => {
         if (confirm('Apakah Anda yakin ingin menghapus catatan ini?')) {
-            router.delete(route('dosen.penelitian.catatan-harian.delete', id), {
+            router.delete(route('dosen.penelitian.catatan-harian.destroy', id), {
                 onSuccess: () => toast.success('Catatan berhasil dihapus')
             });
         }
@@ -166,39 +159,17 @@ export default function Show({ usulan, logs, months, selectedMonth, isAdminView 
 
                     {/* Timeline & Filter Section */}
                     <div className="flex flex-col md:flex-row gap-8 items-start">
-                        {/* Month Sidebar */}
-                        <div className="w-full md:w-64 space-y-3">
-                            <div className="flex items-center gap-2 px-2 text-gray-400 mb-4">
-                                <History className="w-4 h-4" />
-                                <span className="text-xs font-bold uppercase tracking-widest">Periode Log</span>
-                            </div>
-                            <div className="space-y-1">
-                                {months.map((month) => (
-                                    <button
-                                        key={month}
-                                        onClick={() => handleMonthChange(month)}
-                                        className={`w-full text-left px-4 py-3 rounded-xl text-[13px] font-semibold transition-all flex items-center justify-between group
-                                            ${selectedMonth === month
-                                                ? 'bg-white text-blue-600 shadow-sm border border-gray-100'
-                                                : 'text-gray-500 hover:bg-gray-100/50 hover:text-gray-700'
-                                            }`}
-                                    >
-                                        <span>{month}</span>
-                                        <ChevronRight className={`w-4 h-4 transition-transform ${selectedMonth === month ? 'translate-x-0' : '-translate-x-2 opacity-0 group-hover:translate-x-0 group-hover:opacity-100'}`} />
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
+
 
                         {/* Logs Table */}
                         <div className="flex-1 w-full bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                             <div className="p-6 border-b border-gray-50 bg-gray-50/30 flex items-center justify-between">
                                 <h3 className="text-sm font-bold text-gray-700 flex items-center gap-2">
                                     <FileText className="w-4 h-4 text-blue-500" />
-                                    Daftar Aktivitas {selectedMonth}
+                                    Daftar Riwayat Aktivitas
                                 </h3>
                                 <span className="text-[11px] font-bold text-gray-400 bg-white px-3 py-1 rounded-full border border-gray-100 shadow-sm">
-                                    {logs.length} Catatan Ditemukan
+                                    {logs.length} Catatan
                                 </span>
                             </div>
 
@@ -218,7 +189,7 @@ export default function Show({ usulan, logs, months, selectedMonth, isAdminView 
                                                 <td colSpan={4} className="px-6 py-16 text-center">
                                                     <div className="flex flex-col items-center justify-center space-y-3 grayscale opacity-40">
                                                         <FileText className="w-12 h-12 text-gray-300" />
-                                                        <p className="text-sm font-semibold text-gray-400">Belum ada aktivitas tercatat di bulan ini</p>
+                                                        <p className="text-sm font-semibold text-gray-400">Belum ada aktivitas tercatat.</p>
                                                     </div>
                                                 </td>
                                             </tr>

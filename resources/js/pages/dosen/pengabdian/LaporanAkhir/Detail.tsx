@@ -29,9 +29,12 @@ import {
     Image as ImageIcon,
     Eye
 } from 'lucide-react';
+import { formatAcademicYear } from '@/utils/academicYear';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { Toaster } from '@/components/ui/sonner';
+
+import { createPortal } from 'react-dom';
 
 const containerVariants = {
     hidden: { opacity: 0, y: 10 },
@@ -55,10 +58,8 @@ interface Props {
 
 export default function Detail({ usulan, laporan_akhir, outputs, isAdminView = false }: Props) {
     const { flash }: any = usePage().props;
-    const [step, setStep] = useState(1);
     const fileLaporanRef = useRef<HTMLInputElement>(null);
     const filePosterRef = useRef<HTMLInputElement>(null);
-    const fileSptbRef = useRef<HTMLInputElement>(null);
 
     const { data, setData, post, processing, errors } = useForm({
         ringkasan: laporan_akhir?.ringkasan || '',
@@ -66,7 +67,6 @@ export default function Detail({ usulan, laporan_akhir, outputs, isAdminView = f
         url_video: laporan_akhir?.url_video || '',
         file_laporan: null as File | null,
         file_poster: null as File | null,
-        file_sptb: null as File | null,
     });
 
     useEffect(() => {
@@ -134,7 +134,7 @@ export default function Detail({ usulan, laporan_akhir, outputs, isAdminView = f
                     className="space-y-8"
                 >
                     {/* Header Section */}
-                    <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                    <div className="flex flex-col gap-6">
                         <div className="space-y-1">
                             <Link
                                 href={isAdminView ? route('lppm.pengabdian.laporan-akhir') : route('dosen.pengabdian.laporan-akhir.index')}
@@ -148,54 +148,35 @@ export default function Detail({ usulan, laporan_akhir, outputs, isAdminView = f
                             <p className="text-gray-500 text-[13px] font-medium uppercase tracking-[0.05em]">Modul Pengabdian</p>
                         </div>
 
-                        {/* Step Indicator */}
-                        <div className="flex items-center gap-3 bg-white px-6 py-2.5 rounded-2xl shadow-sm border border-gray-100">
-                            {[
-                                { id: 1, label: 'Metadata & Luaran' },
-                                { id: 2, label: 'SPTB & Finalisasi' }
-                            ].map((s) => (
-                                <React.Fragment key={s.id}>
-                                    <div className="flex items-center gap-2">
-                                        <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-[11px] font-bold transition-all ${step >= s.id ? 'bg-blue-600 text-white shadow-md shadow-blue-100' : 'bg-gray-100 text-gray-400'}`}>
-                                            {s.id}
-                                        </div>
-                                        <span className={`text-[11px] font-bold uppercase tracking-wider ${step >= s.id ? 'text-blue-600' : 'text-gray-400'}`}>{s.label}</span>
-                                    </div>
-                                    {s.id === 1 && <div className={`w-8 h-px ${step > 1 ? 'bg-blue-600' : 'bg-gray-200'}`} />}
-                                </React.Fragment>
-                            ))}
-                        </div>
-                    </div>
+                        {/* Proposal Summary Card */}
+                        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 flex flex-col md:flex-row items-center justify-between gap-6 relative group overflow-hidden w-full">
+                            <div className="absolute top-0 left-0 w-1.5 h-full bg-blue-600" />
+                            <div className="flex-1 space-y-3">
+                                <div className="flex items-center gap-3">
+                                    <span className="px-2.5 py-0.5 bg-amber-50 text-amber-600 text-[11px] font-bold rounded-md border border-amber-100">Pengabdian</span>
+                                    <span className="text-gray-300">|</span>
+                                    <span className="text-gray-400 text-[11px] font-medium tracking-wide uppercase">{usulan.kelompok_skema}</span>
+                                </div>
+                                <h2 className="text-xl font-bold text-gray-900 leading-snug">
+                                    {usulan.judul}
+                                </h2>
+                                <div className="flex items-center gap-2 text-[11px] font-bold text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-100 w-fit">
+                                    <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />
+                                    DANA DISETUJUI: Rp {new Intl.NumberFormat('id-ID').format(usulan.dana_disetujui || usulan.total_anggaran || 0)}
+                                </div>
+                            </div>
+                            <div className="flex flex-col items-end gap-2 shrink-0">
+                                <div className={`px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest ${laporan_akhir?.status === 'Submitted' ? 'bg-emerald-500 text-white border-emerald-600' : 'bg-amber-50 text-amber-600 border border-amber-100'}`}>
+                                    Status: {laporan_akhir?.status === 'Submitted' ? 'Sudah Final' : 'Draft / Belum Final'}
+                                </div>
+                                <div className="text-[11px] font-bold text-gray-400 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-100">
+                                    {formatAcademicYear(usulan.tahun_pertama)}
+                                </div>
+                            </div>
 
-                    {/* Proposal Summary Card */}
-                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 flex flex-col md:flex-row items-center justify-between gap-6 relative group overflow-hidden">
-                        <div className="absolute top-0 left-0 w-1.5 h-full bg-blue-600" />
-                        <div className="flex-1 space-y-3">
-                            <div className="flex items-center gap-3">
-                                <span className="px-2.5 py-0.5 bg-amber-50 text-amber-600 text-[11px] font-bold rounded-md border border-amber-100">Pengabdian</span>
-                                <span className="text-gray-300">|</span>
-                                <span className="text-gray-400 text-[11px] font-medium tracking-wide uppercase">{usulan.kelompok_skema}</span>
-                            </div>
-                            <h2 className="text-xl font-bold text-gray-900 leading-snug">
-                                {usulan.judul}
-                            </h2>
-                            <div className="flex items-center gap-2 text-[11px] font-bold text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-100 w-fit">
-                                <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />
-                                DANA DISETUJUI: Rp {new Intl.NumberFormat('id-ID').format(usulan.dana_disetujui || usulan.total_anggaran || 0)}
-                            </div>
                         </div>
-                        <div className="flex flex-col items-end gap-2 shrink-0">
-                            <div className={`px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest ${laporan_akhir?.status === 'Submitted' ? 'bg-emerald-500 text-white border-emerald-600' : 'bg-amber-50 text-amber-600 border border-amber-100'}`}>
-                                Status: {laporan_akhir?.status === 'Submitted' ? 'Sudah Final' : 'Draft / Belum Final'}
-                            </div>
-                            <div className="text-[11px] font-bold text-gray-400 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-100">
-                                {usulan.tahun_pertama}
-                            </div>
-                        </div>
-                    </div>
 
-                    <form onSubmit={handleSubmit} className="space-y-10">
-                        {step === 1 && (
+                        <form onSubmit={handleSubmit} className="space-y-10">
                             <motion.div
                                 initial={{ opacity: 0, x: 20 }}
                                 animate={{ opacity: 1, x: 0 }}
@@ -367,73 +348,7 @@ export default function Detail({ usulan, laporan_akhir, outputs, isAdminView = f
                                     </div>
                                 </section>
 
-                                <div className="flex justify-end pt-6">
-                                    <button
-                                        type="button"
-                                        onClick={() => setStep(2)}
-                                        className="px-12 py-4 bg-blue-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-blue-100 hover:bg-blue-700 transition-all flex items-center gap-3"
-                                    >
-                                        Lanjutkan ke SPTB
-                                        <ArrowRight className="w-4 h-4" />
-                                    </button>
-                                </div>
-                            </motion.div>
-                        )}
-
-                        {step === 2 && (
-                            <motion.div
-                                initial={{ opacity: 0, x: -20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                className="space-y-10"
-                            >
-                                <section className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                                    <div className="p-6 border-b border-gray-50 bg-gray-50/30 flex items-center justify-between">
-                                        <h3 className="text-sm font-bold text-gray-700 flex items-center gap-2">
-                                            <FileCheck className="w-4 h-4 text-emerald-500" />
-                                            Berkas Keuangan & Finalisasi
-                                        </h3>
-                                    </div>
-                                    <div className="p-10 space-y-10">
-                                        <div className="bg-emerald-50/50 border border-emerald-100 rounded-2xl p-8 flex items-start gap-6">
-                                            <div className="p-4 bg-white rounded-xl text-emerald-600 shadow-sm border border-emerald-100 shrink-0">
-                                                <AlertCircle className="w-6 h-6" />
-                                            </div>
-                                            <div className="space-y-2">
-                                                <h4 className="text-sm font-bold text-emerald-900 italic">Pernyataan Tanggung Jawab Belanja (SPTB) Akhir</h4>
-                                                <p className="text-[13px] text-emerald-700/80 leading-relaxed font-medium">
-                                                    Dokumen SPTB Akhir (100%) wajib menyertakan tanda tangan dan stempel basah. Dokumen ini adalah syarat mutlak untuk finalisasi laporan akhir pengabdian.
-                                                </p>
-                                            </div>
-                                        </div>
-
-                                        <div className="max-w-xl space-y-4">
-                                            <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">Unggah SPTB Akhir (100%)</label>
-                                            <div className="flex gap-2">
-                                                <input type="file" ref={fileSptbRef} className="hidden" onChange={e => setData('file_sptb', e.target.files?.[0] || null)} accept=".pdf" />
-                                                <button type="button" onClick={() => fileSptbRef.current?.click()} className="flex-1 bg-gray-50 border border-gray-100 rounded-xl px-5 py-4 text-sm font-bold text-gray-600 hover:bg-white hover:border-emerald-500 hover:text-emerald-600 transition-all text-left flex items-center justify-between">
-                                                    <span className="truncate">{data.file_sptb ? data.file_sptb.name : 'Pilih Berkas SPTB Akhir'}</span>
-                                                    <Upload className="w-4 h-4 opacity-40" />
-                                                </button>
-                                                {laporan_akhir?.file_sptb && (
-                                                    <a href={`/storage/${laporan_akhir.file_sptb}`} target="_blank" className="bg-emerald-50 text-emerald-600 px-5 py-4 rounded-xl border border-emerald-100 hover:bg-emerald-100 transition-all">
-                                                        <Eye className="w-5 h-5" />
-                                                    </a>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </section>
-
-                                <div className="flex justify-between items-center pt-8 border-t border-gray-100">
-                                    <button
-                                        type="button"
-                                        onClick={() => setStep(1)}
-                                        className="px-8 py-4 bg-white border border-gray-200 text-gray-500 rounded-xl text-[13px] font-bold hover:bg-gray-50 transition-all flex items-center gap-2"
-                                    >
-                                        <ArrowLeft className="w-4 h-4" />
-                                        Metadata & Luaran
-                                    </button>
-
+                                <div className="flex justify-end pt-6 border-t border-gray-100">
                                     {!isAdminView && (
                                         <div className="flex gap-4">
                                             <button
@@ -455,9 +370,9 @@ export default function Detail({ usulan, laporan_akhir, outputs, isAdminView = f
                                     )}
                                 </div>
                             </motion.div>
-                        )}
-                    </form>
-                    <Toaster />
+                        </form>
+                        <Toaster />
+                    </div>
                 </motion.div>
             </main>
 
@@ -502,6 +417,7 @@ function OutputRow({ output, index, isReadOnly }: { output: any, index: number, 
 
     return (
         <>
+
             <motion.tr
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -520,7 +436,7 @@ function OutputRow({ output, index, isReadOnly }: { output: any, index: number, 
                 </td>
                 <td className="px-8 py-8">
                     <div className="space-y-4">
-                        <div className={`inline-flex items-center px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest ${output.status === 'Published' || output.status === 'Accepted' || output.status === 'Ready' ? 'bg-emerald-500 text-white' : 'bg-blue-600 text-white'}`}>
+                        <div className={`inline-flex items-center px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest ${output.status === 'Published' || output.status === 'LOA' ? 'bg-emerald-500 text-white' : 'bg-blue-600 text-white'}`}>
                             {output.status}
                         </div>
                         {output.judul_realisasi && (
@@ -552,120 +468,120 @@ function OutputRow({ output, index, isReadOnly }: { output: any, index: number, 
                 </td>
             </motion.tr>
 
-            <AnimatePresence>
-                {isEditing && (
-                    <tr>
-                        <td>
-                            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                                <motion.div
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    exit={{ opacity: 0 }}
-                                    onClick={() => setIsEditing(false)}
-                                    className="absolute inset-0 bg-gray-900/40 backdrop-blur-md"
-                                />
-                                <motion.div
-                                    initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                                    exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                                    className="bg-white rounded-[2rem] shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col relative z-10 border border-gray-100"
-                                >
-                                    <div className="px-10 py-6 bg-gradient-to-r from-gray-900 to-blue-900 flex items-center justify-between">
-                                        <div className="flex items-center gap-5">
-                                            <div className="p-2.5 bg-white/10 rounded-xl border border-white/10 backdrop-blur-md">
-                                                <BadgeCheck className="w-5 h-5 text-white" />
-                                            </div>
-                                            <div>
-                                                <h3 className="text-lg font-bold text-white tracking-tight">Capaian Akhir Luaran</h3>
-                                                <p className="text-[10px] text-blue-100/60 font-bold uppercase tracking-widest mt-0.5">Dokumentasi Luaran Wajib Pengabdian</p>
-                                            </div>
+            {createPortal(
+                <AnimatePresence>
+                    {isEditing && (
+                        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                onClick={() => setIsEditing(false)}
+                                className="absolute inset-0 bg-gray-900/40 backdrop-blur-md"
+                            />
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                                className="bg-white rounded-[2rem] shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col relative z-10 border border-gray-100"
+                            >
+                                <div className="px-10 py-6 bg-gradient-to-r from-gray-900 to-blue-900 flex items-center justify-between">
+                                    <div className="flex items-center gap-5">
+                                        <div className="p-2.5 bg-white/10 rounded-xl border border-white/10 backdrop-blur-md">
+                                            <BadgeCheck className="w-5 h-5 text-white" />
                                         </div>
-                                        <button onClick={() => setIsEditing(false)} className="p-2 bg-white/10 text-white rounded-xl hover:bg-white/20 transition-all">
-                                            <X className="w-5 h-5" />
-                                        </button>
+                                        <div>
+                                            <h3 className="text-lg font-bold text-white tracking-tight">Capaian Akhir Luaran</h3>
+                                            <p className="text-[10px] text-blue-100/60 font-bold uppercase tracking-widest mt-0.5">Dokumentasi Luaran Wajib Pengabdian</p>
+                                        </div>
                                     </div>
+                                    <button onClick={() => setIsEditing(false)} className="p-2 bg-white/10 text-white rounded-xl hover:bg-white/20 transition-all">
+                                        <X className="w-5 h-5" />
+                                    </button>
+                                </div>
 
-                                    <div className="flex-1 overflow-y-auto p-10 space-y-8">
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                            <div className="md:col-span-2 space-y-2">
-                                                <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">Judul Realisasi / Kegiatan Akhir / Produk</label>
-                                                <textarea
-                                                    className="w-full bg-gray-50 border-gray-100 rounded-xl focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500 py-4 px-6 text-sm font-medium min-h-[100px] transition-all"
-                                                    value={data.judul_realisasi}
-                                                    onChange={e => setData('judul_realisasi', e.target.value)}
-                                                    placeholder="Masukkan judul finalisasi luaran pengabdian..."
-                                                />
-                                            </div>
+                                <div className="flex-1 overflow-y-auto p-10 space-y-8">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                        <div className="md:col-span-2 space-y-2">
+                                            <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">Judul Realisasi / Kegiatan Akhir / Produk</label>
+                                            <textarea
+                                                className="w-full bg-gray-50 border-gray-100 rounded-xl focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500 py-4 px-6 text-sm font-medium min-h-[100px] transition-all"
+                                                value={data.judul_realisasi}
+                                                onChange={e => setData('judul_realisasi', e.target.value)}
+                                                placeholder="Masukkan judul finalisasi luaran pengabdian..."
+                                            />
+                                        </div>
 
-                                            <div className="space-y-2">
-                                                <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">Status Capaian Akhir</label>
-                                                <select className="w-full bg-gray-50 border-gray-100 rounded-xl py-3.5 px-6 text-sm font-bold" value={data.status} onChange={e => setData('status', e.target.value)}>
-                                                    <option value="Ready">Ready/Terlaksana</option>
-                                                    <option value="Published">Published</option>
-                                                    <option value="Accepted">Accepted</option>
-                                                    <option value="Granted">Granted (HKI/Paten)</option>
-                                                </select>
-                                            </div>
+                                        <div className="space-y-2">
+                                            <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">Status Capaian Akhir</label>
+                                            <select className="w-full bg-gray-50 border-gray-100 rounded-xl py-3.5 px-6 text-sm font-bold" value={data.status} onChange={e => setData('status', e.target.value)}>
+                                                <option value="Submit">Submit</option>
+                                                <option value="Under Review">Under Review</option>
+                                                <option value="LOA">LOA</option>
+                                                <option value="Published">Published</option>
+                                            </select>
+                                        </div>
 
-                                            <div className="space-y-2">
-                                                <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">Peran Pelaksana / Penulis</label>
-                                                <input type="text" className="w-full bg-gray-50 border-gray-100 rounded-xl py-3.5 px-6 text-sm font-bold" value={data.peran_penulis} onChange={e => setData('peran_penulis', e.target.value)} placeholder="Contoh: Ketua Pelaksana" />
-                                            </div>
+                                        <div className="space-y-2">
+                                            <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">Peran Pelaksana / Penulis</label>
+                                            <input type="text" className="w-full bg-gray-50 border-gray-100 rounded-xl py-3.5 px-6 text-sm font-bold" value={data.peran_penulis} onChange={e => setData('peran_penulis', e.target.value)} placeholder="Contoh: Ketua Pelaksana" />
+                                        </div>
 
-                                            <div className="space-y-2">
-                                                <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">Nama Jurnal / Lokasi / Venue</label>
-                                                <input type="text" className="w-full bg-gray-50 border-gray-100 rounded-xl py-3.5 px-6 text-sm font-bold" value={data.nama_jurnal} onChange={e => setData('nama_jurnal', e.target.value)} placeholder="Nama Media/Lokasi/Venue..." />
-                                            </div>
+                                        <div className="space-y-2">
+                                            <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">Nama Jurnal / Lokasi / Venue</label>
+                                            <input type="text" className="w-full bg-gray-50 border-gray-100 rounded-xl py-3.5 px-6 text-sm font-bold" value={data.nama_jurnal} onChange={e => setData('nama_jurnal', e.target.value)} placeholder="Nama Media/Lokasi/Venue..." />
+                                        </div>
 
-                                            <div className="space-y-2">
-                                                <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">ISSN / ISBN / No. Sertifikat</label>
-                                                <input type="text" className="w-full bg-gray-50 border-gray-100 rounded-xl py-3.5 px-6 text-sm font-bold" value={data.issn} onChange={e => setData('issn', e.target.value)} placeholder="XXXX-XXXX" />
-                                            </div>
+                                        <div className="space-y-2">
+                                            <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">ISSN / ISBN / No. Sertifikat</label>
+                                            <input type="text" className="w-full bg-gray-50 border-gray-100 rounded-xl py-3.5 px-6 text-sm font-bold" value={data.issn} onChange={e => setData('issn', e.target.value)} placeholder="XXXX-XXXX" />
+                                        </div>
 
-                                            <div className="md:col-span-2 pt-6 border-t border-gray-50">
-                                                <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1 block mb-3">Unggah Berkas Bukti Luaran Akhir (PDF)</label>
-                                                <div className="bg-gray-50/50 p-8 rounded-2xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center text-center space-y-4 hover:bg-white hover:border-blue-400 transition-all group/up">
-                                                    <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center text-gray-300 shadow-sm border border-gray-100 group-hover/up:text-blue-600 transition-colors">
-                                                        <Upload className="w-6 h-6" />
-                                                    </div>
-                                                    <div className="space-y-1">
-                                                        <p className="text-[13px] font-bold text-gray-700">Pilih Berkas Bukti Final</p>
-                                                        <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-wider">Max Size: 10MB</p>
-                                                    </div>
-                                                    <input type="file" ref={fileInputRef} className="hidden" onChange={e => setData('file_bukti', e.target.files?.[0] || null)} accept=".pdf" />
-                                                    <div className="flex gap-3">
-                                                        <button type="button" onClick={() => fileInputRef.current?.click()} className="px-8 py-2.5 bg-white border border-gray-900 text-gray-900 rounded-xl text-[11px] font-bold hover:bg-gray-900 hover:text-white transition-all shadow-sm">
-                                                            {data.file_bukti ? 'File Dipilih ✓' : 'Pilih Berkas'}
-                                                        </button>
-                                                        {output.file_bukti && (
-                                                            <a href={`/storage/${output.file_bukti}`} target="_blank" className="px-8 py-2.5 bg-blue-50 text-blue-700 rounded-xl text-[11px] font-bold hover:bg-blue-100 transition-all border border-blue-100 flex items-center gap-2">
-                                                                <Search className="w-3.5 h-3.5" /> Lihat Terunggah
-                                                            </a>
-                                                        )}
-                                                    </div>
+                                        <div className="md:col-span-2 pt-6 border-t border-gray-50">
+                                            <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1 block mb-3">Unggah Berkas Bukti Luaran Akhir (PDF)</label>
+                                            <div className="bg-gray-50/50 p-8 rounded-2xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center text-center space-y-4 hover:bg-white hover:border-blue-400 transition-all group/up">
+                                                <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center text-gray-300 shadow-sm border border-gray-100 group-hover/up:text-blue-600 transition-colors">
+                                                    <Upload className="w-6 h-6" />
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <p className="text-[13px] font-bold text-gray-700">Pilih Berkas Bukti Final</p>
+                                                    <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-wider">Max Size: 10MB</p>
+                                                </div>
+                                                <input type="file" ref={fileInputRef} className="hidden" onChange={e => setData('file_bukti', e.target.files?.[0] || null)} accept=".pdf" />
+                                                <div className="flex gap-3">
+                                                    <button type="button" onClick={() => fileInputRef.current?.click()} className="px-8 py-2.5 bg-white border border-gray-900 text-gray-900 rounded-xl text-[11px] font-bold hover:bg-gray-900 hover:text-white transition-all shadow-sm">
+                                                        {data.file_bukti ? 'File Dipilih ✓' : 'Pilih Berkas'}
+                                                    </button>
+                                                    {output.file_bukti && (
+                                                        <a href={`/storage/${output.file_bukti}`} target="_blank" className="px-8 py-2.5 bg-blue-50 text-blue-700 rounded-xl text-[11px] font-bold hover:bg-blue-100 transition-all border border-blue-100 flex items-center gap-2">
+                                                            <Search className="w-3.5 h-3.5" /> Lihat Terunggah
+                                                        </a>
+                                                    )}
                                                 </div>
                                             </div>
+                                        </div>
 
-                                            <div className="md:col-span-2 pt-6 flex justify-end gap-3">
-                                                <button type="button" onClick={() => setIsEditing(false)} className="px-8 py-3 text-[13px] font-bold text-gray-400 hover:text-gray-700 transition-colors">Batalkan</button>
-                                                <button
-                                                    type="button"
-                                                    onClick={handleSubmit}
-                                                    disabled={processing}
-                                                    className="px-14 py-3 bg-blue-600 text-white rounded-xl text-[13px] font-bold shadow-lg shadow-blue-100 hover:bg-blue-700 transition-all flex items-center gap-2"
-                                                >
-                                                    {processing ? '...' : <Save className="w-4 h-4" />}
-                                                    Simpan Capaian Luaran
-                                                </button>
-                                            </div>
+                                        <div className="md:col-span-2 pt-6 flex justify-end gap-3">
+                                            <button type="button" onClick={() => setIsEditing(false)} className="px-8 py-3 text-[13px] font-bold text-gray-400 hover:text-gray-700 transition-colors">Batalkan</button>
+                                            <button
+                                                type="button"
+                                                onClick={handleSubmit}
+                                                disabled={processing}
+                                                className="px-14 py-3 bg-blue-600 text-white rounded-xl text-[13px] font-bold shadow-lg shadow-blue-100 hover:bg-blue-700 transition-all flex items-center gap-2"
+                                            >
+                                                {processing ? '...' : <Save className="w-4 h-4" />}
+                                                Simpan Capaian Luaran
+                                            </button>
                                         </div>
                                     </div>
-                                </motion.div>
-                            </div>
-                        </td>
-                    </tr>
-                )}
-            </AnimatePresence>
+                                </div>
+                            </motion.div>
+                        </div>
+                    )}
+                </AnimatePresence>,
+                document.body
+            )}
         </>
     );
+
 }

@@ -30,6 +30,7 @@ import {
     Share2,
     BookOpen
 } from 'lucide-react';
+import { formatAcademicYear } from '@/utils/academicYear';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { Toaster } from '@/components/ui/sonner';
@@ -124,7 +125,7 @@ export default function Detail({ usulan, mandatory_outputs = [], additional_outp
                             <div className="w-px h-8 bg-gray-100" />
                             <div className="flex flex-col">
                                 <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Tahun</span>
-                                <span className="text-lg font-extrabold text-blue-600 leading-tight">{usulan.tahun_pertama}</span>
+                                <span className="text-lg font-extrabold text-blue-600 leading-tight">{formatAcademicYear(usulan.tahun_pertama)}</span>
                             </div>
                         </div>
                     </div>
@@ -274,7 +275,7 @@ function OutputRow({ output, index, isReadOnly, type, onEdit }: { output: any, i
             </td>
             <td className="px-8 py-8">
                 <div className="space-y-4">
-                    <div className={`mt-2 inline-flex items-center px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest ${output.status === 'Published' || output.status === 'Accepted' || output.status === 'Granted' || output.status === 'Ready' ? 'bg-emerald-500 text-white shadow-sm' : 'bg-blue-600 text-white shadow-sm'}`}>
+                    <div className={`mt-2 inline-flex items-center px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest ${output.status === 'Published' || output.status === 'LOA' ? 'bg-emerald-500 text-white shadow-sm' : output.status === 'Submit' || output.status === 'Under Review' ? 'bg-blue-600 text-white shadow-sm' : 'bg-gray-400 text-white'}`}>
                         {output.status}
                     </div>
                     {output.judul_realisasi && (
@@ -420,12 +421,9 @@ function EditOutputModal({ isOpen, onClose, output, type }: { isOpen: boolean, o
                                 <div className="space-y-2">
                                     <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">Status Capaian Sa'at Ini</label>
                                     <select className="w-full bg-gray-50 border-gray-100 rounded-xl py-3.5 px-6 text-sm font-bold" value={data.status} onChange={e => setData('status', e.target.value)}>
-                                        <option value="Rencana">Rencana</option>
-                                        <option value="Draft">Draft/In Preparation</option>
-                                        <option value="Ready">Ready/Terlaksana</option>
-                                        <option value="Submitted">Submitted</option>
-                                        <option value="In Review">In Review</option>
-                                        <option value="Accepted">Accepted</option>
+                                        <option value="Submit">Submit</option>
+                                        <option value="Under Review">Under Review</option>
+                                        <option value="LOA">LOA</option>
                                         <option value="Published">Published</option>
                                     </select>
                                     {errors.status && <div className="text-red-500 text-xs mt-1">{errors.status}</div>}

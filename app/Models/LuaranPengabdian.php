@@ -32,11 +32,16 @@ class LuaranPengabdian extends Model
         'url_artikel',
         'doi',
         'keterangan',
+        'attribute', // JSON field for dynamic attributes
         'judul_realisasi_akhir',
         'file_bukti_akhir',
         'url_bukti_akhir',
         'status_akhir',
         'keterangan_akhir',
+    ];
+
+    protected $casts = [
+        'attribute' => 'array',
     ];
 
     /**

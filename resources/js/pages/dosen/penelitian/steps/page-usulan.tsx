@@ -11,7 +11,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
-import { MoreHorizontal, Edit, Trash, Eye, Plus, FileText, Calendar, User, Search, Filter } from "lucide-react"
+import { MoreHorizontal, Edit, Trash, Eye, Plus, FileText, Calendar, User, Search, Filter, Download } from "lucide-react"
 import { motion } from 'framer-motion';
 import { formatAcademicYear, getCurrentAcademicYearCode, getAcademicYearOptions } from '@/utils/academicYear';
 
@@ -26,6 +26,7 @@ export interface Usulan {
     status: string;
     catatan?: string | null;
     reviewer_action?: string | null;
+    nomor_kontrak?: string | null;
 }
 
 interface PageProps extends InertiaPageProps {
@@ -225,6 +226,17 @@ const PageUsulan: React.FC<PageUsulanProps> = ({
                                                                 >
                                                                     <Edit className="mr-3 h-4 w-4 text-slate-500" /> Lanjutkan Pengisian
                                                                 </DropdownMenuItem>
+                                                                {u.status === 'didanai' && u.nomor_kontrak && (
+                                                                    <DropdownMenuItem asChild>
+                                                                        <a
+                                                                            href={route('lppm.kontrak.generate', { id: u.id, type: 'penelitian' })}
+                                                                            target="_blank"
+                                                                            className="rounded-md cursor-pointer flex items-center w-full"
+                                                                        >
+                                                                            <Download className="mr-3 h-4 w-4 text-emerald-600" /> Download Kontrak
+                                                                        </a>
+                                                                    </DropdownMenuItem>
+                                                                )}
                                                                 <DropdownMenuSeparator />
                                                                 <DropdownMenuItem
                                                                     onClick={() => {

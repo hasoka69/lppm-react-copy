@@ -31,7 +31,7 @@ class CatatanHarianPenelitianController extends Controller
                     'skema' => $u->kelompok_skema,
                     'tahun' => $u->tahun_pertama,
                     'dana_disetujui' => (float) ($u->dana_disetujui ?? 0),
-                    'last_percentage' => $logs->max('persentase') ?? 0,
+                    'last_percentage' => $logs->sum('persentase') ?? 0,
                     'total_logs' => $logs->count(),
                 ];
             });
@@ -50,31 +50,13 @@ class CatatanHarianPenelitianController extends Controller
             ->where('status', '=', 'didanai', 'and')
             ->findOrFail($usulanId);
 
-        $months = [
-            'Januari',
-            'Februari',
-            'Maret',
-            'April',
-            'Mei',
-            'Juni',
-            'Juli',
-            'Agustus',
-            'September',
-            'Oktober',
-            'November',
-            'Desember'
-        ];
 
-        $selectedMonth = $request->query('month', $months[date('n') - 1]);
+
+
 
         $logsQuery = CatatanHarianPenelitian::with('files')
             ->where('usulan_id', '=', $usulan->id, 'and')
-            ->orderBy('tanggal', 'desc');
-
-        if ($selectedMonth) {
-            $monthIndex = array_search($selectedMonth, $months) + 1;
-            $logsQuery->whereMonth('tanggal', '=', $monthIndex);
-        }
+            ->orderBy('tanggal', 'asc');
 
         $logs = $logsQuery->get()->map(function ($log) {
             return [
@@ -94,9 +76,7 @@ class CatatanHarianPenelitianController extends Controller
 
         return Inertia::render('dosen/penelitian/CatatanHarian/Show', [
             'usulan' => $usulan,
-            'logs' => $logs,
-            'months' => $months,
-            'selectedMonth' => $selectedMonth
+            'logs' => $logs
         ]);
     }
 

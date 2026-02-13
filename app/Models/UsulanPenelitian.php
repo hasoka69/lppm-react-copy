@@ -42,7 +42,11 @@ class UsulanPenelitian extends Model
         'dana_disetujui',
         'dana_disetujui',
         'reviewer_id',
-        'tugas_ketua' // [NEW]
+        'tugas_ketua', // [NEW]
+        'nomor_kontrak', // [NEW]
+        'tanggal_kontrak', // [NEW]
+        'tanggal_mulai_kontrak', // [NEW]
+        'tanggal_selesai_kontrak' // [NEW]
     ];
 
     protected $casts = [

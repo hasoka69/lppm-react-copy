@@ -63,6 +63,7 @@ class UsulanPenelitianController extends Controller
                 'status' => $u->status,
                 'catatan' => $u->reviewHistories->first()?->comments ?? null,
                 'reviewer_action' => $u->reviewHistories->first()?->action ?? null,
+                'nomor_kontrak' => $u->nomor_kontrak, // [NEW] Supported for contract download
             ]);
 
         // ✅ TAMBAHAN: Ambil draft terakhir yang sedang dikerjakan

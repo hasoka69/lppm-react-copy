@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, Head } from '@inertiajs/react';
+import { Link, Head, useForm } from '@inertiajs/react'; // Added useForm
 import Header from '@/components/Header';
 import Footer from '@/components/footer';
 import {
@@ -10,6 +10,18 @@ import { motion } from 'framer-motion';
 import { formatAcademicYear, getAcademicYearOptions } from '@/utils/academicYear';
 import { router } from '@inertiajs/react';
 import Select from 'react-select';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 
 interface Usulan {
     id: number;
@@ -20,6 +32,10 @@ interface Usulan {
     tanggal: string;
     status: string;
     type: string;
+    nomor_kontrak?: string | null;
+    tanggal_kontrak?: string | null;
+    tanggal_mulai_kontrak?: string | null;
+    tanggal_selesai_kontrak?: string | null;
     report?: {
         id: number;
         status: string;
@@ -102,6 +118,41 @@ export default function AdminPenelitianIndex({ proposals = [], activeTab = 'daft
     // So we assume 'proposals' prop is the result.
     const filteredProposals = proposals;
 
+    const [isContractModalOpen, setIsContractModalOpen] = useState(false);
+    const [selectedProposalForContract, setSelectedProposalForContract] = useState<Usulan | null>(null);
+
+    const { data: contractData, setData: setContractData, put: submitContract, processing: contractProcessing, reset: resetContract } = useForm({
+        nomor_kontrak: '',
+        tanggal_kontrak: '',
+        tanggal_mulai_kontrak: '',
+        tanggal_selesai_kontrak: '',
+    });
+
+    const openContractModal = (item: Usulan) => {
+        setSelectedProposalForContract(item);
+        setContractData({
+            nomor_kontrak: item.nomor_kontrak || '',
+            tanggal_kontrak: item.tanggal_kontrak || new Date().toISOString().split('T')[0],
+            tanggal_mulai_kontrak: item.tanggal_mulai_kontrak || new Date().toISOString().split('T')[0],
+            tanggal_selesai_kontrak: item.tanggal_selesai_kontrak || '',
+        });
+        setIsContractModalOpen(true);
+    };
+
+    const handleContractSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!selectedProposalForContract) return;
+
+        submitContract(route('lppm.kontrak.update', { id: selectedProposalForContract.id, type: 'penelitian' }), {
+            onSuccess: () => {
+                setIsContractModalOpen(false);
+                resetContract();
+                toast.success('Data kontrak berhasil disimpan');
+            },
+            onError: () => toast.error('Gagal menyimpan data kontrak'),
+        });
+    };
+
     const renderContent = () => {
         switch (activeTab) {
             case 'laporan-kemajuan':
@@ -113,7 +164,13 @@ export default function AdminPenelitianIndex({ proposals = [], activeTab = 'daft
             case 'pengkinian-capaian':
                 return <PengkinianLuaranTable proposals={filteredProposals} />;
             default:
-                return <DaftarUsulanTable proposals={filteredProposals} activeTab={activeTab} />;
+                return (
+                    <DaftarUsulanTable
+                        proposals={filteredProposals}
+                        activeTab={activeTab}
+                        onContractClick={openContractModal}
+                    />
+                );
         }
     };
 
@@ -191,14 +248,147 @@ export default function AdminPenelitianIndex({ proposals = [], activeTab = 'daft
 
                 {renderContent()}
             </div>
+            {/* Contract Modal */}
+            <Dialog open={isContractModalOpen} onOpenChange={setIsContractModalOpen}>
+                <DialogContent className="sm:max-w-[500px]">
+                    <DialogHeader>
+                        <DialogTitle>Buat Kontrak Penelitian</DialogTitle>
+                        <DialogDescription>
+                            Lengkapi data kontrak untuk <b>{selectedProposalForContract?.judul}</b>.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <form onSubmit={handleContractSubmit}>
+                        <div className="grid gap-4 py-4">
+                            {/* Nomor Kontrak */}
+                            <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor="nomor_kontrak" className="text-right">
+                                    No. Kontrak
+                                </Label>
+                                <Input
+                                    id="nomor_kontrak"
+                                    value={contractData.nomor_kontrak}
+                                    onChange={(e) => setContractData('nomor_kontrak', e.target.value)}
+                                    className="col-span-3"
+                                    placeholder="Contoh: 123/LPPM/2026"
+                                    required
+                                />
+                            </div>
+
+                            {/* Tanggal Kontrak (Tanda Tangan) */}
+                            <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor="tanggal_kontrak" className="text-right">
+                                    Tgl. TTD
+                                </Label>
+                                <Input
+                                    id="tanggal_kontrak"
+                                    type="date"
+                                    value={contractData.tanggal_kontrak}
+                                    onChange={(e) => setContractData('tanggal_kontrak', e.target.value)}
+                                    className="col-span-3"
+                                    required
+                                />
+                            </div>
+
+                            {/* Divider for Duration */}
+                            <div className="border-t border-gray-100 my-2"></div>
+                            <p className="text-sm font-medium text-gray-500 mb-2">Jangka Waktu Pelaksanaan</p>
+
+                            {/* Tanggal Mulai */}
+                            <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor="tanggal_mulai_kontrak" className="text-right">
+                                    Mulai
+                                </Label>
+                                <Input
+                                    id="tanggal_mulai_kontrak"
+                                    type="date"
+                                    value={contractData.tanggal_mulai_kontrak}
+                                    onChange={(e) => setContractData('tanggal_mulai_kontrak', e.target.value)}
+                                    className="col-span-3"
+                                    required
+                                />
+                            </div>
+
+                            {/* Tanggal Selesai */}
+                            <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor="tanggal_selesai_kontrak" className="text-right">
+                                    Selesai
+                                </Label>
+                                <Input
+                                    id="tanggal_selesai_kontrak"
+                                    type="date"
+                                    value={contractData.tanggal_selesai_kontrak}
+                                    onChange={(e) => setContractData('tanggal_selesai_kontrak', e.target.value)}
+                                    className="col-span-3"
+                                    required
+                                />
+                            </div>
+
+                        </div>
+                        <DialogFooter>
+
+                            <Button type="submit" disabled={contractProcessing}>
+                                {contractProcessing ? 'Menyimpan...' : 'Simpan Kontrak'}
+                            </Button>
+                        </DialogFooter>
+                    </form>
+                </DialogContent>
+            </Dialog>
+
             <Footer />
+
+            {/* Contract Modal */}
+            <Dialog open={isContractModalOpen} onOpenChange={setIsContractModalOpen}>
+                <DialogContent className="sm:max-w-[425px]">
+                    <DialogHeader>
+                        <DialogTitle>Buat Kontrak Penelitian</DialogTitle>
+                        <DialogDescription>
+                            Masukkan nomor dan tanggal kontrak untuk <b>{selectedProposalForContract?.judul}</b>.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <form onSubmit={handleContractSubmit}>
+                        <div className="grid gap-4 py-4">
+                            <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor="nomor_kontrak" className="text-right">
+                                    No. Kontrak
+                                </Label>
+                                <Input
+                                    id="nomor_kontrak"
+                                    value={contractData.nomor_kontrak}
+                                    onChange={(e) => setContractData('nomor_kontrak', e.target.value)}
+                                    className="col-span-3"
+                                    placeholder="Contoh: 123/LPPM/2026"
+                                    required
+                                />
+                            </div>
+                            <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor="tanggal_kontrak" className="text-right">
+                                    Tanggal
+                                </Label>
+                                <Input
+                                    id="tanggal_kontrak"
+                                    type="date"
+                                    value={contractData.tanggal_kontrak}
+                                    onChange={(e) => setContractData('tanggal_kontrak', e.target.value)}
+                                    className="col-span-3"
+                                    required
+                                />
+                            </div>
+                        </div>
+                        <DialogFooter>
+                            <Button type="submit" disabled={contractProcessing}>
+                                {contractProcessing ? 'Menyimpan...' : 'Simpan Kontrak'}
+                            </Button>
+                        </DialogFooter>
+                    </form>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }
 
 // --- SUB COMPONENTS FOR TABLES ---
 
-function DaftarUsulanTable({ proposals, activeTab }: { proposals: Usulan[], activeTab: string }) {
+function DaftarUsulanTable({ proposals, activeTab, onContractClick }: { proposals: Usulan[], activeTab: string, onContractClick: (item: Usulan) => void }) {
     return (
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
             <div className="overflow-x-auto">
@@ -250,9 +440,41 @@ function DaftarUsulanTable({ proposals, activeTab }: { proposals: Usulan[], acti
                                         </span>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        <Link href={route('lppm.penelitian.show', item.id)} className="text-blue-600 hover:text-blue-900 inline-flex items-center">
-                                            <Eye className="w-4 h-4 mr-1" /> Lihat Detail
-                                        </Link>
+                                        <div className="flex flex-col items-end gap-2">
+                                            <Link href={route('lppm.penelitian.show', item.id)} className="text-blue-600 hover:text-blue-900 inline-flex items-center">
+                                                <Eye className="w-4 h-4 mr-1" /> Lihat Detail
+                                            </Link>
+
+                                            {item.status === 'didanai' && (
+                                                <div className="flex items-center gap-2">
+                                                    {item.nomor_kontrak ? (
+                                                        <>
+                                                            <a
+                                                                href={route('lppm.kontrak.generate', { id: item.id, type: 'penelitian' })}
+                                                                target="_blank"
+                                                                className="text-emerald-600 hover:text-emerald-800 text-xs inline-flex items-center font-bold px-2 py-1 bg-emerald-50 rounded border border-emerald-100"
+                                                            >
+                                                                <Download className="w-3 h-3 mr-1" /> Kontrak
+                                                            </a>
+                                                            <button
+                                                                onClick={() => onContractClick(item)}
+                                                                className="text-gray-400 hover:text-blue-600"
+                                                                title="Edit Nomor Kontrak"
+                                                            >
+                                                                <FileText className="w-4 h-4" />
+                                                            </button>
+                                                        </>
+                                                    ) : (
+                                                        <button
+                                                            onClick={() => onContractClick(item)}
+                                                            className="text-white bg-blue-600 hover:bg-blue-700 text-xs inline-flex items-center font-bold px-3 py-1 rounded shadow-sm shadow-blue-200 transition-all"
+                                                        >
+                                                            <FileText className="w-3 h-3 mr-1" /> Buat Kontrak
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
                                     </td>
                                 </tr>
                             ))

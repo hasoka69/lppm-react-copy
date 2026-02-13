@@ -35,7 +35,11 @@ class UsulanPengabdian extends Model
         'revision_count',
         'dana_disetujui',
         'reviewer_id',
-        'tugas_ketua' // [NEW] Added for review display
+        'tugas_ketua', // [NEW] Added for review display
+        'nomor_kontrak', // [NEW]
+        'tanggal_kontrak', // [NEW]
+        'tanggal_mulai_kontrak', // [NEW]
+        'tanggal_selesai_kontrak' // [NEW]
     ];
 
     protected $casts = [

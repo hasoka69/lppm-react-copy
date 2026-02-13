@@ -87,6 +87,10 @@ class AdminLPPMController extends Controller
                     'type' => 'penelitian',
                     'dana_disetujui' => $item->dana_disetujui,
                     'tahun_pertama' => $item->tahun_pertama,
+                    'nomor_kontrak' => $item->nomor_kontrak,
+                    'tanggal_kontrak' => $item->tanggal_kontrak,
+                    'tanggal_mulai_kontrak' => $item->tanggal_mulai_kontrak,
+                    'tanggal_selesai_kontrak' => $item->tanggal_selesai_kontrak,
                 ];
 
                 // Add specialized data based on tab
@@ -217,6 +221,10 @@ class AdminLPPMController extends Controller
                     'type' => 'pengabdian',
                     'dana_disetujui' => $item->dana_disetujui,
                     'tahun_pertama' => $item->tahun_pertama,
+                    'nomor_kontrak' => $item->nomor_kontrak,
+                    'tanggal_kontrak' => $item->tanggal_kontrak,
+                    'tanggal_mulai_kontrak' => $item->tanggal_mulai_kontrak,
+                    'tanggal_selesai_kontrak' => $item->tanggal_selesai_kontrak,
                 ];
 
                 // Add specialized data based on tab
@@ -443,6 +451,8 @@ class AdminLPPMController extends Controller
         if ($request->decision === 'didanai') {
             $rules['nomor_kontrak'] = 'required|string';
             $rules['tanggal_kontrak'] = 'required|date';
+            $rules['tanggal_mulai_kontrak'] = 'required|date';
+            $rules['tanggal_selesai_kontrak'] = 'required|date|after_or_equal:tanggal_mulai_kontrak';
         }
 
         $request->validate($rules);
@@ -454,6 +464,8 @@ class AdminLPPMController extends Controller
         if ($request->decision === 'didanai') {
             $updateData['nomor_kontrak'] = $request->nomor_kontrak;
             $updateData['tanggal_kontrak'] = $request->tanggal_kontrak;
+            $updateData['tanggal_mulai_kontrak'] = $request->tanggal_mulai_kontrak;
+            $updateData['tanggal_selesai_kontrak'] = $request->tanggal_selesai_kontrak;
 
             // Ensure dana_disetujui is set. If not already set by setBudget, default to total_anggaran
             if (!$usulan->dana_disetujui || $usulan->dana_disetujui <= 0) {

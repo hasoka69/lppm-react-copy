@@ -216,10 +216,7 @@ const PageSubstansi: React.FC<PageSubstansiProps> = ({
                     Target Luaran Pengabdian
                 </h2>
 
-                {renderLuaranSection('A. Luaran Peningkatan Pemberdayaan Mitra', 'A', 'Peningkatan Pemberdayaan Mitra')}
-                {renderLuaranSection('B. Luaran Publikasi', 'B', 'Publikasi')}
-                {renderLuaranSection('C. Luaran Publikasi Media', 'C', 'Publikasi Media')}
-                {renderLuaranSection('D. Luaran Video', 'D', 'Video')}
+                {renderLuaranSection('Target Luaran Pengabdian', 'ALL', '')}
             </div>
 
             {/* Action Buttons */}

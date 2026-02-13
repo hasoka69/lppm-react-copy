@@ -50,6 +50,7 @@ class UsulanPengabdianController extends Controller
                 'status' => $u->status,
                 // Get latest review comment (from Reviewer or Kaprodi)
                 'catatan' => $u->reviewHistories->sortByDesc('reviewed_at')->first()?->comments ?? '-',
+                'nomor_kontrak' => $u->nomor_kontrak, // [NEW] Supported for contract download
             ]);
 
         $latestDraft = UsulanPengabdian::where('user_id', $user->id)

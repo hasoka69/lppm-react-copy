@@ -102,6 +102,8 @@ export default function AdminPengabdianDetail({ usulan, reviewers, initialScores
     const [isContractModalOpen, setIsContractModalOpen] = useState(false);
     const [contractNumber, setContractNumber] = useState('');
     const [contractDate, setContractDate] = useState('');
+    const [contractStartDate, setContractStartDate] = useState('');
+    const [contractEndDate, setContractEndDate] = useState('');
     const [processingDecision, setProcessingDecision] = useState(false);
 
     const handleDidanaiSubmit = () => {
@@ -113,7 +115,9 @@ export default function AdminPengabdianDetail({ usulan, reviewers, initialScores
         router.post(route('lppm.final_decision', { type: 'pengabdian', id: usulan.id }), {
             decision: 'didanai',
             nomor_kontrak: contractNumber,
-            tanggal_kontrak: contractDate
+            tanggal_kontrak: contractDate,
+            tanggal_mulai_kontrak: contractStartDate,
+            tanggal_selesai_kontrak: contractEndDate
         }, {
             onFinish: () => {
                 setProcessingDecision(false);
@@ -655,6 +659,30 @@ export default function AdminPengabdianDetail({ usulan, reviewers, initialScores
                                     type="date"
                                     value={contractDate}
                                     onChange={(e) => setContractDate(e.target.value)}
+                                    className="col-span-3"
+                                />
+                            </div>
+                            <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor="contract_start_date" className="text-right">
+                                    Tgl Mulai
+                                </Label>
+                                <Input
+                                    id="contract_start_date"
+                                    type="date"
+                                    value={contractStartDate}
+                                    onChange={(e) => setContractStartDate(e.target.value)}
+                                    className="col-span-3"
+                                />
+                            </div>
+                            <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor="contract_end_date" className="text-right">
+                                    Tgl Selesai
+                                </Label>
+                                <Input
+                                    id="contract_end_date"
+                                    type="date"
+                                    value={contractEndDate}
+                                    onChange={(e) => setContractEndDate(e.target.value)}
                                     className="col-span-3"
                                 />
                             </div>
