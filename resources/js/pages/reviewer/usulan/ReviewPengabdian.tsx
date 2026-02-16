@@ -661,6 +661,7 @@ export default function ReviewPengabdian({
                                 maxFunding={Number(proposal?.dana_usulan_awal || proposal?.total_anggaran || 0)}
                                 initialScores={initialScores}
                                 isReadOnly={isReadOnly}
+                                type="pengabdian"
                             />
                         </div>
 

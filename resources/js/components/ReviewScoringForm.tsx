@@ -6,6 +6,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 
+import { Checkbox } from '@/components/ui/checkbox';
+
 interface ScoreItem {
     section: string;
     score: number;
@@ -14,132 +16,243 @@ interface ScoreItem {
 
 interface ReviewScoringFormProps {
     onChange: (scores: ScoreItem[], totalScore: number, recommendation: number) => void;
-    maxFunding?: number; // Default 7,000,000
+    maxFunding?: number;
     initialScores?: ScoreItem[];
     isReadOnly?: boolean;
+    type?: 'penelitian' | 'pengabdian';
 }
 
-const SECTIONS = [
-    { id: 'judul', label: 'Judul Usulan', weight: 5 },
-    { id: 'abstrak', label: 'Abstrak / Ringkasan', weight: 10 },
-    { id: 'pendahuluan', label: 'Latar Belakang & Pendahuluan', weight: 15 },
-    { id: 'tinjauan_pustaka', label: 'Tinjauan Pustaka / Analisis Situasi', weight: 15 },
-    { id: 'metode', label: 'Metode Pelaksanaan', weight: 25 },
-    { id: 'jadwal', label: 'Jadwal Pelaksanaan', weight: 10 },
-    { id: 'tim', label: 'Kualifikasi Tim Pelaksana', weight: 10 },
-    { id: 'rab', label: 'Kewajaran RAB', weight: 10 },
+const LUARAN_OPTIONS = [
+    { id: 'scopus', label: 'Jurnal Internasional Bereputasi Scopus', bonus: 2000000 },
+    { id: 'sinta12', label: 'Jurnal Terakreditasi SINTA 1 - 2', bonus: 2000000 },
+    { id: 'internasional', label: 'Jurnal Internasional', bonus: 1000000 },
+    { id: 'sinta3', label: 'Jurnal Nasional Terakreditasi SINTA 3', bonus: 1000000 },
 ];
 
-const ReviewScoringForm: React.FC<ReviewScoringFormProps> = ({ onChange, maxFunding = 7000000, initialScores, isReadOnly }) => {
+const ReviewScoringForm: React.FC<ReviewScoringFormProps> = ({
+    onChange,
+    maxFunding = 7000000,
+    initialScores,
+    isReadOnly,
+    type = 'penelitian'
+}) => {
+    const labelType = type === 'penelitian' ? 'Penelitian' : 'Pengabdian';
+
+    const SECTIONS = [
+        {
+            title: 'Bab I. Pendahuluan', items: [
+                { id: 'pend_a', label: `a. Kesesuaian latar belakang dengan topik kajian` },
+                { id: 'pend_b', label: `b. Urgensi ${labelType.toLowerCase()}` },
+                { id: 'pend_c', label: `c. Ketajaman perumusan masalah` },
+                { id: 'pend_d', label: `d. Inovasi pendekatan pemecahan masalah` },
+                { id: 'pend_e', label: `e. State of the art dan kebaruan` },
+            ]
+        },
+        {
+            title: 'Bab II. Metode ' + (type === 'penelitian' ? 'Penelitian' : 'Pengabdian'), items: [
+                { id: 'met_a', label: `a. Kesesuaian dan ketepatan metode ${labelType.toLowerCase()} yang digunakan mencakup kesesuaian instrumen, populasi dan sampel, teknik pensampelan, serta teknik analisa data yang digunakan` },
+                { id: 'met_b', label: `b. Kesesuaian metode dengan waktu, RAB, dan target publikasi` },
+            ]
+        },
+        {
+            title: 'Bab III. Kelayakan P2M', items: [
+                { id: 'kel_a', label: 'a. Kesesuaian waktu' },
+                { id: 'kel_b', label: 'b. Kesesuaian biaya' },
+                { id: 'kel_c', label: 'c. Kesesuaian personalia dan pembagian tugas' },
+            ]
+        },
+        {
+            title: 'Referensi', items: [
+                { id: 'ref_a', label: 'a. Kebaruan referensi' },
+                { id: 'ref_b', label: 'b. Relevansi dan kualitas referensi' },
+            ]
+        },
+    ];
+
+    const ALL_SECTION_IDS = SECTIONS.flatMap(s => s.items.map(i => i.id));
+
     const [scores, setScores] = useState<ScoreItem[]>(() => {
         if (initialScores && initialScores.length > 0) {
-            return SECTIONS.map(s => {
-                const found = initialScores.find(is => is.section === s.id);
-                return found || { section: s.id, score: 0, comments: '' };
+            return ALL_SECTION_IDS.map(id => {
+                const found = initialScores.find(is => is.section === id);
+                return found || { section: id, score: 0, comments: '' };
             });
         }
-        return SECTIONS.map(s => ({ section: s.id, score: 0, comments: '' }));
+        return ALL_SECTION_IDS.map(id => ({ section: id, score: 0, comments: '' }));
+    });
+
+    const [selectedLuaran, setSelectedLuaran] = useState<string[]>(() => {
+        if (initialScores) {
+            const luaranSection = initialScores.find(s => s.section === 'selected_luaran');
+            return luaranSection ? luaranSection.comments?.split(',') || [] : [];
+        }
+        return [];
     });
 
     useEffect(() => {
         if (initialScores && initialScores.length > 0) {
-            setScores(SECTIONS.map(s => {
-                const found = initialScores.find(is => is.section === s.id);
-                return found || { section: s.id, score: 0, comments: '' };
+            setScores(ALL_SECTION_IDS.map(id => {
+                const found = initialScores.find(is => is.section === id);
+                return found || { section: id, score: 0, comments: '' };
             }));
+
+            const luaranSection = initialScores.find(s => s.section === 'selected_luaran');
+            const luaranIds = luaranSection ? luaranSection.comments?.split(',') || [] : [];
+            setSelectedLuaran(luaranIds);
         }
     }, [initialScores]);
 
-    useEffect(() => {
-        let calculatedScore = 0;
-        let totalWeight = 0;
+    const calculateFunding = (avgScore: number, luaranIds: string[]) => {
+        let substansiFunding = 0;
+        if (avgScore >= 87.01) substansiFunding = 5000000;
+        else if (avgScore >= 75.01 && avgScore <= 87.00) substansiFunding = 4000000;
+        else if (avgScore >= 63.01 && avgScore <= 75.00) substansiFunding = 3000000;
+        else if (avgScore >= 51.01 && avgScore <= 63.00) substansiFunding = 2000000;
 
-        SECTIONS.forEach(section => {
-            const item = scores.find(s => s.section === section.id);
-            const score = item?.score || 0;
-            calculatedScore += (score * section.weight / 100);
-            totalWeight += section.weight;
-        });
+        const luaranFunding = luaranIds.reduce((acc, id) => {
+            const opt = LUARAN_OPTIONS.find(o => o.id === id);
+            return acc + (opt?.bonus || 0);
+        }, 0);
 
-        // calculatedScore is now 0-100 based on weights.
-        const recommendation = (calculatedScore / 100) * maxFunding;
-
-        onChange(scores, calculatedScore, recommendation);
-    }, [scores]);
-
-    const handleScoreChange = (section: string, val: number) => {
-        const newScores = scores.map(s => s.section === section ? { ...s, score: val } : s);
-        setScores(newScores);
+        return substansiFunding + luaranFunding;
     };
 
-    const handleCommentChange = (section: string, val: string) => {
-        const newScores = scores.map(s => s.section === section ? { ...s, comments: val } : s);
-        setScores(newScores);
+    const getAvgSubstanceScore = () => {
+        const substanceScores = scores.filter(s => ALL_SECTION_IDS.includes(s.section));
+        if (substanceScores.length === 0) return 0;
+        const total = substanceScores.reduce((acc, s) => acc + (Number(s.score) || 0), 0);
+        return total / substanceScores.length;
+    };
+
+    useEffect(() => {
+        const avgScore = getAvgSubstanceScore();
+        const recommendation = calculateFunding(avgScore, selectedLuaran);
+
+        const finalScores = [...scores];
+        const luaranIndex = finalScores.findIndex(s => s.section === 'selected_luaran');
+        const luaranComments = selectedLuaran.join(',');
+
+        if (luaranIndex !== -1) {
+            finalScores[luaranIndex] = { section: 'selected_luaran', score: 0, comments: luaranComments };
+        } else {
+            finalScores.push({ section: 'selected_luaran', score: 0, comments: luaranComments });
+        }
+
+        onChange(finalScores, avgScore, recommendation);
+    }, [scores, selectedLuaran]);
+
+    const handleScoreChange = (id: string, val: number) => {
+        setScores(prev => prev.map(s => s.section === id ? { ...s, score: val } : s));
+    };
+
+    const handleCommentChange = (id: string, val: string) => {
+        setScores(prev => prev.map(s => s.section === id ? { ...s, comments: val } : s));
+    };
+
+    const toggleLuaran = (id: string) => {
+        if (isReadOnly) return;
+        setSelectedLuaran(prev => prev.includes(id) ? [] : [id]);
     };
 
     const formatRupiah = (val: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(val);
 
-    const totalWeighted = scores.reduce((acc, item) => {
-        const weight = SECTIONS.find(s => s.id === item.section)?.weight || 0;
-        return acc + (item.score * weight / 100);
-    }, 0);
+    const avgScore = getAvgSubstanceScore();
 
     return (
         <Card className="border-gray-200">
-            <CardHeader className="bg-gray-50 pb-4">
-                <CardTitle className="text-base text-gray-800">Form Penilaian Detail</CardTitle>
+            <CardHeader className="bg-gray-50 pb-4 border-b border-gray-100">
+                <CardTitle className="text-base text-gray-800">Standar Penilaian {labelType}</CardTitle>
             </CardHeader>
             <CardContent className="p-0">
-                <div className="divide-y divide-gray-100">
-                    {SECTIONS.map((section) => {
-                        const scoreItem = scores.find(s => s.section === section.id);
-                        return (
-                            <div key={section.id} className="p-4 hover:bg-slate-50 transition-colors">
-                                <div className="flex justify-between items-start mb-2">
-                                    <Label className="font-bold text-gray-700">{section.label} <span className="text-xs font-normal text-gray-500">(Bobot: {section.weight}%)</span></Label>
-                                    <div className="flex items-center gap-2">
-                                        <Input
-                                            type="number"
-                                            min="0"
-                                            max="100"
-                                            className="w-20 h-8 text-right font-mono"
-                                            value={scoreItem?.score || 0}
-                                            onChange={(e) => handleScoreChange(section.id, Number(e.target.value))}
-                                            readOnly={isReadOnly}
-                                            disabled={isReadOnly}
-                                        />
-                                        <span className="text-xs text-gray-400">/ 100</span>
+                <div className="max-h-[600px] overflow-y-auto">
+                    {SECTIONS.map((section, sIdx) => (
+                        <div key={sIdx} className="bg-white">
+                            <div className="bg-slate-50/80 px-4 py-2 border-y border-slate-100 italic">
+                                <Label className="text-xs font-bold text-slate-600">{section.title}</Label>
+                            </div>
+                            <div className="divide-y divide-gray-50">
+                                {section.items.map((item) => {
+                                    const scoreItem = scores.find(s => s.section === item.id);
+                                    return (
+                                        <div key={item.id} className="p-4 hover:bg-slate-50 transition-colors group">
+                                            <div className="flex justify-between items-start mb-2 gap-4">
+                                                <Label className="text-sm text-gray-700 leading-relaxed flex-1">{item.label}</Label>
+                                                <div className="flex items-center gap-2 shrink-0">
+                                                    <Input
+                                                        type="number"
+                                                        min="0"
+                                                        max="100"
+                                                        className="w-16 h-8 text-right font-mono text-sm"
+                                                        value={scoreItem?.score || 0}
+                                                        onChange={(e) => handleScoreChange(item.id, Number(e.target.value))}
+                                                        readOnly={isReadOnly}
+                                                        disabled={isReadOnly}
+                                                    />
+                                                    <span className="text-[10px] text-gray-400">/ 100</span>
+                                                </div>
+                                            </div>
+                                            <Textarea
+                                                placeholder={isReadOnly ? "" : `Komentar untuk poin ini...`}
+                                                className="h-12 text-[11px] resize-none bg-white/50 focus:bg-white"
+                                                value={scoreItem?.comments || ''}
+                                                onChange={(e) => handleCommentChange(item.id, e.target.value)}
+                                                readOnly={isReadOnly}
+                                                disabled={isReadOnly}
+                                            />
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    ))}
+
+                    <div className="bg-blue-50/50 p-4 border-t border-blue-100">
+                        <Label className="text-sm font-bold text-blue-900 block mb-3">Peluang Luaran {labelType}</Label>
+                        <div className="grid grid-cols-1 gap-3">
+                            {LUARAN_OPTIONS.map((opt) => (
+                                <div
+                                    key={opt.id}
+                                    className={`flex items-start gap-3 p-2 rounded-lg border transition-all cursor-pointer ${selectedLuaran.includes(opt.id) ? 'bg-white border-blue-300 shadow-sm' : 'bg-transparent border-transparent'
+                                        }`}
+                                    onClick={() => toggleLuaran(opt.id)}
+                                >
+                                    <Checkbox
+                                        id={opt.id}
+                                        checked={selectedLuaran.includes(opt.id)}
+                                        onCheckedChange={() => toggleLuaran(opt.id)}
+                                        disabled={isReadOnly}
+                                    />
+                                    <div className="flex-1">
+                                        <Label htmlFor={opt.id} className="text-xs font-semibold text-gray-700 cursor-pointer block">{opt.label}</Label>
+                                        <span className="text-[10px] text-blue-600 font-bold">+{formatRupiah(opt.bonus)}</span>
                                     </div>
                                 </div>
-                                <Textarea
-                                    placeholder={isReadOnly ? "" : `Catatan untuk ${section.label}...`}
-                                    className="h-16 text-xs resize-none"
-                                    value={scoreItem?.comments || ''}
-                                    onChange={(e) => handleCommentChange(section.id, e.target.value)}
-                                    readOnly={isReadOnly}
-                                    disabled={isReadOnly}
-                                />
-                            </div>
-                        );
-                    })}
+                            ))}
+                        </div>
+                    </div>
                 </div>
 
                 <div className="p-4 bg-orange-50 border-t border-orange-100">
-                    <div className="flex justify-between items-center mb-2">
-                        <span className="font-bold text-gray-700">Total Skor (Terbobot)</span>
-                        <Badge variant="outline" className="text-lg font-bold bg-white text-orange-600 border-orange-200">
-                            {totalWeighted.toFixed(2)}
-                        </Badge>
+                    <div className="space-y-3">
+                        <div className="flex justify-between items-center">
+                            <span className="text-sm font-bold text-orange-900">Rata-rata Nilai Substansi</span>
+                            <Badge variant="outline" className="text-lg font-bold bg-white text-orange-600 border-orange-200 shadow-sm px-3">
+                                {avgScore.toFixed(2)}
+                            </Badge>
+                        </div>
+                        <Separator className="bg-orange-200" />
+                        <div className="flex justify-between items-center">
+                            <div>
+                                <span className="text-sm font-bold text-gray-700 block">Rekomendasi Dana</span>
+                                <span className="text-[10px] text-gray-500 italic">*Berdasarkan bracket substansi + bonus luaran</span>
+                            </div>
+                            <div className="text-right">
+                                <span className="text-xl font-bold text-green-700 font-mono tracking-tighter">
+                                    {formatRupiah(calculateFunding(avgScore, selectedLuaran))}
+                                </span>
+                            </div>
+                        </div>
                     </div>
-                    <div className="flex justify-between items-center">
-                        <span className="font-bold text-gray-700">Rekomendasi Dana</span>
-                        <span className="text-lg font-bold text-green-700 font-mono">
-                            {formatRupiah((totalWeighted / 100) * maxFunding)}
-                        </span>
-                    </div>
-                    <p className="text-[10px] text-gray-500 mt-2 text-right">
-                        *Maksimal Dana: {formatRupiah(maxFunding)}
-                    </p>
                 </div>
             </CardContent>
         </Card>

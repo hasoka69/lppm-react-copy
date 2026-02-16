@@ -107,15 +107,13 @@ export default function AdminPengabdianDetail({ usulan, reviewers, initialScores
     const [processingDecision, setProcessingDecision] = useState(false);
 
     const handleDidanaiSubmit = () => {
-        if (!contractNumber || !contractDate) {
-            // Ideally validation toast here
+        if (!contractNumber) {
             return;
         }
         setProcessingDecision(true);
         router.post(route('lppm.final_decision', { type: 'pengabdian', id: usulan.id }), {
             decision: 'didanai',
             nomor_kontrak: contractNumber,
-            tanggal_kontrak: contractDate,
             tanggal_mulai_kontrak: contractStartDate,
             tanggal_selesai_kontrak: contractEndDate
         }, {
@@ -447,6 +445,7 @@ export default function AdminPengabdianDetail({ usulan, reviewers, initialScores
                                     maxFunding={Number(usulan?.dana_usulan_awal || usulan?.total_anggaran || 0)}
                                     initialScores={initialScores}
                                     isReadOnly={true}
+                                    type="pengabdian"
                                 />
                             </section>
                         )}
@@ -523,7 +522,13 @@ export default function AdminPengabdianDetail({ usulan, reviewers, initialScores
                                     <div className="mt-4 grid grid-cols-2 gap-2 text-xs font-semibold text-gray-500">
                                         <div className="bg-gray-50 p-2 rounded text-center border border-gray-100">
                                             RAB USULAN<br />
-                                            <span className="text-gray-900 text-sm">{formatRupiah(usulan.dana_usulan_awal || usulan.total_anggaran)}</span>
+                                            <span className="text-gray-900 text-sm">
+                                                {formatRupiah(
+                                                    usulan.dana_usulan_awal ||
+                                                    usulan.total_anggaran ||
+                                                    (usulan.rabItems || usulan.rab_items || []).reduce((acc: number, item: any) => acc + (Number(item.total) || 0), 0)
+                                                )}
+                                            </span>
                                         </div>
                                         <div className="bg-gray-50 p-2 rounded text-center border border-gray-100">
                                             PAGU DISETUJUI<br />
@@ -651,39 +656,27 @@ export default function AdminPengabdianDetail({ usulan, reviewers, initialScores
                                 />
                             </div>
                             <div className="grid grid-cols-4 items-center gap-4">
-                                <Label htmlFor="contract_date" className="text-right">
-                                    Tanggal
-                                </Label>
-                                <Input
-                                    id="contract_date"
-                                    type="date"
-                                    value={contractDate}
-                                    onChange={(e) => setContractDate(e.target.value)}
-                                    className="col-span-3"
-                                />
-                            </div>
-                            <div className="grid grid-cols-4 items-center gap-4">
-                                <Label htmlFor="contract_start_date" className="text-right">
-                                    Tgl Mulai
+                                <Label htmlFor="contract_start_date" className="text-right text-xs">
+                                    Tanggal Mulai
                                 </Label>
                                 <Input
                                     id="contract_start_date"
                                     type="date"
                                     value={contractStartDate}
                                     onChange={(e) => setContractStartDate(e.target.value)}
-                                    className="col-span-3"
+                                    className="col-span-3 h-9 text-sm"
                                 />
                             </div>
                             <div className="grid grid-cols-4 items-center gap-4">
-                                <Label htmlFor="contract_end_date" className="text-right">
-                                    Tgl Selesai
+                                <Label htmlFor="contract_end_date" className="text-right text-xs">
+                                    Tanggal Selesai
                                 </Label>
                                 <Input
                                     id="contract_end_date"
                                     type="date"
                                     value={contractEndDate}
                                     onChange={(e) => setContractEndDate(e.target.value)}
-                                    className="col-span-3"
+                                    className="col-span-3 h-9 text-sm"
                                 />
                             </div>
                         </div>
@@ -692,7 +685,7 @@ export default function AdminPengabdianDetail({ usulan, reviewers, initialScores
                             <button
                                 type="button"
                                 onClick={handleDidanaiSubmit}
-                                disabled={!contractNumber || !contractDate || processingDecision}
+                                disabled={!contractNumber || processingDecision}
                                 className="px-4 py-2 bg-green-600 text-white rounded-md text-sm font-bold hover:bg-green-700 disabled:opacity-50"
                             >
                                 {processingDecision ? 'Menyimpan...' : 'Simpan & Danai'}

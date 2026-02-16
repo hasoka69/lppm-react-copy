@@ -323,6 +323,12 @@ class AdminLPPMController extends Controller
             'reviewer'
         ])->findOrFail($id);
 
+        // [FIX] Ensure total_anggaran is synced with RAB items
+        $actualTotal = $usulan->getTotalAnggaran();
+        if ($usulan->total_anggaran != $actualTotal) {
+            $usulan->update(['total_anggaran' => $actualTotal]);
+        }
+
         $initialScores = [];
         $latestReview = \App\Models\ReviewHistory::where('usulan_id', $id)
             ->where('usulan_type', get_class($usulan))
@@ -450,7 +456,7 @@ class AdminLPPMController extends Controller
         $rules = ['decision' => 'required|in:didanai,ditolak_akhir'];
         if ($request->decision === 'didanai') {
             $rules['nomor_kontrak'] = 'required|string';
-            $rules['tanggal_kontrak'] = 'required|date';
+            $rules['tanggal_kontrak'] = 'nullable|date';
             $rules['tanggal_mulai_kontrak'] = 'required|date';
             $rules['tanggal_selesai_kontrak'] = 'required|date|after_or_equal:tanggal_mulai_kontrak';
         }
@@ -463,7 +469,7 @@ class AdminLPPMController extends Controller
         $updateData = ['status' => $request->decision];
         if ($request->decision === 'didanai') {
             $updateData['nomor_kontrak'] = $request->nomor_kontrak;
-            $updateData['tanggal_kontrak'] = $request->tanggal_kontrak;
+            $updateData['tanggal_kontrak'] = $request->tanggal_kontrak ?? now();
             $updateData['tanggal_mulai_kontrak'] = $request->tanggal_mulai_kontrak;
             $updateData['tanggal_selesai_kontrak'] = $request->tanggal_selesai_kontrak;
 

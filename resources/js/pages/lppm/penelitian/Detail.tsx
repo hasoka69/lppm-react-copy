@@ -104,15 +104,13 @@ export default function AdminPenelitianDetail({ usulan, reviewers, initialScores
     const [processingDecision, setProcessingDecision] = useState(false);
 
     const handleDidanaiSubmit = () => {
-        if (!contractNumber || !contractDate) {
-            // Ideally validation toast here
+        if (!contractNumber) {
             return;
         }
         setProcessingDecision(true);
         router.post(route('lppm.final_decision', { type: 'penelitian', id: usulan.id }), {
             decision: 'didanai',
             nomor_kontrak: contractNumber,
-            tanggal_kontrak: contractDate,
             tanggal_mulai_kontrak: contractStartDate,
             tanggal_selesai_kontrak: contractEndDate
         }, {
@@ -436,6 +434,7 @@ export default function AdminPenelitianDetail({ usulan, reviewers, initialScores
                                     maxFunding={Number(usulan?.dana_usulan_awal || usulan?.total_anggaran || 0)}
                                     initialScores={initialScores}
                                     isReadOnly={true}
+                                    type="penelitian"
                                 />
                             </div>
                         )}
@@ -731,20 +730,8 @@ export default function AdminPenelitianDetail({ usulan, reviewers, initialScores
                                 />
                             </div>
                             <div className="grid grid-cols-4 items-center gap-4">
-                                <Label htmlFor="contract_date" className="text-right">
-                                    Tanggal
-                                </Label>
-                                <Input
-                                    id="contract_date"
-                                    type="date"
-                                    value={contractDate}
-                                    onChange={(e) => setContractDate(e.target.value)}
-                                    className="col-span-3"
-                                />
-                            </div>
-                            <div className="grid grid-cols-4 items-center gap-4">
                                 <Label htmlFor="contract_start_date" className="text-right">
-                                    Tgl Mulai
+                                    Tanggal Mulai
                                 </Label>
                                 <Input
                                     id="contract_start_date"
@@ -756,7 +743,7 @@ export default function AdminPenelitianDetail({ usulan, reviewers, initialScores
                             </div>
                             <div className="grid grid-cols-4 items-center gap-4">
                                 <Label htmlFor="contract_end_date" className="text-right">
-                                    Tgl Selesai
+                                    Tanggal Selesai
                                 </Label>
                                 <Input
                                     id="contract_end_date"
@@ -769,7 +756,7 @@ export default function AdminPenelitianDetail({ usulan, reviewers, initialScores
                         </div>
                         <DialogFooter>
                             <Button type="button" variant="outline" onClick={() => setIsContractModalOpen(false)}>Batal</Button>
-                            <Button type="button" onClick={handleDidanaiSubmit} disabled={!contractNumber || !contractDate || processingDecision}>
+                            <Button type="button" onClick={handleDidanaiSubmit} disabled={!contractNumber || processingDecision}>
                                 {processingDecision ? 'Menyimpan...' : 'Simpan & Danai'}
                             </Button>
                         </DialogFooter>

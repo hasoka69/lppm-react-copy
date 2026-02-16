@@ -334,8 +334,14 @@ class UsulanPengabdianController extends Controller
             }
 
             Log::info('Validation Passed. Updating status to ' . $newStatus);
+
+            // [FIX] Sync budget columns before submission
+            $actualTotal = $usulan->getTotalAnggaran();
+
             $usulan->update([
                 'status' => $newStatus,
+                'total_anggaran' => $actualTotal,
+                'dana_usulan_awal' => $actualTotal,
                 'submitted_at' => now(), // Assuming column is added or we fallback in view
             ]);
 

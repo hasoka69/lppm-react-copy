@@ -508,6 +508,7 @@ const ReviewerReview: React.FC<ReviewerReviewProps> = ({ proposal, dosen, isRead
                                 maxFunding={Number(usulan?.dana_usulan_awal || usulan?.total_anggaran || 0)}
                                 initialScores={initialScores}
                                 isReadOnly={isReadOnly}
+                                type="penelitian"
                             />
                         </div>
 

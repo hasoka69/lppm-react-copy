@@ -53,14 +53,35 @@ class ContractController extends Controller
         }
 
         try {
+            // Set Locale to Indonesian for date translation
+            \Carbon\Carbon::setLocale('id');
+            setlocale(LC_TIME, 'id_ID', 'id', 'id_ID.utf8', 'Indonesian');
+
             $templateProcessor = new TemplateProcessor($templatePath);
+
+            // Year and Semester Parsing
+            $tahunStr = (string) $usulan->tahun_pertama;
+            if (strlen($tahunStr) === 5) {
+                $year = substr($tahunStr, 0, 4);
+                $semesterCode = substr($tahunStr, 4, 1);
+                $semesterLabel = $semesterCode === '1' ? 'Ganjil' : ($semesterCode === '2' ? 'Genap' : 'Pendek');
+                $academicYear = $year . '/' . (intval($year) + 1);
+            } else {
+                $year = $tahunStr;
+                $academicYear = $tahunStr; // Fallback
+                $semesterLabel = '-';
+            }
 
             // Basic Info
             $judulSanitized = strtoupper(trim(str_replace(["\r", "\n"], " ", strip_tags($usulan->judul))));
             $templateProcessor->setValue('JUDUL', $judulSanitized);
             $templateProcessor->setValue('NOMOR_KONTRAK', trim($usulan->nomor_kontrak) ?? '-');
             $templateProcessor->setValue('TANGGAL_KONTRAK', $usulan->tanggal_kontrak ? \Carbon\Carbon::parse($usulan->tanggal_kontrak)->translatedFormat('d F Y') : '-');
-            $templateProcessor->setValue('TAHUN', $usulan->tahun_pertama);
+            $templateProcessor->setValue('TAHUN', $year);
+            $templateProcessor->setValue('SEMESTER', $semesterLabel);
+            $templateProcessor->setValue('SEMESTER_TAHUN_ANGGARAN', 'Semester ' . $semesterLabel . ' Tahun Anggaran ' . $academicYear);
+            $templateProcessor->setValue('SEMESTER_TAHUN', 'Semester ' . $semesterLabel . ' Tahun ' . $academicYear);
+            $templateProcessor->setValue('SEMESTER_TAHUN_AKADEMIK_UPPER', strtoupper('Semester ' . $semesterLabel . ' Tahun Akademik ' . $academicYear));
             $templateProcessor->setValue('DANA', number_format($usulan->dana_disetujui, 0, ',', '.'));
             $templateProcessor->setValue('TERBILANG_DANA', $this->terbilang($usulan->dana_disetujui) . ' rupiah');
 
@@ -83,7 +104,7 @@ class ContractController extends Controller
 
             $templateProcessor->setValue('HARI_KONTRAK', $tanggal ? $tanggal->translatedFormat('l') : '-');
             $templateProcessor->setValue('TANGGAL_LENGKAP', $tanggal ? $tanggal->translatedFormat('d F Y') : '-');
-            $templateProcessor->setValue('TAHUN_AKADEMIK', $usulan->tahun_pertama . '/' . ($usulan->tahun_pertama + 1));
+            $templateProcessor->setValue('TAHUN_AKADEMIK', $academicYear);
 
             $templateProcessor->setValue('TANGGAL_MULAI', $mulai ? $mulai->translatedFormat('d F Y') : '-');
             $templateProcessor->setValue('TANGGAL_SELESAI', $selesai ? $selesai->translatedFormat('d F Y') : '-');
@@ -167,21 +188,21 @@ class ContractController extends Controller
         } else if ($nilai < 20) {
             $hasil = $this->terbilang($nilai - 10) . " belas";
         } else if ($nilai < 100) {
-            $hasil = $this->terbilang(floor($nilai / 10)) . " puluh" . $this->terbilang($nilai % 10);
+            $hasil = $this->terbilang(floor($nilai / 10)) . " puluh " . $this->terbilang($nilai % 10);
         } else if ($nilai < 200) {
-            $hasil = " seratus" . $this->terbilang($nilai - 100);
+            $hasil = " seratus " . $this->terbilang($nilai - 100);
         } else if ($nilai < 1000) {
-            $hasil = $this->terbilang(floor($nilai / 100)) . " ratus" . $this->terbilang($nilai % 100);
+            $hasil = $this->terbilang(floor($nilai / 100)) . " ratus " . $this->terbilang($nilai % 100);
         } else if ($nilai < 2000) {
-            $hasil = " seribu" . $this->terbilang($nilai - 1000);
+            $hasil = " seribu " . $this->terbilang($nilai - 1000);
         } else if ($nilai < 1000000) {
-            $hasil = $this->terbilang(floor($nilai / 1000)) . " ribu" . $this->terbilang($nilai % 1000);
+            $hasil = $this->terbilang(floor($nilai / 1000)) . " ribu " . $this->terbilang($nilai % 1000);
         } else if ($nilai < 1000000000) {
-            $hasil = $this->terbilang(floor($nilai / 1000000)) . " juta" . $this->terbilang($nilai % 1000000);
+            $hasil = $this->terbilang(floor($nilai / 1000000)) . " juta " . $this->terbilang($nilai % 1000000);
         } else if ($nilai < 1000000000000) {
-            $hasil = $this->terbilang(floor($nilai / 1000000000)) . " milyar" . $this->terbilang(fmod($nilai, 1000000000));
+            $hasil = $this->terbilang(floor($nilai / 1000000000)) . " milyar " . $this->terbilang(fmod($nilai, 1000000000));
         } else if ($nilai < 1000000000000000) {
-            $hasil = $this->terbilang(floor($nilai / 1000000000000)) . " trilyun" . $this->terbilang(fmod($nilai, 1000000000000));
+            $hasil = $this->terbilang(floor($nilai / 1000000000000)) . " trilyun " . $this->terbilang(fmod($nilai, 1000000000000));
         }
 
         return trim($hasil);
