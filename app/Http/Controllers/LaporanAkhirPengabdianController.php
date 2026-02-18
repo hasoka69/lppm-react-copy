@@ -100,9 +100,9 @@ class LaporanAkhirPengabdianController extends Controller
             'peran_penulis' => 'nullable|string|max:100',
             'nama_jurnal' => 'nullable|string|max:255',
             'issn' => 'nullable|string|max:100',
-            'pengindek' => 'nullable|string|max:100',
+            // 'pengindek' => 'nullable|string|max:100', // Removed
             'keterangan_akhir' => 'nullable|string',
-            'file_bukti_akhir' => 'nullable|file|mimes:pdf,jpg,png,doc,docx|max:10240',
+            // 'file_bukti_akhir' => 'nullable|file|mimes:pdf,jpg,png,doc,docx|max:10240', // Removed
             'url_bukti_akhir' => 'nullable|url',
         ]);
 

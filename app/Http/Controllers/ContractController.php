@@ -14,19 +14,24 @@ class ContractController extends Controller
     {
         $request->validate([
             'nomor_kontrak' => 'required|string|max:255',
-            'tanggal_kontrak' => 'required|date',
+            'tanggal_kontrak' => 'nullable|date',
             'tanggal_mulai_kontrak' => 'required|date',
             'tanggal_selesai_kontrak' => 'required|date|after_or_equal:tanggal_mulai_kontrak',
         ]);
 
         $model = $type === 'penelitian' ? UsulanPenelitian::findOrFail($id) : UsulanPengabdian::findOrFail($id);
 
-        $model->update([
+        $updateData = [
             'nomor_kontrak' => $request->nomor_kontrak,
-            'tanggal_kontrak' => $request->tanggal_kontrak,
             'tanggal_mulai_kontrak' => $request->tanggal_mulai_kontrak,
             'tanggal_selesai_kontrak' => $request->tanggal_selesai_kontrak,
-        ]);
+        ];
+
+        if ($request->has('tanggal_kontrak')) {
+            $updateData['tanggal_kontrak'] = $request->tanggal_kontrak;
+        }
+
+        $model->update($updateData);
 
         return redirect()->back()->with('success', 'Nomor kontrak berhasil disimpan.');
     }

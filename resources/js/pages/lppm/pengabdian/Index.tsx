@@ -34,6 +34,8 @@ interface Usulan {
     type: string;
     nomor_kontrak?: string | null;
     tanggal_kontrak?: string | null;
+    tanggal_mulai_kontrak?: string | null;
+    tanggal_selesai_kontrak?: string | null;
     report?: {
         id: number;
         status: string;
@@ -114,14 +116,16 @@ export default function AdminPengabdianIndex({ proposals = [], activeTab = 'daft
 
     const { data: contractData, setData: setContractData, put: submitContract, processing: contractProcessing, reset: resetContract } = useForm({
         nomor_kontrak: '',
-        tanggal_kontrak: '',
+        tanggal_mulai_kontrak: '',
+        tanggal_selesai_kontrak: '',
     });
 
     const openContractModal = (item: Usulan) => {
         setSelectedProposalForContract(item);
         setContractData({
             nomor_kontrak: item.nomor_kontrak || '',
-            tanggal_kontrak: item.tanggal_kontrak || new Date().toISOString().split('T')[0],
+            tanggal_mulai_kontrak: item.tanggal_mulai_kontrak || new Date().toISOString().split('T')[0],
+            tanggal_selesai_kontrak: item.tanggal_selesai_kontrak || '',
         });
         setIsContractModalOpen(true);
     };
@@ -259,15 +263,36 @@ export default function AdminPengabdianIndex({ proposals = [], activeTab = 'daft
                                     required
                                 />
                             </div>
+
+                            {/* Divider for Duration */}
+                            <div className="border-t border-gray-100 my-2"></div>
+                            <p className="text-sm font-medium text-gray-500 mb-2">Jangka Waktu Pelaksanaan</p>
+
+                            {/* Tanggal Mulai */}
                             <div className="grid grid-cols-4 items-center gap-4">
-                                <Label htmlFor="tanggal_kontrak" className="text-right">
-                                    Tanggal
+                                <Label htmlFor="tanggal_mulai_kontrak" className="text-right">
+                                    Mulai
                                 </Label>
                                 <Input
-                                    id="tanggal_kontrak"
+                                    id="tanggal_mulai_kontrak"
                                     type="date"
-                                    value={contractData.tanggal_kontrak}
-                                    onChange={(e) => setContractData('tanggal_kontrak', e.target.value)}
+                                    value={contractData.tanggal_mulai_kontrak}
+                                    onChange={(e) => setContractData('tanggal_mulai_kontrak', e.target.value)}
+                                    className="col-span-3"
+                                    required
+                                />
+                            </div>
+
+                            {/* Tanggal Selesai */}
+                            <div className="grid grid-cols-4 items-center gap-4">
+                                <Label htmlFor="tanggal_selesai_kontrak" className="text-right">
+                                    Selesai
+                                </Label>
+                                <Input
+                                    id="tanggal_selesai_kontrak"
+                                    type="date"
+                                    value={contractData.tanggal_selesai_kontrak}
+                                    onChange={(e) => setContractData('tanggal_selesai_kontrak', e.target.value)}
                                     className="col-span-3"
                                     required
                                 />

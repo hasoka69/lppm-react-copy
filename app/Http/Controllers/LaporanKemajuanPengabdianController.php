@@ -103,9 +103,9 @@ class LaporanKemajuanPengabdianController extends Controller
             'peran_penulis' => 'nullable|string|max:100',
             'nama_jurnal' => 'nullable|string|max:255',
             'issn' => 'nullable|string|max:100',
-            'pengindek' => 'nullable|string|max:100',
+            // 'pengindek' => 'nullable|string|max:100', // Removed
             'keterangan' => 'nullable|string',
-            'file_bukti' => 'nullable|file|mimes:pdf,jpg,png,doc,docx|max:10240',
+            // 'file_bukti' => 'nullable|file|mimes:pdf,jpg,png,doc,docx|max:10240', // Removed
             'file_bukti_submit' => 'nullable|file|mimes:pdf,jpg,png,doc,docx|max:10240',
             'url_bukti' => 'nullable|url',
         ]);

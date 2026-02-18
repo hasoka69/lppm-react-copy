@@ -581,7 +581,8 @@ class AdminLPPMController extends Controller
         $usulan = UsulanPenelitian::with(['luaranList'])->findOrFail($id);
         return Inertia::render('dosen/penelitian/PengkinianLuaran/Detail', [
             'usulan' => $usulan,
-            'outputs' => $usulan->luaranList,
+            'mandatory_outputs' => $usulan->luaranList->where('is_wajib', 1)->values(),
+            'additional_outputs' => $usulan->luaranList->where('is_wajib', 0)->values(),
             'isAdminView' => true
         ]);
     }
@@ -673,7 +674,8 @@ class AdminLPPMController extends Controller
         $usulan = UsulanPengabdian::with(['luaranList'])->findOrFail($id);
         return Inertia::render('dosen/pengabdian/PengkinianLuaran/Detail', [
             'usulan' => $usulan,
-            'outputs' => $usulan->luaranList,
+            'mandatory_outputs' => $usulan->luaranList->where('is_wajib', 1)->values(),
+            'additional_outputs' => $usulan->luaranList->where('is_wajib', 0)->values(),
             'isAdminView' => true
         ]);
     }

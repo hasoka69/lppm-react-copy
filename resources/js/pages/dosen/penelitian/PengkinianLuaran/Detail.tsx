@@ -28,7 +28,8 @@ import {
     Star,
     Layers,
     Share2,
-    BookOpen
+    BookOpen,
+    Eye
 } from 'lucide-react';
 import { formatAcademicYear } from '@/utils/academicYear';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -247,6 +248,7 @@ export default function Detail({ usulan, mandatory_outputs = [], additional_outp
                 onClose={() => setEditingOutput(null)}
                 output={editingOutput}
                 type="penelitian"
+                isAdminView={isAdminView}
             />
 
             <Footer />
@@ -308,14 +310,19 @@ function OutputRow({ output, index, isReadOnly, type, onEdit }: { output: any, i
                         <Edit className="w-4 h-4 text-gray-400 group-hover:text-white" />
                     </button>
                 ) : (
-                    <BadgeCheck className="w-6 h-6 text-blue-500 mx-auto" />
+                    <button
+                        onClick={onEdit}
+                        className="bg-white border border-gray-100 p-3 rounded-xl hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all shadow-sm group/view"
+                    >
+                        <Eye className="w-4 h-4 text-gray-400 group-hover/view:text-white" />
+                    </button>
                 )}
             </td>
         </motion.tr>
     );
 }
 
-function EditOutputModal({ isOpen, onClose, output, type }: { isOpen: boolean, onClose: () => void, output: any, type: string }) {
+function EditOutputModal({ isOpen, onClose, output, type, isAdminView = false }: { isOpen: boolean, onClose: () => void, output: any, type: string, isAdminView?: boolean }) {
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const { data, setData, post, processing, errors, reset } = useForm({
@@ -324,8 +331,8 @@ function EditOutputModal({ isOpen, onClose, output, type }: { isOpen: boolean, o
         peran_penulis: '',
         nama_jurnal: '',
         issn: '',
-        pengindek: '',
-        tahun_realisasi: '',
+        // pengindek: '', // Removed
+        // tahun_realisasi: '', // Removed
         volume: '',
         nomor: '',
         halaman_awal: '',
@@ -334,7 +341,7 @@ function EditOutputModal({ isOpen, onClose, output, type }: { isOpen: boolean, o
         url_artikel: '',
         doi: '',
         keterangan: '',
-        file_bukti: null as File | null,
+        // file_bukti: null as File | null, // Removed
     });
 
     useEffect(() => {
@@ -345,8 +352,8 @@ function EditOutputModal({ isOpen, onClose, output, type }: { isOpen: boolean, o
                 peran_penulis: output.peran_penulis || '',
                 nama_jurnal: output.nama_jurnal || '',
                 issn: output.issn || '',
-                pengindek: output.pengindek || '',
-                tahun_realisasi: output.tahun_realisasi || '',
+                // pengindek: output.pengindek || '', // Removed
+                // tahun_realisasi: output.tahun_realisasi || '', // Removed
                 volume: output.volume || '',
                 nomor: output.nomor || '',
                 halaman_awal: output.halaman_awal || '',
@@ -355,7 +362,7 @@ function EditOutputModal({ isOpen, onClose, output, type }: { isOpen: boolean, o
                 url_artikel: output.url_artikel || '',
                 doi: output.doi || '',
                 keterangan: output.keterangan || '',
-                file_bukti: null,
+                // file_bukti: null, // Removed
             });
         }
     }, [output, isOpen]);
@@ -415,13 +422,19 @@ function EditOutputModal({ isOpen, onClose, output, type }: { isOpen: boolean, o
                                         value={data.judul_realisasi}
                                         onChange={e => setData('judul_realisasi', e.target.value)}
                                         placeholder="Masukkan judul lengkap luaran yang dihasilkan..."
+                                        readOnly={isAdminView}
                                     />
                                     {errors.judul_realisasi && <div className="text-red-500 text-xs mt-1">{errors.judul_realisasi}</div>}
                                 </div>
 
                                 <div className="space-y-2">
                                     <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">Status Capaian Sa'at Ini</label>
-                                    <select className="w-full bg-gray-50 border-gray-100 rounded-xl py-3.5 px-6 text-sm font-bold" value={data.status} onChange={e => setData('status', e.target.value)}>
+                                    <select
+                                        className="w-full bg-gray-50 border-gray-100 rounded-xl py-3.5 px-6 text-sm font-bold"
+                                        value={data.status}
+                                        onChange={e => setData('status', e.target.value)}
+                                        disabled={isAdminView}
+                                    >
                                         <option value="Submit">Submit</option>
                                         <option value="Under Review">Under Review</option>
                                         <option value="LOA">LOA</option>
@@ -436,6 +449,7 @@ function EditOutputModal({ isOpen, onClose, output, type }: { isOpen: boolean, o
                                         className="w-full bg-gray-50 border-gray-100 rounded-xl py-3.5 px-6 text-sm font-bold"
                                         value={data.peran_penulis}
                                         onChange={e => setData('peran_penulis', e.target.value)}
+                                        disabled={isAdminView}
                                     >
                                         <option value="">Pilih Peran...</option>
                                         <option value="Penulis Pertama">Penulis Pertama</option>
@@ -446,39 +460,78 @@ function EditOutputModal({ isOpen, onClose, output, type }: { isOpen: boolean, o
 
                                 <div className="space-y-2">
                                     <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">Nama Jurnal / Lokasi / Penerbit</label>
-                                    <input type="text" className="w-full bg-gray-50 border-gray-100 rounded-xl py-3.5 px-6 text-sm font-bold" value={data.nama_jurnal} onChange={e => setData('nama_jurnal', e.target.value)} placeholder="Nama Media/Lembaga..." />
+                                    <input
+                                        type="text"
+                                        className="w-full bg-gray-50 border-gray-100 rounded-xl py-3.5 px-6 text-sm font-bold"
+                                        value={data.nama_jurnal}
+                                        onChange={e => setData('nama_jurnal', e.target.value)}
+                                        placeholder="Nama Media/Lembaga..."
+                                        readOnly={isAdminView}
+                                    />
                                 </div>
 
                                 <div className="space-y-2">
                                     <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">ISSN / ISBN / No. Pendaftaran</label>
-                                    <input type="text" className="w-full bg-gray-50 border-gray-100 rounded-xl py-3.5 px-6 text-sm font-bold" value={data.issn} onChange={e => setData('issn', e.target.value)} placeholder="XXXX-XXXX" />
+                                    <input
+                                        type="text"
+                                        className="w-full bg-gray-50 border-gray-100 rounded-xl py-3.5 px-6 text-sm font-bold"
+                                        value={data.issn}
+                                        onChange={e => setData('issn', e.target.value)}
+                                        placeholder="XXXX-XXXX"
+                                        readOnly={isAdminView}
+                                    />
                                 </div>
 
                                 <div className="space-y-2">
-                                    <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">Lembaga Pengindek (Jika ada)</label>
-                                    <input type="text" className="w-full bg-gray-50 border-gray-100 rounded-xl py-3.5 px-6 text-sm font-bold" value={data.pengindek} onChange={e => setData('pengindek', e.target.value)} placeholder="Contoh: Scopus Q1, Sinta 1" />
+                                    <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">Kategori Luaran</label>
+                                    <div className="w-full bg-gray-100 border-gray-100 rounded-xl py-3.5 px-6 text-sm font-bold text-gray-500 cursor-not-allowed">
+                                        {output?.kategori}
+                                    </div>
                                 </div>
 
-                                <div className="space-y-2">
-                                    <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">Tahun Realisasi</label>
-                                    <input type="text" className="w-full bg-gray-50 border-gray-100 rounded-xl py-3.5 px-6 text-sm font-bold" value={data.tahun_realisasi} onChange={e => setData('tahun_realisasi', e.target.value)} placeholder="2026" />
-                                </div>
+                                {/* Removed Tahun Realisasi and Bukti Unggah where applicable */}
 
                                 <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-6 pt-6 border-t border-gray-50">
                                     <div className="space-y-2">
                                         <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">Volume</label>
-                                        <input type="text" className="w-full bg-gray-50 border-gray-100 rounded-xl py-3.5 px-6 text-sm font-bold" value={data.volume} onChange={e => setData('volume', e.target.value)} />
+                                        <input
+                                            type="text"
+                                            className="w-full bg-gray-50 border-gray-100 rounded-xl py-3.5 px-6 text-sm font-bold"
+                                            value={data.volume}
+                                            onChange={e => setData('volume', e.target.value)}
+                                            readOnly={isAdminView}
+                                        />
                                     </div>
                                     <div className="space-y-2">
                                         <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">Nomor</label>
-                                        <input type="text" className="w-full bg-gray-50 border-gray-100 rounded-xl py-3.5 px-6 text-sm font-bold" value={data.nomor} onChange={e => setData('nomor', e.target.value)} />
+                                        <input
+                                            type="text"
+                                            className="w-full bg-gray-50 border-gray-100 rounded-xl py-3.5 px-6 text-sm font-bold"
+                                            value={data.nomor}
+                                            onChange={e => setData('nomor', e.target.value)}
+                                            readOnly={isAdminView}
+                                        />
                                     </div>
                                     <div className="space-y-2">
                                         <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">Halaman</label>
                                         <div className="flex items-center gap-2">
-                                            <input type="text" className="w-full bg-gray-50 border-gray-100 rounded-xl py-3.5 px-4 text-sm font-bold" value={data.halaman_awal} onChange={e => setData('halaman_awal', e.target.value)} placeholder="Awal" />
+                                            <input
+                                                type="text"
+                                                className="w-full bg-gray-50 border-gray-100 rounded-xl py-3.5 px-4 text-sm font-bold"
+                                                value={data.halaman_awal}
+                                                onChange={e => setData('halaman_awal', e.target.value)}
+                                                placeholder="Awal"
+                                                readOnly={isAdminView}
+                                            />
                                             <span className="text-gray-300">-</span>
-                                            <input type="text" className="w-full bg-gray-50 border-gray-100 rounded-xl py-3.5 px-4 text-sm font-bold" value={data.halaman_akhir} onChange={e => setData('halaman_akhir', e.target.value)} placeholder="Akhir" />
+                                            <input
+                                                type="text"
+                                                className="w-full bg-gray-50 border-gray-100 rounded-xl py-3.5 px-4 text-sm font-bold"
+                                                value={data.halaman_akhir}
+                                                onChange={e => setData('halaman_akhir', e.target.value)}
+                                                placeholder="Akhir"
+                                                readOnly={isAdminView}
+                                            />
                                         </div>
                                     </div>
                                 </div>
@@ -487,45 +540,60 @@ function EditOutputModal({ isOpen, onClose, output, type }: { isOpen: boolean, o
                                     <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">URL Artikel / Produk (Jika ada)</label>
                                     <div className="relative">
                                         <Globe className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" />
-                                        <input type="url" className="w-full bg-gray-50 border-gray-100 rounded-xl py-3.5 pl-12 pr-4 text-sm font-bold focus:ring-4 focus:ring-blue-500/5 transition-all" value={data.url_artikel} onChange={e => setData('url_artikel', e.target.value)} placeholder="https://..." />
+                                        <input
+                                            type="url"
+                                            className="w-full bg-gray-50 border-gray-100 rounded-xl py-3.5 pl-12 pr-4 text-sm font-bold focus:ring-4 focus:ring-blue-500/5 transition-all"
+                                            value={data.url_artikel}
+                                            onChange={e => setData('url_artikel', e.target.value)}
+                                            placeholder="https://..."
+                                            readOnly={isAdminView}
+                                        />
                                     </div>
                                 </div>
 
-                                <div className="md:col-span-2 pt-6 border-t border-gray-50">
-                                    <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1 block mb-3">Unggah Bukti Luaran (PDF)</label>
-                                    <div className="bg-gray-50/50 p-8 rounded-2xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center text-center space-y-4 hover:bg-white hover:border-blue-400 transition-all group/up">
-                                        <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center text-gray-300 shadow-sm border border-gray-100 group-hover/up:text-blue-600 transition-colors">
-                                            <Upload className="w-6 h-6" />
-                                        </div>
-                                        <div className="space-y-1">
-                                            <p className="text-[13px] font-bold text-gray-700">Pilih Berkas Bukti (PDF)</p>
-                                            <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-wider">Maksimal Ukuran: 10MB</p>
-                                        </div>
-                                        <input type="file" ref={fileInputRef} className="hidden" onChange={e => setData('file_bukti', e.target.files?.[0] || null)} accept=".pdf" />
-                                        <div className="flex gap-3">
-                                            <button type="button" onClick={() => fileInputRef.current?.click()} className="px-8 py-2.5 bg-white border border-gray-900 text-gray-900 rounded-xl text-[11px] font-bold hover:bg-gray-900 hover:text-white transition-all shadow-sm">
-                                                {data.file_bukti ? 'Ganti File ✓' : 'Pilih Berkas'}
-                                            </button>
-                                            {output.file_bukti && (
-                                                <a href={`/storage/${output.file_bukti}`} target="_blank" className="px-8 py-2.5 bg-blue-50 text-blue-700 rounded-xl text-[11px] font-bold hover:bg-blue-100 transition-all border border-blue-100 flex items-center gap-2">
-                                                    <Search className="w-3.5 h-3.5" /> Lihat Terunggah
-                                                </a>
-                                            )}
-                                        </div>
+                                <div className="md:col-span-2 space-y-2">
+                                    <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">DOI (Digital Object Identifier)</label>
+                                    <div className="relative">
+                                        <ExternalLink className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" />
+                                        <input
+                                            type="url"
+                                            className="w-full bg-gray-50 border-gray-100 rounded-xl py-3.5 pl-12 pr-4 text-sm font-bold focus:ring-4 focus:ring-blue-500/5 transition-all"
+                                            value={data.doi}
+                                            onChange={e => setData('doi', e.target.value)}
+                                            placeholder="10.xxxx/xxxxx"
+                                            readOnly={isAdminView}
+                                        />
                                     </div>
                                 </div>
 
+                                <div className="md:col-span-2 space-y-2">
+                                    <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">Keterangan Tambahan</label>
+                                    <textarea
+                                        className="w-full bg-gray-50 border-gray-100 rounded-xl focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500 py-4 px-6 text-sm font-medium min-h-[100px] transition-all"
+                                        value={data.keterangan}
+                                        onChange={e => setData('keterangan', e.target.value)}
+                                        placeholder="Catatan tambahan mengenai status luaran..."
+                                        readOnly={isAdminView}
+                                    />
+                                    {errors.keterangan && <div className="text-red-500 text-xs mt-1">{errors.keterangan}</div>}
+                                </div>
+
+                                {/* Removed Bukti Unggah as requested */}
                                 <div className="md:col-span-2 pt-6 flex justify-end gap-3">
-                                    <button type="button" onClick={onClose} className="px-8 py-3 text-[13px] font-bold text-gray-400 hover:text-gray-700 transition-colors">Batalkan</button>
-                                    <button
-                                        type="button"
-                                        onClick={handleSubmit}
-                                        disabled={processing}
-                                        className="px-14 py-3 bg-blue-600 text-white rounded-xl text-[13px] font-bold shadow-lg shadow-blue-100 hover:bg-blue-700 transition-all flex items-center gap-2"
-                                    >
-                                        {processing ? '...' : <Save className="w-4 h-4" />}
-                                        Simpan Perubahan
+                                    <button type="button" onClick={onClose} className="px-8 py-3 text-[13px] font-bold text-gray-400 hover:text-gray-700 transition-colors">
+                                        {isAdminView ? 'Tutup' : 'Batalkan'}
                                     </button>
+                                    {!isAdminView && (
+                                        <button
+                                            type="button"
+                                            onClick={handleSubmit}
+                                            disabled={processing}
+                                            className="px-14 py-3 bg-blue-600 text-white rounded-xl text-[13px] font-bold shadow-lg shadow-blue-100 hover:bg-blue-700 transition-all flex items-center gap-2"
+                                        >
+                                            {processing ? '...' : <Save className="w-4 h-4" />}
+                                            Simpan Perubahan
+                                        </button>
+                                    )}
                                 </div>
                             </div>
                         </div>

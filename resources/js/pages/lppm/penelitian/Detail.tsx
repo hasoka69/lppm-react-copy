@@ -98,7 +98,6 @@ export default function AdminPenelitianDetail({ usulan, reviewers, initialScores
     // [NEW] Contract Modal State
     const [isContractModalOpen, setIsContractModalOpen] = useState(false);
     const [contractNumber, setContractNumber] = useState('');
-    const [contractDate, setContractDate] = useState('');
     const [contractStartDate, setContractStartDate] = useState('');
     const [contractEndDate, setContractEndDate] = useState('');
     const [processingDecision, setProcessingDecision] = useState(false);
@@ -727,6 +726,7 @@ export default function AdminPenelitianDetail({ usulan, reviewers, initialScores
                                     onChange={(e) => setContractNumber(e.target.value)}
                                     className="col-span-3"
                                     placeholder="Nomor Kontrak..."
+                                    required
                                 />
                             </div>
                             <div className="grid grid-cols-4 items-center gap-4">

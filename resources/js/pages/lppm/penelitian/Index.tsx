@@ -123,7 +123,6 @@ export default function AdminPenelitianIndex({ proposals = [], activeTab = 'daft
 
     const { data: contractData, setData: setContractData, put: submitContract, processing: contractProcessing, reset: resetContract } = useForm({
         nomor_kontrak: '',
-        tanggal_kontrak: '',
         tanggal_mulai_kontrak: '',
         tanggal_selesai_kontrak: '',
     });
@@ -132,7 +131,6 @@ export default function AdminPenelitianIndex({ proposals = [], activeTab = 'daft
         setSelectedProposalForContract(item);
         setContractData({
             nomor_kontrak: item.nomor_kontrak || '',
-            tanggal_kontrak: item.tanggal_kontrak || new Date().toISOString().split('T')[0],
             tanggal_mulai_kontrak: item.tanggal_mulai_kontrak || new Date().toISOString().split('T')[0],
             tanggal_selesai_kontrak: item.tanggal_selesai_kontrak || '',
         });
@@ -274,21 +272,6 @@ export default function AdminPenelitianIndex({ proposals = [], activeTab = 'daft
                                 />
                             </div>
 
-                            {/* Tanggal Kontrak (Tanda Tangan) */}
-                            <div className="grid grid-cols-4 items-center gap-4">
-                                <Label htmlFor="tanggal_kontrak" className="text-right">
-                                    Tgl. TTD
-                                </Label>
-                                <Input
-                                    id="tanggal_kontrak"
-                                    type="date"
-                                    value={contractData.tanggal_kontrak}
-                                    onChange={(e) => setContractData('tanggal_kontrak', e.target.value)}
-                                    className="col-span-3"
-                                    required
-                                />
-                            </div>
-
                             {/* Divider for Duration */}
                             <div className="border-t border-gray-100 my-2"></div>
                             <p className="text-sm font-medium text-gray-500 mb-2">Jangka Waktu Pelaksanaan</p>
@@ -335,53 +318,6 @@ export default function AdminPenelitianIndex({ proposals = [], activeTab = 'daft
             </Dialog>
 
             <Footer />
-
-            {/* Contract Modal */}
-            <Dialog open={isContractModalOpen} onOpenChange={setIsContractModalOpen}>
-                <DialogContent className="sm:max-w-[425px]">
-                    <DialogHeader>
-                        <DialogTitle>Buat Kontrak Penelitian</DialogTitle>
-                        <DialogDescription>
-                            Masukkan nomor dan tanggal kontrak untuk <b>{selectedProposalForContract?.judul}</b>.
-                        </DialogDescription>
-                    </DialogHeader>
-                    <form onSubmit={handleContractSubmit}>
-                        <div className="grid gap-4 py-4">
-                            <div className="grid grid-cols-4 items-center gap-4">
-                                <Label htmlFor="nomor_kontrak" className="text-right">
-                                    No. Kontrak
-                                </Label>
-                                <Input
-                                    id="nomor_kontrak"
-                                    value={contractData.nomor_kontrak}
-                                    onChange={(e) => setContractData('nomor_kontrak', e.target.value)}
-                                    className="col-span-3"
-                                    placeholder="Contoh: 123/LPPM/2026"
-                                    required
-                                />
-                            </div>
-                            <div className="grid grid-cols-4 items-center gap-4">
-                                <Label htmlFor="tanggal_kontrak" className="text-right">
-                                    Tanggal
-                                </Label>
-                                <Input
-                                    id="tanggal_kontrak"
-                                    type="date"
-                                    value={contractData.tanggal_kontrak}
-                                    onChange={(e) => setContractData('tanggal_kontrak', e.target.value)}
-                                    className="col-span-3"
-                                    required
-                                />
-                            </div>
-                        </div>
-                        <DialogFooter>
-                            <Button type="submit" disabled={contractProcessing}>
-                                {contractProcessing ? 'Menyimpan...' : 'Simpan Kontrak'}
-                            </Button>
-                        </DialogFooter>
-                    </form>
-                </DialogContent>
-            </Dialog>
         </div>
     );
 }

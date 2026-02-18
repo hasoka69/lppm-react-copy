@@ -74,8 +74,8 @@ class PengkinianCapaianPenelitianController extends Controller
             'peran_penulis' => 'nullable|string|max:100',
             'nama_jurnal' => 'nullable|string|max:255',
             'issn' => 'nullable|string|max:100',
-            'pengindek' => 'nullable|string|max:100',
-            'tahun_realisasi' => 'nullable|string|max:4',
+            // 'pengindek' => 'nullable|string|max:100', // Removed
+            // 'tahun_realisasi' => 'nullable|string|max:4', // Removed
             'volume' => 'nullable|string|max:50',
             'nomor' => 'nullable|string|max:50',
             'halaman_awal' => 'nullable|string|max:20',
@@ -84,7 +84,7 @@ class PengkinianCapaianPenelitianController extends Controller
             'url_artikel' => 'nullable|url',
             'doi' => 'nullable|string|max:255',
             'keterangan' => 'nullable|string',
-            'file_bukti' => 'nullable|file|mimes:pdf,jpg,png,doc,docx|max:10240',
+            // 'file_bukti' => 'nullable|file|mimes:pdf,jpg,png,doc,docx|max:10240', // Removed
         ]);
 
         $luaran = LuaranPenelitian::whereHas('usulan', function ($q) {

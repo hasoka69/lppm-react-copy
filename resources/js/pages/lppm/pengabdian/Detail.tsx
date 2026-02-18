@@ -101,7 +101,6 @@ export default function AdminPengabdianDetail({ usulan, reviewers, initialScores
     // [NEW] Contract Modal State
     const [isContractModalOpen, setIsContractModalOpen] = useState(false);
     const [contractNumber, setContractNumber] = useState('');
-    const [contractDate, setContractDate] = useState('');
     const [contractStartDate, setContractStartDate] = useState('');
     const [contractEndDate, setContractEndDate] = useState('');
     const [processingDecision, setProcessingDecision] = useState(false);
@@ -644,15 +643,16 @@ export default function AdminPengabdianDetail({ usulan, reviewers, initialScores
                         </DialogHeader>
                         <div className="grid gap-4 py-4">
                             <div className="grid grid-cols-4 items-center gap-4">
-                                <Label htmlFor="contract_number" className="text-right">
+                                <Label htmlFor="contract_number" className="text-right text-xs">
                                     No. Kontrak
                                 </Label>
                                 <Input
                                     id="contract_number"
                                     value={contractNumber}
                                     onChange={(e) => setContractNumber(e.target.value)}
-                                    className="col-span-3"
+                                    className="col-span-3 h-9 text-sm"
                                     placeholder="Nomor Kontrak..."
+                                    required
                                 />
                             </div>
                             <div className="grid grid-cols-4 items-center gap-4">
@@ -695,6 +695,6 @@ export default function AdminPengabdianDetail({ usulan, reviewers, initialScores
                 </Dialog>
             </main>
             <Footer />
-        </div>
+        </div >
     );
 }
