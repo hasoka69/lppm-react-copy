@@ -72,15 +72,25 @@ class AdminLPPMController extends Controller
             $query->where('tahun_pertama', $year);
         }
 
+        if ($search = request('search')) {
+            $query->where(function ($q) use ($search) {
+                $q->where('judul', 'like', "%{$search}%")
+                    ->orWhereHas('user', function ($q) use ($search) {
+                        $q->where('name', 'like', "%{$search}%");
+                    });
+            });
+        }
+
         $proposals = $query->whereIn('status', $statusFilter)
             ->latest()
-            ->get()
-            ->map(function ($item) use ($activeTab) {
+            ->paginate(10)
+            ->withQueryString()
+            ->through(function ($item) use ($activeTab) {
                 $data = [
                     'id' => $item->id,
                     'judul' => $item->judul,
-                    'ketua' => $item->ketua->name ?? '-',
-                    'prodi' => $item->ketua->dosen->prodi ?? '-',
+                    'ketua' => $item->ketua?->name ?? '-',
+                    'prodi' => $item->ketua?->dosen?->prodi ?? '-',
                     'skema' => $item->kelompok_skema,
                     'tanggal' => $item->created_at->format('d M Y'),
                     'status' => $item->status,
@@ -139,9 +149,17 @@ class AdminLPPMController extends Controller
                 return $data;
             });
 
+        $stats = [
+            'total' => (clone $query)->count(),
+            'didanai' => (clone $query)->where('status', 'didanai')->count(),
+            'proses' => (clone $query)->whereIn('status', ['submitted', 'approved_prodi', 'reviewer_assigned', 'resubmitted_revision', 'reviewed_approved'])->count(),
+            'perbaikan' => (clone $query)->whereIn('status', ['under_revision_admin', 'revision_dosen'])->count(),
+        ];
+
         return Inertia::render('lppm/penelitian/Index', [
             'proposals' => $proposals,
             'activeTab' => $activeTab,
+            'stats' => [],
             'filters' => request()->all(['tahun_akademik', 'search'])
         ]);
     }
@@ -206,15 +224,25 @@ class AdminLPPMController extends Controller
             $query->where('tahun_pertama', $year);
         }
 
+        if ($search = request('search')) {
+            $query->where(function ($q) use ($search) {
+                $q->where('judul', 'like', "%{$search}%")
+                    ->orWhereHas('user', function ($q) use ($search) {
+                        $q->where('name', 'like', "%{$search}%");
+                    });
+            });
+        }
+
         $proposals = $query->whereIn('status', $statusFilter)
             ->latest()
-            ->get()
-            ->map(function ($item) use ($activeTab) {
+            ->paginate(10)
+            ->withQueryString()
+            ->through(function ($item) use ($activeTab) {
                 $data = [
                     'id' => $item->id,
                     'judul' => $item->judul,
-                    'ketua' => $item->ketua->name ?? '-',
-                    'prodi' => $item->ketua->dosen->prodi ?? '-',
+                    'ketua' => $item->ketua?->name ?? '-',
+                    'prodi' => $item->ketua?->dosen?->prodi ?? '-',
                     'skema' => $item->kelompok_skema,
                     'tanggal' => $item->created_at->format('d M Y'),
                     'status' => $item->status,
@@ -272,9 +300,17 @@ class AdminLPPMController extends Controller
                 return $data;
             });
 
+        $stats = [
+            'total' => (clone $query)->count(),
+            'didanai' => (clone $query)->where('status', 'didanai')->count(),
+            'proses' => (clone $query)->whereIn('status', ['submitted', 'approved_prodi', 'reviewer_assigned', 'resubmitted_revision', 'reviewed_approved'])->count(),
+            'perbaikan' => (clone $query)->whereIn('status', ['under_revision_admin', 'revision_dosen'])->count(),
+        ];
+
         return Inertia::render('lppm/pengabdian/Index', [
             'proposals' => $proposals,
             'activeTab' => $activeTab,
+            'stats' => [],
             'filters' => request()->all(['tahun_akademik', 'search'])
         ]);
     }

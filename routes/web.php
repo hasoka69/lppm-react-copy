@@ -253,7 +253,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 Route::get('/', function () {
     $pengumuman = \App\Models\Pengumuman::where('is_active', true)->latest()->take(3)->get();
-    $berita = \App\Models\Berita::where('status', 'published')->latest()->take(5)->get();
+    $berita = Berita::where('status', 'published')->latest()->take(5)->get();
 
     return Inertia::render('welcome', [
         'pengumuman' => $pengumuman,
@@ -264,6 +264,8 @@ Route::get('/', function () {
 Route::get('/berita', [\App\Http\Controllers\BeritaController::class, 'indexPublic'])->name('berita.index');
 Route::get('/berita/{slug}', [\App\Http\Controllers\BeritaController::class, 'showPublic'])->name('berita.show');
 Route::get('/pengumuman', [\App\Http\Controllers\PengumumanController::class, 'indexPublic'])->name('pengumuman.public.index');
+Route::get('/panduan', [\App\Http\Controllers\PanduanController::class, 'indexPublic'])->name('panduan.public.index');
+Route::get('/panduan/{id}', [\App\Http\Controllers\PanduanController::class, 'showPublic'])->name('panduan.public.show');
 
 // Otentikasi dihandle di routes/auth.php (already included at bottom)
 
@@ -288,16 +290,20 @@ Route::middleware('auth')->group(function () {
         Route::resource('pengumuman', \App\Http\Controllers\PengumumanController::class);
 
         // Template Dokumen
-        Route::resource('template-dokumen', \App\Http\Controllers\TemplateDokumenController::class);
-        Route::post('template-dokumen/{id}/toggle', [\App\Http\Controllers\TemplateDokumenController::class, 'toggleStatus'])->name('template-dokumen.toggle');
+        Route::resource('template-dokumen', TemplateDokumenController::class);
+        Route::post('template-dokumen/{id}/toggle', [TemplateDokumenController::class, 'toggleStatus'])->name('template-dokumen.toggle');
+
+        // Panduan Management
+        Route::resource('panduan', \App\Http\Controllers\PanduanController::class);
+        Route::post('panduan/{id}/toggle', [\App\Http\Controllers\PanduanController::class, 'toggleStatus'])->name('panduan.toggle');
 
         // Setting Form
         Route::get('/setting-form', [\App\Http\Controllers\SettingFormController::class, 'index'])->name('setting-form');
         Route::put('/setting-form/{id}', [\App\Http\Controllers\SettingFormController::class, 'update'])->name('setting-form.update');
 
         // User Management under LPPM
-        Route::resource('users', \App\Http\Controllers\UserController::class);
-        Route::put('/users/{user}/reset-password', [\App\Http\Controllers\UserController::class, 'resetPassword'])->name('users.reset-password');
+        Route::resource('users', UserController::class);
+        Route::put('/users/{user}/reset-password', [UserController::class, 'resetPassword'])->name('users.reset-password');
 
         // Global Workflow Actions (Using type parameter)
         Route::post('/{type}/{id}/assign-reviewer', [\App\Http\Controllers\AdminLPPMController::class, 'assignReviewer'])->name('assign_reviewer');

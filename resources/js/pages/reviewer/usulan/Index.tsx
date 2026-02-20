@@ -6,9 +6,11 @@ import Footer from '@/components/footer';
 import ReviewerPageUsulan, { Proposal } from './ReviewerPageUsulan';
 import { motion } from 'framer-motion';
 
+import { PaginatedResponse } from '@/types'; // Added import
+
 interface PageProps {
-    proposals: Proposal[]; // Penelitian
-    pengabdianProposals: Proposal[]; // Pengabdian
+    proposals: PaginatedResponse<Proposal>; // Penelitian
+    pengabdianProposals: PaginatedResponse<Proposal>; // Pengabdian
     [key: string]: unknown;
     filters?: {
         tahun_akademik?: string;
@@ -17,7 +19,7 @@ interface PageProps {
 
 const ReviewerIndex: React.FC = () => {
     const { props } = usePage<PageProps>();
-    const { proposals, pengabdianProposals = [], filters = {} } = props;
+    const { proposals, pengabdianProposals, filters = {} } = props;
 
     const [activeTab, setActiveTab] = useState<'penelitian' | 'pengabdian'>('penelitian');
 
@@ -58,7 +60,7 @@ const ReviewerIndex: React.FC = () => {
                                 }`}
                         >
                             Penelitian
-                            {proposals.length > 0 && <span className="ml-2 bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded-full text-[10px]">{proposals.length}</span>}
+                            {proposals.total > 0 && <span className="ml-2 bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded-full text-[10px]">{proposals.total}</span>}
                             {activeTab === 'penelitian' && (
                                 <motion.div layoutId="activeTab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 rounded-full" />
                             )}
@@ -69,7 +71,7 @@ const ReviewerIndex: React.FC = () => {
                                 }`}
                         >
                             Pengabdian
-                            {pengabdianProposals.length > 0 && <span className="ml-2 bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded-full text-[10px]">{pengabdianProposals.length}</span>}
+                            {pengabdianProposals.total > 0 && <span className="ml-2 bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded-full text-[10px]">{pengabdianProposals.total}</span>}
                             {activeTab === 'pengabdian' && (
                                 <motion.div layoutId="activeTab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 rounded-full" />
                             )}

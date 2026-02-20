@@ -29,7 +29,7 @@ class PengumumanController extends Controller
         ]);
 
         Pengumuman::create([
-            'content' => $request->content,
+            'content' => $request->input('content'),
             'is_active' => true,
         ]);
 

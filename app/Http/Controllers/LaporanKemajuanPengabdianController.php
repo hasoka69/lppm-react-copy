@@ -23,8 +23,8 @@ class LaporanKemajuanPengabdianController extends Controller
         $fundedUsulan = UsulanPengabdian::where('user_id', '=', $user->id, 'and')
             ->where('status', '=', 'didanai', 'and')
             ->latest()
-            ->get()
-            ->map(fn($u) => [
+            ->paginate(10)
+            ->through(fn($u) => [
                 'id' => $u->id,
                 'judul' => $u->judul,
                 'skema' => $u->kelompok_skema,

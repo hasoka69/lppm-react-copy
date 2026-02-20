@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import styles from '../../../../css/pengajuan.module.css';
+import styles from '../../../../css/pengajuan.module.css'; // Adjust path if needed or use absolute imports
 import { Button } from "@/components/ui/button"
 import { Search, Filter, FileText, Calendar, User, CheckCircle, Clock, XCircle, AlertCircle } from "lucide-react"
 import { motion } from 'framer-motion';
-import { Link } from '@inertiajs/react';
-import { formatAcademicYear, getAcademicYearOptions } from '@/utils/academicYear'; // Added getAcademicYearOptions
-import Select from 'react-select'; // Added Select
+import { Link, router, usePage } from '@inertiajs/react'; // Import router using named import
+import { formatAcademicYear, getAcademicYearOptions } from '@/utils/academicYear';
+import Select from 'react-select';
+import Pagination from '@/Components/Pagination'; // Pagination Component
+import { PaginatedResponse } from '@/types';
 
 export interface Proposal {
     id: number;
@@ -20,7 +22,7 @@ export interface Proposal {
 }
 
 interface ReviewerPageUsulanProps {
-    proposals: Proposal[];
+    proposals: PaginatedResponse<Proposal>;
     title?: string;
     type: 'penelitian' | 'pengabdian';
     selectedYear: { value: string; label: string } | null;
@@ -34,19 +36,23 @@ const ReviewerPageUsulan: React.FC<ReviewerPageUsulanProps> = ({
     selectedYear,
     onYearChange
 }) => {
-    const [searchTerm, setSearchTerm] = useState('');
-    // Removed local filterYear state
+    // Get search from URL params initially
+    const { filters } = usePage().props as any;
+    const [searchTerm, setSearchTerm] = useState(filters?.search || '');
 
-    // Filter Logic
-    const filteredProposals = proposals.filter(p => {
-        const matchesSearch = p.judul.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            p.ketua.toLowerCase().includes(searchTerm.toLowerCase());
-        // Note: Year filter is tricky if API doesn't provide year in "tanggal_pengajuan" easily 
-        // or if we rely on "tahun_pelaksanaan". 
-        // For now, assume we just filter by search, strict year filtering might need parsing "tanggal_pengajuan" (YYYY-MM-DD)
-        const yearMatch = selectedYear ? (p.tahun_pelaksanaan?.toString() === selectedYear.value || p.tanggal_pengajuan?.startsWith(selectedYear.value)) : true;
-        return matchesSearch && yearMatch;
-    });
+    // Server-side Filtering
+    const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter') {
+            router.get(route(route().current() as string), {
+                search: searchTerm,
+                tahun_akademik: selectedYear?.value
+            }, {
+                preserveState: true,
+                preserveScroll: true,
+                replace: true
+            });
+        }
+    };
 
     const getStatusStyle = (status: string) => {
         const statusMap: Record<string, { label: string; bg: string; color: string; dot: string; icon: any }> = {
@@ -63,6 +69,8 @@ const ReviewerPageUsulan: React.FC<ReviewerPageUsulanProps> = ({
         };
         return statusMap[status] || { label: status, bg: '#f1f5f9', color: '#475569', dot: '#94a3b8', icon: FileText };
     };
+
+    const items = proposals.data || [];
 
     return (
         <div className={styles.container}>
@@ -85,12 +93,12 @@ const ReviewerPageUsulan: React.FC<ReviewerPageUsulanProps> = ({
                             placeholder="Cari judul atau nama pengusul..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
+                            onKeyDown={handleSearch}
                             className="w-full bg-white border border-gray-200 rounded-xl py-2 pl-9 pr-4 text-sm font-medium text-gray-700 focus:border-blue-500 focus:ring-0 transition-all outline-none"
                         />
                     </div>
 
                     <div className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl shadow-sm w-48">
-                        {/* <Filter size={14} className="text-blue-600" /> Removed icon from wrapper, put inside select if needed, or just standard Select */}
                         <div style={{ width: '100%' }}>
                             <Select
                                 options={getAcademicYearOptions().map(opt => ({ value: opt.value.toString(), label: opt.label }))}
@@ -131,7 +139,7 @@ const ReviewerPageUsulan: React.FC<ReviewerPageUsulanProps> = ({
                         </thead>
 
                         <tbody>
-                            {filteredProposals.length === 0 ? (
+                            {items.length === 0 ? (
                                 <tr>
                                     <td colSpan={5} style={{ textAlign: "center", padding: "6rem 2rem" }}>
                                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', color: '#94a3b8' }}>
@@ -146,7 +154,7 @@ const ReviewerPageUsulan: React.FC<ReviewerPageUsulanProps> = ({
                                     </td>
                                 </tr>
                             ) : (
-                                filteredProposals.map((u, idx) => {
+                                items.map((u, idx) => {
                                     const status = getStatusStyle(u.status);
                                     const StatusIcon = status.icon;
 
@@ -157,7 +165,9 @@ const ReviewerPageUsulan: React.FC<ReviewerPageUsulanProps> = ({
                                             animate={{ opacity: 1, x: 0 }}
                                             transition={{ duration: 0.3, delay: idx * 0.05 }}
                                         >
-                                            <td style={{ fontWeight: 700, color: '#94a3b8', paddingLeft: '1.5rem' }}>{idx + 1}</td>
+                                            <td style={{ fontWeight: 700, color: '#94a3b8', paddingLeft: '1.5rem' }}>
+                                                {(proposals.current_page - 1) * proposals.per_page + idx + 1}
+                                            </td>
                                             <td className={styles.judulCell} style={{ padding: '1.25rem 0.75rem' }}>
                                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
                                                     <span style={{ fontSize: '0.7rem', color: 'var(--primary)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.025em' }}>
@@ -217,6 +227,10 @@ const ReviewerPageUsulan: React.FC<ReviewerPageUsulanProps> = ({
                         </tbody>
                     </table>
                 </div>
+            </div>
+
+            <div className="mt-8 px-4">
+                <Pagination links={proposals.links} />
             </div>
         </div>
     );

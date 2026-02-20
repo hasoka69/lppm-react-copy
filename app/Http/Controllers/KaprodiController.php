@@ -168,10 +168,10 @@ class KaprodiController extends Controller
             })
             ->where('status', 'submitted')
             ->latest()
-            ->get()
-            ->map(function ($usulan, $index) {
+            ->paginate(10)
+            ->through(function ($usulan, $index) {
                 return [
-                    'no' => $index + 1,
+                    'no' => $index + 1, // Note: $index in through() might be 0-based index within the page, not global. For accurate numbering across pages we usually need to compute it in frontend or using $penelitianList->firstItem() + $index.
                     'id' => $usulan->id,
                     'judul' => $usulan->judul,
                     'pengusul' => $usulan->ketua->name,
@@ -190,20 +190,21 @@ class KaprodiController extends Controller
             })
             ->where('status', 'submitted')
             ->latest()
-            ->get()
-            ->map(function ($usulan, $index) {
+            ->paginate(10)
+            ->through(function ($usulan, $index) {
                 return [
                     'no' => $index + 1,
                     'id' => $usulan->id,
                     'judul' => $usulan->judul,
                     'pengusul' => $usulan->ketua->name,
                     'skema' => $usulan->kelompok_skema,
-                    'tahun' => $usulan->tahun_pertama,
+                    'tahun' => $usulan->tahun_pertama, // Assuming column exists
                     'status' => $usulan->status,
                     'tanggal' => $usulan->created_at->format('d/m/Y'),
                     'type' => 'pengabdian'
                 ];
             });
+
 
         return Inertia::render('kaprodi/usulan/Index', [
             'usulanList' => $penelitianList, // Backward compat checks

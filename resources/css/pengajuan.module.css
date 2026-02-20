@@ -110,8 +110,11 @@
 }
 
 .header {
-  padding: 3rem 2rem 2rem;
-  text-align: center;
+  padding: 2.5rem 0 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 2rem;
 }
 
 .title {
@@ -351,6 +354,12 @@
   border-top: 1px solid var(--border-color);
 }
 
+.headerAction {
+  display: flex;
+  justify-content: flex-end;
+  flex-shrink: 0;
+}
+
 .primaryButton {
   background: var(--primary);
   color: white;
@@ -470,6 +479,10 @@
 @media (max-width: 768px) {
   .header {
     padding: 2rem 1rem;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 1.5rem;
   }
 
   .title {

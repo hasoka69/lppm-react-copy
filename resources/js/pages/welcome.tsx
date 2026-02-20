@@ -89,7 +89,7 @@ const Welcome = ({ auth, pengumuman = [], berita = [] }: { auth: any, pengumuman
                 </span>
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-indigo-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               </Link>
-              <Link href="#panduan" className="px-8 py-4 bg-white/5 hover:bg-white/10 text-white border border-white/10 font-medium rounded-2xl backdrop-blur-sm transition-all hover:scale-105">
+              <Link href="/panduan" className="px-8 py-4 bg-white/5 hover:bg-white/10 text-white border border-white/10 font-medium rounded-2xl backdrop-blur-sm transition-all hover:scale-105">
                 Pelajari Panduan
               </Link>
             </div>
@@ -339,7 +339,7 @@ const Welcome = ({ auth, pengumuman = [], berita = [] }: { auth: any, pengumuman
       </section>
 
       {/* HOW IT WORKS */}
-      <section className="py-24 bg-slate-900 text-white" id="panduan">
+      <section className="py-24 bg-slate-900 text-white" id="cara-kerja">
         <div className="container mx-auto px-6">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">Bagaimana Cara Kerjanya?</h2>

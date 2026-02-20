@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import { Link, Head } from '@inertiajs/react';
 import Header from '@/components/Header';
 import Footer from '@/components/footer';
+import Pagination from '@/components/Pagination';
+import { PaginatedResponse } from '@/types';
 import {
     Home, ChevronRight, Eye, Users, FileText, Search, Filter,
     BookOpen, AlertCircle, CheckCircle2, Clock, CheckCircle, Download
 } from 'lucide-react';
-import { motion } from 'framer-motion';
 import { formatAcademicYear, getAcademicYearOptions } from '@/utils/academicYear';
 import { router, useForm } from '@inertiajs/react';
 import Select from 'react-select';
@@ -50,7 +51,7 @@ interface Usulan {
 }
 
 interface PageProps {
-    proposals: Usulan[];
+    proposals: PaginatedResponse<Usulan>;
     activeTab: string;
     filters?: {
         tahun_akademik?: string;
@@ -58,14 +59,14 @@ interface PageProps {
     }
 }
 
-export default function AdminPengabdianIndex({ proposals = [], activeTab = 'daftar', filters = {} }: PageProps) {
+export default function AdminPengabdianIndex({ proposals, activeTab = 'daftar', filters = {} }: PageProps) {
     const tabs = [
-        { id: 'daftar', label: 'Daftar Usulan', href: route('lppm.pengabdian.index') },
-        { id: 'perbaikan', label: 'Perbaikan Usulan', href: route('lppm.pengabdian.perbaikan') },
-        { id: 'laporan-kemajuan', label: 'Laporan Kemajuan', href: route('lppm.pengabdian.laporan-kemajuan') },
-        { id: 'catatan-harian', label: 'Catatan Harian', href: route('lppm.pengabdian.catatan-harian') },
-        { id: 'laporan-akhir', label: 'Laporan Akhir', href: route('lppm.pengabdian.laporan-akhir') },
-        { id: 'pengkinian-capaian', label: 'Pengkinian Capaian Luaran', href: route('lppm.pengabdian.pengkinian-luaran') },
+        { id: 'daftar', label: 'Daftar Usulan', icon: FileText, href: route('lppm.pengabdian.index') },
+        { id: 'perbaikan', label: 'Perbaikan Usulan', icon: AlertCircle, href: route('lppm.pengabdian.perbaikan') },
+        { id: 'laporan-kemajuan', label: 'Laporan Kemajuan', icon: Clock, href: route('lppm.pengabdian.laporan-kemajuan') },
+        { id: 'catatan-harian', label: 'Catatan Harian', icon: BookOpen, href: route('lppm.pengabdian.catatan-harian') },
+        { id: 'laporan-akhir', label: 'Laporan Akhir', icon: CheckCircle2, href: route('lppm.pengabdian.laporan-akhir') },
+        { id: 'pengkinian-capaian', label: 'Pengkinian Luaran', icon: CheckCircle, href: route('lppm.pengabdian.pengkinian-luaran') },
     ];
 
 
@@ -109,7 +110,7 @@ export default function AdminPengabdianIndex({ proposals = [], activeTab = 'daft
         handleFilterChange(searchQuery, option?.value);
     };
 
-    const filteredProposals = proposals;
+    const filteredProposals = proposals.data || [];
 
     const [isContractModalOpen, setIsContractModalOpen] = useState(false);
     const [selectedProposalForContract, setSelectedProposalForContract] = useState<Usulan | null>(null);
@@ -147,19 +148,21 @@ export default function AdminPengabdianIndex({ proposals = [], activeTab = 'daft
     const renderContent = () => {
         switch (activeTab) {
             case 'laporan-kemajuan':
-                return <LaporanKemajuanTable proposals={filteredProposals} />;
+                return <LaporanKemajuanTable proposals={filteredProposals} currentPage={proposals.current_page} perPage={proposals.per_page} />;
             case 'catatan-harian':
-                return <CatatanHarianTable proposals={filteredProposals} />;
+                return <CatatanHarianTable proposals={filteredProposals} currentPage={proposals.current_page} perPage={proposals.per_page} />;
             case 'laporan-akhir':
-                return <LaporanAkhirTable proposals={filteredProposals} />;
+                return <LaporanAkhirTable proposals={filteredProposals} currentPage={proposals.current_page} perPage={proposals.per_page} />;
             case 'pengkinian-capaian':
-                return <PengkinianLuaranTable proposals={filteredProposals} />;
+                return <PengkinianLuaranTable proposals={filteredProposals} currentPage={proposals.current_page} perPage={proposals.per_page} />;
             default:
                 return (
                     <DaftarUsulanTable
                         proposals={filteredProposals}
                         activeTab={activeTab}
                         onContractClick={openContractModal}
+                        currentPage={proposals.current_page}
+                        perPage={proposals.per_page}
                     />
                 );
         }
@@ -170,17 +173,17 @@ export default function AdminPengabdianIndex({ proposals = [], activeTab = 'daft
             <Head title="Admin LPPM - Monitoring Pengabdian" />
             <Header />
 
-            {/* Sub Navbar / Tabs */}
-            <div className="bg-white border-b border-gray-200 sticky top-[73px] z-20">
+            {/* Simple Sub Navbar */}
+            <div className="bg-white border-b border-gray-100">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex space-x-8 overflow-x-auto no-scrollbar">
                         {tabs.map((tab) => (
                             <Link
                                 key={tab.id}
                                 href={tab.href}
-                                className={`py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap transition-colors ${activeTab === tab.id
-                                    ? 'border-blue-600 text-blue-600'
-                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                className={`py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap transition-all ${activeTab === tab.id
+                                    ? 'border-emerald-600 text-emerald-600'
+                                    : 'border-transparent text-gray-400 hover:text-gray-600 hover:border-gray-200'
                                     }`}
                             >
                                 {tab.label}
@@ -190,54 +193,64 @@ export default function AdminPengabdianIndex({ proposals = [], activeTab = 'daft
                 </div>
             </div>
 
-            <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+            <div className="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
+
                 {/* Header Section */}
-                <div className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-6">
+                <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
-                        <h1 className="text-2xl font-bold text-gray-900 tracking-tight flex items-center gap-2 uppercase">
-                            <Users className="w-6 h-6 text-green-600" />
+                        <h1 className="text-xl font-bold text-gray-900">
                             {tabs.find(t => t.id === activeTab)?.label || 'Monitoring Pengabdian'}
                         </h1>
                         <p className="text-gray-500 text-sm mt-1">
-                            Monitoring data usulan pengabdian secara real-time.
+                            Monitoring data usulan pengabdian.
                         </p>
                     </div>
 
-                    <div className="flex items-center gap-4">
-                        <div className="w-48">
+                    <div className="flex flex-wrap items-center gap-4">
+                        <div className="w-full sm:w-56">
                             <Select
                                 options={getAcademicYearOptions().map(opt => ({ value: opt.value.toString(), label: opt.label }))}
                                 value={selectedYear}
                                 onChange={handleYearChange}
-                                placeholder="Pilih Tahun..."
+                                placeholder="Filter Tahun..."
                                 isClearable
+                                className="react-select-premium"
                                 styles={{
                                     control: (base) => ({
                                         ...base,
-                                        borderRadius: '0.75rem',
-                                        borderColor: '#e5e7eb',
-                                        padding: '0.1rem',
+                                        borderRadius: '1rem',
+                                        borderColor: '#f1f5f9',
+                                        backgroundColor: '#f8fafc',
+                                        padding: '0.2rem',
                                         fontSize: '0.875rem',
-                                        minHeight: '42px'
-                                    })
+                                        fontWeight: '600',
+                                        minHeight: '48px',
+                                        boxShadow: 'none',
+                                        '&:hover': { borderColor: '#e2e8f0' }
+                                    }),
+                                    menu: (base) => ({ ...base, borderRadius: '1rem', overflow: 'hidden', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' })
                                 }}
                             />
                         </div>
-                        <div className="relative group">
-                            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
+                        <div className="relative group w-full sm:w-72">
+                            <Search className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-500 transition-colors" />
                             <input
                                 type="text"
                                 placeholder="Cari judul atau ketua..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 onKeyDown={handleSearchKeyDown}
-                                className="bg-white border text-sm border-gray-200 rounded-xl py-2 pl-10 pr-4 w-64 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all"
+                                className="bg-slate-50 border border-slate-100 text-sm font-semibold rounded-2xl py-3.5 pl-12 pr-6 w-full focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none transition-all placeholder:text-slate-400 shadow-xs"
                             />
                         </div>
                     </div>
                 </div>
 
                 {renderContent()}
+
+                <div className="mt-12 flex justify-center pb-12">
+                    <Pagination links={proposals.links} />
+                </div>
             </div>
             {/* Contract Modal */}
             <Dialog open={isContractModalOpen} onOpenChange={setIsContractModalOpen}>
@@ -306,6 +319,7 @@ export default function AdminPengabdianIndex({ proposals = [], activeTab = 'daft
                     </form>
                 </DialogContent>
             </Dialog>
+
             <Footer />
         </div>
     );
@@ -313,62 +327,66 @@ export default function AdminPengabdianIndex({ proposals = [], activeTab = 'daft
 
 // --- SUB COMPONENTS FOR TABLES ---
 
-function DaftarUsulanTable({ proposals, activeTab, onContractClick }: { proposals: Usulan[], activeTab: string, onContractClick: (item: Usulan) => void }) {
+function DaftarUsulanTable({ proposals, activeTab, onContractClick, currentPage, perPage }: { proposals: Usulan[], activeTab: string, onContractClick: (item: Usulan) => void, currentPage: number, perPage: number }) {
+    const startingIndex = (currentPage - 1) * perPage;
     return (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="bg-white rounded-[2.5rem] shadow-sm border border-slate-100 overflow-hidden">
             <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
+                <table className="min-w-full divide-y divide-slate-100">
+                    <thead className="bg-slate-50/50">
                         <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Judul / Skema</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ketua / Prodi</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tahun</th>
-                            <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                            <th className="px-8 py-5 text-left text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">No</th>
+                            <th className="px-8 py-5 text-left text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Usulan / Skema</th>
+                            <th className="px-8 py-5 text-left text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Pelaksana</th>
+                            <th className="px-8 py-5 text-left text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Tahun</th>
+                            <th className="px-8 py-5 text-center text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Status</th>
+                            <th className="px-8 py-5 text-right text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Aksi</th>
                         </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+                    <tbody className="bg-white divide-y divide-slate-50">
                         {proposals.length === 0 ? (
                             <tr>
-                                <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
-                                    Belum ada data usulan pengabdian.
+                                <td colSpan={6} className="px-8 py-16 text-center">
+                                    <div className="flex flex-col items-center gap-3">
+                                        <div className="p-4 bg-slate-50 rounded-full text-slate-300">
+                                            <Search className="w-8 h-8" />
+                                        </div>
+                                        <p className="text-slate-400 font-bold text-sm">Belum ada data yang sesuai.</p>
+                                    </div>
                                 </td>
                             </tr>
                         ) : (
                             proposals.map((item, idx) => (
-                                <tr key={item.id} className="hover:bg-gray-50 transition">
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{idx + 1}</td>
-                                    <td className="px-6 py-4">
-                                        <div className="text-sm font-semibold text-gray-900 line-clamp-2">{item.judul}</div>
-                                        <div className="text-xs text-green-600 mt-1 inline-flex items-center px-2 py-0.5 rounded bg-green-50">
+                                <tr
+                                    key={item.id}
+                                    className="hover:bg-emerald-50/30 transition-all group"
+                                >
+                                    <td className="px-8 py-6 whitespace-nowrap text-sm font-bold text-slate-300">{startingIndex + idx + 1}</td>
+                                    <td className="px-8 py-6">
+                                        <div className="text-sm font-extrabold text-slate-800 line-clamp-2 leading-relaxed mb-2 group-hover:text-emerald-700 transition-colors uppercase tracking-tight">{item.judul}</div>
+                                        <div className="inline-flex items-center px-2.5 py-1 rounded-lg text-[10px] font-black tracking-widest bg-emerald-50 text-emerald-600 border border-emerald-100 uppercase">
                                             {item.skema}
                                         </div>
                                     </td>
-                                    <td className="px-6 py-4">
-                                        <div className="text-sm font-medium text-gray-900">{item.ketua}</div>
-                                        <div className="text-xs text-gray-500">{item.prodi}</div>
+                                    <td className="px-8 py-6">
+                                        <div className="text-sm font-bold text-slate-700">{item.ketua}</div>
+                                        <div className="text-xs font-semibold text-slate-400 mt-0.5">{item.prodi}</div>
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <td className="px-8 py-6 whitespace-nowrap text-sm font-bold text-slate-500">
                                         {formatAcademicYear(item.tahun_pertama || parseInt(item.tanggal.split('-')[0]))}
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-center">
-                                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black tracking-widest border
-                                            ${item.status === 'submitted' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' :
-                                                ['approved_prodi', 'reviewer_assigned', 'revision_dosen', 'resubmitted_revision'].includes(item.status) ? 'bg-blue-50 text-blue-700 border-blue-200' :
-                                                    item.status === 'reviewed_approved' ? 'bg-purple-50 text-purple-700 border-purple-200' :
-                                                        item.status === 'didanai' ? 'bg-green-50 text-green-700 border-green-200' :
-                                                            item.status === 'ditolak_akhir' || item.status === 'rejected_reviewer' ? 'bg-red-50 text-red-700 border-red-200' :
-                                                                'bg-gray-50 text-gray-700 border-gray-200'
-                                            }`}>
-                                            {item.status.toUpperCase().replace('_', ' ')}
-                                        </span>
+                                    <td className="px-8 py-6 whitespace-nowrap text-center">
+                                        <StatusBadge status={item.status} />
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        <div className="flex flex-col items-end gap-2">
-                                            <Link href={route('lppm.pengabdian.show', item.id)} className="text-blue-600 hover:text-blue-900 inline-flex items-center">
-                                                <Eye className="w-4 h-4 mr-1" /> Lihat Detail
+                                    <td className="px-8 py-6 whitespace-nowrap text-right">
+                                        <div className="flex flex-col items-end gap-2.5">
+                                            <Link
+                                                href={route('lppm.pengabdian.show', item.id)}
+                                                className="h-9 px-4 inline-flex items-center rounded-xl bg-slate-50 text-slate-600 hover:bg-emerald-600 hover:text-white text-xs font-bold transition-all shadow-sm group-hover:shadow-md"
+                                            >
+                                                <Eye className="w-3.5 h-3.5 mr-2" /> Detail Usulan
                                             </Link>
+
                                             {item.status === 'didanai' && (
                                                 <div className="flex items-center gap-2">
                                                     {item.nomor_kontrak ? (
@@ -376,13 +394,13 @@ function DaftarUsulanTable({ proposals, activeTab, onContractClick }: { proposal
                                                             <a
                                                                 href={route('lppm.kontrak.generate', { id: item.id, type: 'pengabdian' })}
                                                                 target="_blank"
-                                                                className="text-emerald-600 hover:text-emerald-800 text-xs inline-flex items-center font-bold px-2 py-1 bg-emerald-50 rounded border border-emerald-100"
+                                                                className="h-9 px-4 inline-flex items-center rounded-xl bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white text-xs font-black transition-all border border-emerald-100 uppercase tracking-wider"
                                                             >
-                                                                <Download className="w-3 h-3 mr-1" /> Kontrak
+                                                                <Download className="w-3.5 h-3.5 mr-2" /> Kontrak
                                                             </a>
                                                             <button
                                                                 onClick={() => onContractClick(item)}
-                                                                className="text-gray-400 hover:text-blue-600"
+                                                                className="p-2.5 rounded-xl bg-slate-50 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-all"
                                                                 title="Edit Nomor Kontrak"
                                                             >
                                                                 <FileText className="w-4 h-4" />
@@ -391,9 +409,9 @@ function DaftarUsulanTable({ proposals, activeTab, onContractClick }: { proposal
                                                     ) : (
                                                         <button
                                                             onClick={() => onContractClick(item)}
-                                                            className="text-white bg-blue-600 hover:bg-blue-700 text-xs inline-flex items-center font-bold px-3 py-1 rounded shadow-sm shadow-blue-200 transition-all"
+                                                            className="h-9 px-4 inline-flex items-center rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 text-xs font-black transition-all shadow-lg shadow-emerald-200 uppercase tracking-wider"
                                                         >
-                                                            <FileText className="w-3 h-3 mr-1" /> Buat Kontrak
+                                                            <FileText className="w-3.5 h-3.5 mr-2" /> Buat Kontrak
                                                         </button>
                                                     )}
                                                 </div>
@@ -410,54 +428,79 @@ function DaftarUsulanTable({ proposals, activeTab, onContractClick }: { proposal
     );
 }
 
-function LaporanKemajuanTable({ proposals }: { proposals: Usulan[] }) {
+function StatusBadge({ status }: { status: string }) {
+    const configs: Record<string, { bg: string, text: string, border: string }> = {
+        submitted: { bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200' },
+        approved_prodi: { bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200' },
+        reviewer_assigned: { bg: 'bg-cyan-50', text: 'text-cyan-700', border: 'border-cyan-200' },
+        resubmitted_revision: { bg: 'bg-indigo-50', text: 'text-indigo-700', border: 'border-indigo-200' },
+        reviewed_approved: { bg: 'bg-purple-50', text: 'text-purple-700', border: 'border-purple-200' },
+        didanai: { bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200' },
+        ditolak_akhir: { bg: 'bg-rose-50', text: 'text-rose-700', border: 'border-rose-200' },
+        rejected_reviewer: { bg: 'bg-rose-50', text: 'text-rose-700', border: 'border-rose-200' }
+    };
+
+    const config = configs[status] || { bg: 'bg-slate-50', text: 'text-slate-700', border: 'border-slate-200' };
+
     return (
-        <div className="bg-white rounded-[2.5rem] shadow-sm border border-gray-100 overflow-hidden">
+        <span className={`inline-flex items-center px-4 py-1.5 rounded-full text-[10px] font-black tracking-widest border uppercase ${config.bg} ${config.text} ${config.border} shadow-sm`}>
+            {status.replace('_', ' ')}
+        </span>
+    );
+}
+
+function LaporanKemajuanTable({ proposals, currentPage, perPage }: { proposals: Usulan[], currentPage: number, perPage: number }) {
+    const startingIndex = (currentPage - 1) * perPage;
+    return (
+        <div className="bg-white rounded-[2.5rem] shadow-sm border border-slate-100 overflow-hidden">
             <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                     <thead>
-                        <tr className="bg-gray-50/50 border-b border-gray-100">
-                            <th className="px-6 py-5 text-[11px] font-bold text-gray-500 uppercase tracking-wider w-16 text-center">No</th>
-                            <th className="px-6 py-5 text-[11px] font-bold text-gray-500 uppercase tracking-wider">Ketua Peneliti</th>
-                            <th className="px-6 py-5 text-[11px] font-bold text-gray-500 uppercase tracking-wider">Judul Pengabdian</th>
-                            <th className="px-6 py-5 text-[11px] font-bold text-gray-500 uppercase tracking-wider">Tahun</th>
-                            <th className="px-6 py-5 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center">Status Laporan</th>
-                            <th className="px-6 py-5 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center">Aksi</th>
+                        <tr className="bg-slate-50/50 border-b border-slate-100">
+                            <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] w-16 text-center">No</th>
+                            <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Pelaksana</th>
+                            <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Judul Pengabdian</th>
+                            <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Tahun</th>
+                            <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-center">Status Laporan</th>
+                            <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-center">Aksi</th>
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-50">
+                    <tbody className="divide-y divide-slate-50">
                         {proposals.length === 0 ? (
-                            <tr><td colSpan={6} className="px-6 py-12 text-center text-gray-400 italic">Tidak ada data.</td></tr>
+                            <tr><td colSpan={6} className="px-8 py-16 text-center text-slate-400 italic font-bold">Tidak ada data.</td></tr>
                         ) : proposals.map((usulan, index) => (
-                            <tr key={usulan.id} className="hover:bg-green-50/30 transition-colors">
-                                <td className="px-6 py-6 text-sm text-gray-400 font-medium text-center">{index + 1}</td>
-                                <td className="px-6 py-6">
+                            <tr
+                                key={usulan.id}
+                                className="hover:bg-emerald-50/30 transition-colors group"
+                            >
+                                <td className="px-8 py-8 text-sm text-slate-300 font-bold text-center">{startingIndex + index + 1}</td>
+                                <td className="px-8 py-8">
                                     <div className="flex flex-col">
-                                        <span className="text-sm font-bold text-gray-900">{usulan.ketua}</span>
-                                        <span className="text-xs text-gray-500">{usulan.prodi}</span>
+                                        <span className="text-sm font-extrabold text-slate-800">{usulan.ketua}</span>
+                                        <span className="text-xs font-semibold text-slate-400 mt-1">{usulan.prodi}</span>
                                     </div>
                                 </td>
-                                <td className="px-6 py-6">
-                                    <p className="text-sm text-gray-800 font-semibold leading-relaxed line-clamp-2">{usulan.judul}</p>
-                                    <span className="text-[10px] uppercase font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded border border-green-100 mt-1 inline-block">{usulan.skema}</span>
+                                <td className="px-8 py-8">
+                                    <p className="text-sm text-slate-700 font-bold leading-relaxed line-clamp-2 uppercase tracking-tight">{usulan.judul}</p>
+                                    <span className="text-[10px] uppercase font-black tracking-widest text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-100 mt-2 inline-block leading-none">{usulan.skema}</span>
                                 </td>
-                                <td className="px-6 py-6 text-sm text-gray-500">
+                                <td className="px-8 py-8 text-sm font-bold text-slate-500">
                                     {formatAcademicYear(usulan.tahun_pertama)}
                                 </td>
-                                <td className="px-6 py-6 text-center">
+                                <td className="px-8 py-8 text-center">
                                     {!usulan.report || usulan.report.status === 'Draft' ? (
-                                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 uppercase border border-amber-100">
-                                            Draft / Belum
+                                        <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[10px] font-black bg-amber-50 text-amber-700 uppercase border border-amber-100 tracking-widest leading-none">
+                                            BELUM SELESAI
                                         </span>
                                     ) : (
-                                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 uppercase border border-emerald-100">
-                                            <CheckCircle2 className="w-3 h-3" /> Submitted
+                                        <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[10px] font-black bg-emerald-50 text-emerald-700 uppercase border border-emerald-100 tracking-widest leading-none">
+                                            <CheckCircle2 className="w-3.5 h-3.5" /> SUBMITTED
                                         </span>
                                     )}
                                 </td>
-                                <td className="px-6 py-6 text-center">
-                                    <Link href={route('lppm.pengabdian.laporan-kemajuan.show', usulan.id)} className="text-blue-600 hover:text-blue-800 font-bold text-xs inline-flex items-center">
-                                        <Eye className="w-3 h-3 mr-1" /> Detail
+                                <td className="px-8 py-8 text-center">
+                                    <Link href={route('lppm.pengabdian.laporan-kemajuan.show', usulan.id)} className="h-9 px-5 inline-flex items-center rounded-xl bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white text-[10px] font-black uppercase tracking-widest transition-all shadow-sm">
+                                        <Eye className="w-3.5 h-3.5 mr-2" /> Detail
                                     </Link>
                                 </td>
                             </tr>
@@ -469,53 +512,57 @@ function LaporanKemajuanTable({ proposals }: { proposals: Usulan[] }) {
     );
 }
 
-function LaporanAkhirTable({ proposals }: { proposals: Usulan[] }) {
+function LaporanAkhirTable({ proposals, currentPage, perPage }: { proposals: Usulan[], currentPage: number, perPage: number }) {
+    const startingIndex = (currentPage - 1) * perPage;
     return (
-        <div className="bg-white rounded-[2.5rem] shadow-sm border border-gray-100 overflow-hidden">
+        <div className="bg-white rounded-[2.5rem] shadow-sm border border-slate-100 overflow-hidden">
             <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                     <thead>
-                        <tr className="bg-gray-50/50 border-b border-gray-100">
-                            <th className="px-6 py-5 text-[11px] font-bold text-gray-500 uppercase tracking-wider w-16 text-center">No</th>
-                            <th className="px-6 py-5 text-[11px] font-bold text-gray-500 uppercase tracking-wider">Ketua Peneliti</th>
-                            <th className="px-6 py-5 text-[11px] font-bold text-gray-500 uppercase tracking-wider">Judul Pengabdian</th>
-                            <th className="px-6 py-5 text-[11px] font-bold text-gray-500 uppercase tracking-wider">Tahun</th>
-                            <th className="px-6 py-5 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center">Status Laporan</th>
-                            <th className="px-6 py-5 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center">Aksi</th>
+                        <tr className="bg-slate-50/50 border-b border-slate-100">
+                            <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] w-16 text-center">No</th>
+                            <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Pelaksana</th>
+                            <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Judul Pengabdian</th>
+                            <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Tahun</th>
+                            <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-center">Status Laporan</th>
+                            <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-center">Aksi</th>
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-50">
+                    <tbody className="divide-y divide-slate-50">
                         {proposals.length === 0 ? (
-                            <tr><td colSpan={6} className="px-6 py-12 text-center text-gray-400 italic">Tidak ada data.</td></tr>
+                            <tr><td colSpan={6} className="px-8 py-16 text-center text-slate-400 italic font-bold">Tidak ada data.</td></tr>
                         ) : proposals.map((usulan, index) => (
-                            <tr key={usulan.id} className="hover:bg-green-50/30 transition-colors">
-                                <td className="px-6 py-6 text-sm text-gray-400 font-medium text-center">{index + 1}</td>
-                                <td className="px-6 py-6">
+                            <tr
+                                key={usulan.id}
+                                className="hover:bg-emerald-50/30 transition-colors group"
+                            >
+                                <td className="px-8 py-8 text-sm text-slate-300 font-bold text-center">{startingIndex + index + 1}</td>
+                                <td className="px-8 py-8">
                                     <div className="flex flex-col">
-                                        <span className="text-sm font-bold text-gray-900">{usulan.ketua}</span>
-                                        <span className="text-xs text-gray-500">{usulan.prodi}</span>
+                                        <span className="text-sm font-extrabold text-slate-800">{usulan.ketua}</span>
+                                        <span className="text-xs font-semibold text-slate-400 mt-1">{usulan.prodi}</span>
                                     </div>
                                 </td>
-                                <td className="px-6 py-6">
-                                    <p className="text-sm text-gray-800 font-semibold leading-relaxed line-clamp-2">{usulan.judul}</p>
+                                <td className="px-8 py-8">
+                                    <p className="text-sm text-slate-700 font-bold leading-relaxed line-clamp-2 uppercase tracking-tight">{usulan.judul}</p>
                                 </td>
-                                <td className="px-6 py-6 text-sm text-gray-500">
+                                <td className="px-8 py-8 text-sm font-bold text-slate-500">
                                     {formatAcademicYear(usulan.tahun_pertama)}
                                 </td>
-                                <td className="px-6 py-6 text-center">
+                                <td className="px-8 py-8 text-center">
                                     {!usulan.report || usulan.report.status === 'Draft' ? (
-                                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 uppercase border border-amber-100">
-                                            Draft / Belum
+                                        <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[10px] font-black bg-amber-50 text-amber-700 uppercase border border-amber-100 tracking-widest leading-none">
+                                            BELUM SELESAI
                                         </span>
                                     ) : (
-                                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 uppercase border border-emerald-100">
-                                            <CheckCircle2 className="w-3 h-3" /> Submitted
+                                        <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[10px] font-black bg-emerald-50 text-emerald-700 uppercase border border-emerald-100 tracking-widest leading-none">
+                                            <CheckCircle2 className="w-3.5 h-3.5" /> SUBMITTED
                                         </span>
                                     )}
                                 </td>
-                                <td className="px-6 py-6 text-center">
-                                    <Link href={route('lppm.pengabdian.laporan-akhir.show', usulan.id)} className="text-blue-600 hover:text-blue-800 font-bold text-xs inline-flex items-center">
-                                        <Eye className="w-3 h-3 mr-1" /> Detail
+                                <td className="px-8 py-8 text-center">
+                                    <Link href={route('lppm.pengabdian.laporan-akhir.show', usulan.id)} className="h-9 px-5 inline-flex items-center rounded-xl bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white text-[10px] font-black uppercase tracking-widest transition-all shadow-sm">
+                                        <Eye className="w-3.5 h-3.5 mr-2" /> Detail
                                     </Link>
                                 </td>
                             </tr>
@@ -527,67 +574,68 @@ function LaporanAkhirTable({ proposals }: { proposals: Usulan[] }) {
     );
 }
 
-function CatatanHarianTable({ proposals }: { proposals: Usulan[] }) {
+function CatatanHarianTable({ proposals, currentPage, perPage }: { proposals: Usulan[], currentPage: number, perPage: number }) {
+    const startingIndex = (currentPage - 1) * perPage;
     return (
-        <div className="bg-white rounded-[2.5rem] shadow-sm border border-gray-100 overflow-hidden">
+        <div className="bg-white rounded-[2.5rem] shadow-sm border border-slate-100 overflow-hidden">
             <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                     <thead>
-                        <tr className="bg-gray-50/50 border-b border-gray-100">
-                            <th className="px-6 py-5 text-[11px] font-bold text-gray-500 uppercase tracking-wider w-16 text-center">No</th>
-                            <th className="px-6 py-5 text-[11px] font-bold text-gray-500 uppercase tracking-wider">Ketua Peneliti</th>
-                            <th className="px-6 py-5 text-[11px] font-bold text-gray-500 uppercase tracking-wider">Judul & Anggaran</th>
-                            <th className="px-6 py-5 text-[11px] font-bold text-gray-500 uppercase tracking-wider">Tahun</th>
-                            <th className="px-6 py-5 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center">Progress</th>
-                            <th className="px-6 py-5 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center">Aksi</th>
+                        <tr className="bg-slate-50/50 border-b border-slate-100">
+                            <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] w-16 text-center">No</th>
+                            <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Pelaksana</th>
+                            <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Judul & Anggaran</th>
+                            <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Tahun</th>
+                            <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-center">Progress</th>
+                            <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-center">Aksi</th>
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-50">
+                    <tbody className="divide-y divide-slate-50">
                         {proposals.length === 0 ? (
-                            <tr><td colSpan={6} className="px-6 py-12 text-center text-gray-400 italic">Tidak ada data.</td></tr>
+                            <tr><td colSpan={6} className="px-8 py-16 text-center text-slate-400 italic font-bold">Tidak ada data.</td></tr>
                         ) : proposals.map((item, index) => (
-                            <tr key={item.id} className="hover:bg-green-50/20 transition">
-                                <td className="px-6 py-6 text-sm text-gray-400 font-bold text-center">{index + 1}</td>
-                                <td className="px-6 py-6">
+                            <tr
+                                key={item.id}
+                                className="hover:bg-emerald-50/30 transition shadow-emerald-500/10 group"
+                            >
+                                <td className="px-8 py-8 text-sm text-slate-300 font-bold text-center">{startingIndex + index + 1}</td>
+                                <td className="px-8 py-8">
                                     <div className="flex flex-col">
-                                        <span className="text-sm font-bold text-gray-900">{item.ketua}</span>
-                                        <span className="text-xs text-gray-500">{item.prodi}</span>
+                                        <span className="text-sm font-extrabold text-slate-800">{item.ketua}</span>
+                                        <span className="text-xs font-semibold text-slate-400 mt-1">{item.prodi}</span>
                                     </div>
                                 </td>
-                                <td className="px-6 py-6 font-medium">
-                                    <div className="space-y-1">
-                                        <p className="text-sm text-gray-900 leading-snug line-clamp-2 font-semibold uppercase">{item.judul}</p>
-                                        <div className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-green-50 text-green-700 rounded-md text-[10px] font-bold border border-green-100/50">
-                                            DANA DISETUJUI: Rp {new Intl.NumberFormat('id-ID').format(item.dana_disetujui || 0)}
+                                <td className="px-8 py-8 font-medium">
+                                    <div className="space-y-2">
+                                        <p className="text-sm text-slate-700 leading-snug line-clamp-2 font-bold uppercase tracking-tight">{item.judul}</p>
+                                        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-lg text-[10px] font-black tracking-widest border border-emerald-100 leading-none">
+                                            ANGGARAN: Rp {new Intl.NumberFormat('id-ID').format(item.dana_disetujui || 0)}
                                         </div>
                                     </div>
                                 </td>
-                                <td className="px-6 py-6 text-sm text-gray-500">
+                                <td className="px-8 py-8 text-sm font-bold text-slate-500">
                                     {formatAcademicYear(item.tahun_pertama)}
                                 </td>
-                                <td className="px-6 py-6">
-                                    <div className="space-y-3 min-w-[150px]">
-                                        <div className="flex justify-between text-[10px] font-bold uppercase">
-                                            <span className="text-gray-400">Total Log</span>
-                                            <span className="text-blue-600">{item.total_logs || 0} ENTRI</span>
+                                <td className="px-8 py-8">
+                                    <div className="space-y-3 min-w-[180px]">
+                                        <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-slate-400">
+                                            <span>Total Entri</span>
+                                            <span className="text-emerald-600 font-black">{item.total_logs || 0}</span>
                                         </div>
-                                        <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                                            <motion.div
-                                                initial={{ width: 0 }}
-                                                animate={{ width: `${item.last_percentage || 0}%` }}
-                                                transition={{ duration: 1, ease: "easeOut" }}
-                                                className="h-full bg-gradient-to-r from-green-500 to-emerald-600 rounded-full"
+                                        <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden border border-slate-50 shadow-inner">
+                                            <div
+                                                className="h-full bg-gradient-to-r from-emerald-500 to-teal-600 rounded-full shadow-lg shadow-emerald-500/20"
                                             />
                                         </div>
-                                        <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-tight">
-                                            <span className="text-gray-400">Capaian</span>
-                                            <span className="text-emerald-600 font-extrabold">{item.last_percentage || 0}%</span>
+                                        <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-tighter">
+                                            <span className="text-slate-400">Capaian</span>
+                                            <span className="text-emerald-600 font-black text-xs">{item.last_percentage || 0}%</span>
                                         </div>
                                     </div>
                                 </td>
-                                <td className="px-6 py-6 text-center">
-                                    <Link href={route('lppm.pengabdian.catatan-harian.show', item.id)} className="text-blue-600 hover:text-blue-800 font-bold text-xs inline-flex items-center">
-                                        <Eye className="w-3 h-3 mr-1" /> Log
+                                <td className="px-8 py-8 text-center text-center">
+                                    <Link href={route('lppm.pengabdian.catatan-harian.show', item.id)} className="h-9 px-5 inline-flex items-center rounded-xl bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white text-[10px] font-black uppercase tracking-widest transition-all shadow-sm">
+                                        <Eye className="w-3.5 h-3.5 mr-2" /> Lihat Log
                                     </Link>
                                 </td>
                             </tr>
@@ -599,46 +647,50 @@ function CatatanHarianTable({ proposals }: { proposals: Usulan[] }) {
     );
 }
 
-function PengkinianLuaranTable({ proposals }: { proposals: Usulan[] }) {
+function PengkinianLuaranTable({ proposals, currentPage, perPage }: { proposals: Usulan[], currentPage: number, perPage: number }) {
+    const startingIndex = (currentPage - 1) * perPage;
     return (
-        <div className="bg-white rounded-[2.5rem] shadow-sm border border-gray-100 overflow-hidden">
+        <div className="bg-white rounded-[2.5rem] shadow-sm border border-slate-100 overflow-hidden">
             <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                     <thead>
-                        <tr className="bg-gray-50/50 border-b border-gray-100">
-                            <th className="px-6 py-5 text-[11px] font-bold text-gray-500 uppercase tracking-wider w-16 text-center">No</th>
-                            <th className="px-6 py-5 text-[11px] font-bold text-gray-500 uppercase tracking-wider">Ketua Peneliti</th>
-                            <th className="px-6 py-5 text-[11px] font-bold text-gray-500 uppercase tracking-wider">Judul Pengabdian</th>
-                            <th className="px-6 py-5 text-[11px] font-bold text-gray-500 uppercase tracking-wider">Tahun</th>
-                            <th className="px-6 py-5 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center">Aksi</th>
+                        <tr className="bg-slate-50/50 border-b border-slate-100">
+                            <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] w-16 text-center">No</th>
+                            <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Pelaksana</th>
+                            <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Judul Pengabdian</th>
+                            <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Tahun</th>
+                            <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-center">Aksi</th>
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-50">
+                    <tbody className="divide-y divide-slate-50">
                         {proposals.length === 0 ? (
-                            <tr><td colSpan={5} className="px-6 py-12 text-center text-gray-400 italic">Tidak ada data.</td></tr>
+                            <tr><td colSpan={5} className="px-8 py-16 text-center text-slate-400 italic font-bold tracking-widest">TIDAK ADA DATA.</td></tr>
                         ) : proposals.map((usulan, index) => (
-                            <tr key={usulan.id} className="hover:bg-green-50/30 transition-all duration-300">
-                                <td className="px-6 py-6 text-sm text-gray-400 font-bold text-center">{index + 1}</td>
-                                <td className="px-6 py-6">
+                            <tr
+                                key={usulan.id}
+                                className="hover:bg-emerald-50/30 transition-all duration-300 group"
+                            >
+                                <td className="px-8 py-8 text-sm text-slate-300 font-bold text-center">{startingIndex + index + 1}</td>
+                                <td className="px-8 py-8">
                                     <div className="flex flex-col">
-                                        <span className="text-sm font-bold text-gray-900">{usulan.ketua}</span>
-                                        <span className="text-xs text-gray-500">{usulan.prodi}</span>
+                                        <span className="text-sm font-extrabold text-slate-800">{usulan.ketua}</span>
+                                        <span className="text-xs font-semibold text-slate-400 mt-1">{usulan.prodi}</span>
                                     </div>
                                 </td>
-                                <td className="px-6 py-6">
-                                    <div className="space-y-1">
-                                        <p className="text-sm text-gray-900 font-bold line-clamp-2">{usulan.judul}</p>
-                                        <span className="px-2 py-0.5 bg-emerald-50 text-emerald-600 text-[10px] font-bold rounded border border-emerald-100 uppercase">
+                                <td className="px-8 py-8">
+                                    <div className="space-y-2">
+                                        <p className="text-sm text-slate-700 font-bold line-clamp-2 uppercase tracking-tight leading-relaxed">{usulan.judul}</p>
+                                        <span className="px-2.5 py-1 bg-emerald-50 text-emerald-600 text-[10px] font-black tracking-widest rounded-lg border border-emerald-100 uppercase leading-none inline-block">
                                             {usulan.skema}
                                         </span>
                                     </div>
                                 </td>
-                                <td className="px-6 py-6 text-sm text-gray-500">
+                                <td className="px-8 py-8 text-sm font-bold text-slate-500">
                                     {formatAcademicYear(usulan.tahun_pertama)}
                                 </td>
-                                <td className="px-6 py-6 text-center">
-                                    <Link href={route('lppm.pengabdian.pengkinian-luaran.show', usulan.id)} className="text-blue-600 hover:text-blue-800 font-bold text-xs inline-flex items-center">
-                                        <Eye className="w-3 h-3 mr-1" /> Lihat Luaran
+                                <td className="px-8 py-8 text-center text-center">
+                                    <Link href={route('lppm.pengabdian.pengkinian-luaran.show', usulan.id)} className="h-9 px-5 inline-flex items-center rounded-xl bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white text-[10px] font-black uppercase tracking-widest transition-all shadow-sm">
+                                        <Eye className="w-3.5 h-3.5 mr-2" /> Detail Luaran
                                     </Link>
                                 </td>
                             </tr>

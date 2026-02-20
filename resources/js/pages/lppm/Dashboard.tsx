@@ -17,6 +17,10 @@ import {
     AreaChart,
 } from "recharts";
 import { FileText, Users, HandHeart, Banknote, ArrowUpRight, Clock, CheckCircle2, XCircle, AlertCircle } from "lucide-react";
+import Select from 'react-select';
+import { formatAcademicYear, getAcademicYearOptions } from '@/utils/academicYear';
+import { router } from '@inertiajs/react';
+import { useState } from 'react';
 
 // --- Types ---
 
@@ -44,6 +48,9 @@ interface DashboardProps {
         penelitian: Record<string, number>;
         pengabdian: Record<string, number>;
     };
+    filters?: {
+        tahun_akademik?: string;
+    }
 }
 
 // --- Components ---
@@ -99,7 +106,8 @@ const ActivityItem = ({ activity }: { activity: DashboardProps['activities'][0] 
     );
 };
 
-export default function DashboardAdmin({ stats, chartData, activities, statusDist }: DashboardProps) {
+export default function DashboardAdmin(props: DashboardProps) {
+    const { stats, chartData, activities, statusDist } = props;
 
     // Format IDR for funds
     const formatCurrency = (amount: number) => {
@@ -117,6 +125,25 @@ export default function DashboardAdmin({ stats, chartData, activities, statusDis
         { name: 'Pengabdian', value: stats.pengabdian, color: '#10b981' },
     ];
     const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444'];
+
+    // -- Filter Logic --
+    const yearOptions = getAcademicYearOptions();
+    const [selectedYear, setSelectedYear] = useState<{ value: number, label: string } | null>(
+        props.filters?.tahun_akademik ? {
+            value: parseInt(props.filters.tahun_akademik),
+            label: formatAcademicYear(props.filters.tahun_akademik)
+        } : null
+    );
+
+    const handleFilterChange = (year: string | undefined) => {
+        router.get(route(route().current() as string), {
+            tahun_akademik: year
+        }, {
+            preserveState: true,
+            preserveScroll: true,
+            replace: true
+        });
+    };
 
 
     return (
@@ -170,7 +197,7 @@ export default function DashboardAdmin({ stats, chartData, activities, statusDis
                         value={formatCurrency(stats.total_funds)}
                         icon={Banknote}
                         color="bg-amber-500"
-                        trend="FY 2025"
+                        trend="Total"
                     />
                 </div>
 
@@ -180,9 +207,31 @@ export default function DashboardAdmin({ stats, chartData, activities, statusDis
                     <div className="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                         <div className="flex justify-between items-center mb-6">
                             <h3 className="font-bold text-lg text-gray-800">Tren Usulan Masuk</h3>
-                            <select className="text-xs border-gray-300 rounded-lg text-gray-500 focus:ring-blue-500 bg-gray-50">
-                                <option>6 Bulan Terakhir</option>
-                            </select>
+                            <div className="w-64">
+                                <Select
+                                    options={yearOptions}
+                                    value={selectedYear}
+                                    onChange={(option) => {
+                                        setSelectedYear(option);
+                                        handleFilterChange(option?.value.toString());
+                                    }}
+                                    placeholder="Filter Tahun Akademik..."
+                                    className="text-sm"
+                                    isClearable
+                                    styles={{
+                                        control: (base) => ({
+                                            ...base,
+                                            borderColor: '#e5e7eb',
+                                            borderRadius: '0.5rem',
+                                            padding: '2px',
+                                            boxShadow: 'none',
+                                            '&:hover': {
+                                                borderColor: '#d1d5db'
+                                            }
+                                        })
+                                    }}
+                                />
+                            </div>
                         </div>
                         <div className="h-80">
                             <ResponsiveContainer width="100%" height="100%">

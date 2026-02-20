@@ -436,12 +436,12 @@ function OutputRow({ output, index, isAdminView = false }: { output: any, index:
                                     <div className="flex-1 overflow-y-auto p-10 space-y-8">
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                             <div className="md:col-span-2 space-y-2">
-                                                <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">Judul Realisasi / Artikel / Produk</label>
+                                                <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">Judul Artikel</label>
                                                 <textarea
                                                     className="w-full bg-gray-50 border-gray-100 rounded-xl focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500 py-4 px-6 text-sm font-medium min-h-[100px] transition-all"
                                                     value={data.judul_realisasi}
                                                     onChange={e => setData('judul_realisasi', e.target.value)}
-                                                    placeholder="Masukkan judul realisasi lengkap..."
+                                                    placeholder="Masukkan judul artikel..."
                                                     readOnly={isAdminView}
                                                 />
                                             </div>
@@ -471,21 +471,20 @@ function OutputRow({ output, index, isAdminView = false }: { output: any, index:
                                                     disabled={isAdminView}
                                                 >
                                                     <option value="">-- Pilih Peran --</option>
-                                                    <option value="First Author">First Author</option>
-                                                    <option value="Corresponding Author">Corresponding Author</option>
-                                                    <option value="Co-Author">Co-Author</option>
-                                                    <option value="Member">Member</option>
+                                                    <option value="Penulis Pertama">Penulis Pertama</option>
+                                                    <option value="Penulis Pendamping">Penulis Pendamping</option>
+                                                    <option value="Penulis Korespondensi">Penulis Korespondensi</option>
                                                 </select>
                                             </div>
 
                                             <div className="space-y-2">
-                                                <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">Nama Jurnal / Venue / Media</label>
+                                                <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">Nama Jurnal</label>
                                                 <input
                                                     type="text"
                                                     className="w-full bg-gray-50 border-gray-100 rounded-xl py-3.5 px-6 text-sm font-bold focus:ring-4 focus:ring-blue-500/5"
                                                     value={data.nama_jurnal}
                                                     onChange={e => setData('nama_jurnal', e.target.value)}
-                                                    placeholder="Nama Jurnal/Venue..."
+                                                    placeholder="Nama Jurnal..."
                                                     readOnly={isAdminView}
                                                 />
                                             </div>

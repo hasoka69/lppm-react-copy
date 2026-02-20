@@ -103,14 +103,27 @@ class ReviewerController extends Controller
     public function index()
     {
         $user = Auth::user();
+        $year = request('tahun_akademik');
+        $search = request('search');
 
         // 1. Penelitian
         $usulanPenelitian = UsulanPenelitian::with(['user.dosen'])
-            ->where('reviewer_id', '=', $user->id, 'and')
+            ->where('reviewer_id', '=', $user->id)
             ->whereIn('status', ['reviewer_assigned'])
+            ->when($year, function ($query, $year) {
+                return $query->where('tahun_pertama', $year);
+            })
+            ->when($search, function ($query, $search) {
+                return $query->where(function ($q) use ($search) {
+                    $q->where('judul', 'like', "%{$search}%")
+                        ->orWhereHas('user', function ($q) use ($search) {
+                            $q->where('name', 'like', "%{$search}%");
+                        });
+                });
+            })
             ->latest()
-            ->get()
-            ->map(fn($item) => [
+            ->paginate(10)
+            ->through(fn($item) => [
                 'id' => $item->id,
                 'judul' => $item->judul,
                 'ketua' => $item->user->name,
@@ -124,11 +137,22 @@ class ReviewerController extends Controller
 
         // 2. Pengabdian
         $usulanPengabdian = \App\Models\UsulanPengabdian::with(['ketua.dosen'])
-            ->where('reviewer_id', '=', $user->id, 'and')
+            ->where('reviewer_id', '=', $user->id)
             ->whereIn('status', ['reviewer_assigned'])
+            ->when($year, function ($query, $year) {
+                return $query->where('tahun_pertama', $year);
+            })
+            ->when($search, function ($query, $search) {
+                return $query->where(function ($q) use ($search) {
+                    $q->where('judul', 'like', "%{$search}%")
+                        ->orWhereHas('ketua', function ($q) use ($search) {
+                            $q->where('name', 'like', "%{$search}%");
+                        });
+                });
+            })
             ->latest()
-            ->get()
-            ->map(fn($item) => [
+            ->paginate(10)
+            ->through(fn($item) => [
                 'id' => $item->id,
                 'judul' => $item->judul,
                 'ketua' => $item->ketua->name,
@@ -140,16 +164,10 @@ class ReviewerController extends Controller
                 'type' => 'pengabdian'
             ]);
 
-        // Filter by Year if requested
-        if ($year = request('tahun_akademik')) {
-            $usulanPenelitian = $usulanPenelitian->where('tahun_pelaksanaan', $year)->values();
-            $usulanPengabdian = $usulanPengabdian->where('tahun_pelaksanaan', $year)->values();
-        }
-
         return Inertia::render('reviewer/usulan/Index', [
             'proposals' => $usulanPenelitian,
             'pengabdianProposals' => $usulanPengabdian,
-            'filters' => request()->all(['tahun_akademik'])
+            'filters' => request()->all(['tahun_akademik', 'search'])
         ]);
     }
 

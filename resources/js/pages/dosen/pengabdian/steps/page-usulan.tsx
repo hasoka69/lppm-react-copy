@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { usePage } from '@inertiajs/react';
 import { PageProps as InertiaPageProps } from '@inertiajs/core';
 import styles from '../../../../../css/pengajuan.module.css';
@@ -14,6 +14,9 @@ import { Button } from "@/components/ui/button"
 import { MoreHorizontal, Edit, Trash, Eye, Plus, FileText, Calendar, User, Search, Filter, Download } from "lucide-react"
 import { motion } from 'framer-motion';
 import { formatAcademicYear, getCurrentAcademicYearCode, getAcademicYearOptions } from '@/utils/academicYear';
+import Select from 'react-select';
+import Pagination from '@/components/Pagination';
+import { PaginatedResponse } from '@/types';
 
 export interface Usulan {
     no: number;
@@ -27,7 +30,7 @@ export interface Usulan {
 }
 
 interface PageProps extends InertiaPageProps {
-    usulanList: Usulan[];
+    usulanList: PaginatedResponse<Usulan>;
 }
 
 interface PageUsulanProps {
@@ -35,7 +38,7 @@ interface PageUsulanProps {
     onEditUsulan?: (usulan: Usulan) => void;
     onDeleteUsulan?: (id: number) => void;
     onViewUsulan?: (usulan: Usulan) => void;
-    usulanList?: Usulan[];
+    usulanList?: PaginatedResponse<Usulan>;
     title?: string;
     isPerbaikanView?: boolean;
 }
@@ -50,7 +53,10 @@ const PageUsulan: React.FC<PageUsulanProps> = ({
     isPerbaikanView = false
 }) => {
     const { props } = usePage<PageProps>();
-    const usulanList = propUsulanList || props.usulanList || [];
+    const usulanList = propUsulanList || props.usulanList;
+
+    const items = usulanList?.data || [];
+    const links = usulanList?.links || [];
 
     const getStatusStyle = (status: string) => {
         const statusMap: Record<string, { label: string; bg: string; color: string; dot: string }> = {
@@ -67,54 +73,101 @@ const PageUsulan: React.FC<PageUsulanProps> = ({
         return statusMap[status] || { label: status, bg: '#f1f5f9', color: '#475569', dot: '#94a3b8' };
     };
 
-    const [selectedYear, setSelectedYear] = React.useState<number>(getCurrentAcademicYearCode());
-    const yearOptions = getAcademicYearOptions();
+    const [selectedYear, setSelectedYear] = useState<number | null>(null);
+    const [searchQuery, setSearchQuery] = useState<string>('');
 
-    const filteredUsulanList = usulanList.filter(u => u.tahun_pelaksanaan === selectedYear);
+    const yearOptions = [
+        { value: null, label: 'Semua Tahun Akademik' },
+        ...getAcademicYearOptions().map(opt => ({ value: opt.value, label: opt.label }))
+    ];
+
+    const filteredUsulanList = items.filter(u => {
+        const matchesYear = selectedYear ? u.tahun_pelaksanaan === selectedYear : true;
+        const matchesSearch = u.judul.toLowerCase().includes(searchQuery.toLowerCase());
+        return matchesYear && matchesSearch;
+    });
+
+    const customSelectStyles = {
+        control: (provided: any, state: any) => ({
+            ...provided,
+            border: '1px solid #e2e8f0',
+            borderRadius: '0.75rem',
+            padding: '2px 8px',
+            fontSize: '0.875rem',
+            fontWeight: 500,
+            boxShadow: 'none',
+            '&:hover': {
+                border: '1px solid #cbd5e1'
+            }
+        }),
+        option: (provided: any, state: any) => ({
+            ...provided,
+            fontSize: '0.875rem',
+            backgroundColor: state.isSelected ? '#3b82f6' : state.isFocused ? '#eff6ff' : 'white',
+            color: state.isSelected ? 'white' : '#1e293b',
+            cursor: 'pointer',
+        }),
+        singleValue: (provided: any) => ({
+            ...provided,
+            color: '#334155',
+            fontWeight: 600,
+            fontSize: '0.875rem',
+        }),
+        placeholder: (provided: any) => ({
+            ...provided,
+            color: '#94a3b8',
+            fontSize: '0.875rem',
+        }),
+        menu: (provided: any) => ({
+            ...provided,
+            borderRadius: '0.75rem',
+            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+            zIndex: 50
+        })
+    };
 
     return (
         <div className={styles.container}>
-            {/* List Header with Toolbar */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '1.5rem', gap: '1rem', flexWrap: 'wrap' }}>
-                <div>
-                    <h1 className={styles.title} style={{ fontSize: '1.75rem', marginBottom: '0.25rem' }}>{title}</h1>
+            <div className={styles.header}>
+                <div className={styles.titleContainer}>
+                    <h1 className={styles.title}>{title}</h1>
                     <p className={styles.subtitle}>Kelola dan monitor status pengajuan usulan Anda</p>
                 </div>
-                {!isPerbaikanView && (
-                    <button className={styles.primaryButton} onClick={onTambahUsulan} style={{ padding: '0.75rem 1.5rem' }}>
-                        <Plus size={18} /> Tambah Usulan Baru
-                    </button>
-                )}
+                <div className={styles.headerAction}>
+                    {!isPerbaikanView && onTambahUsulan && (
+                        <Button onClick={onTambahUsulan} className="bg-blue-600 hover:bg-blue-700 text-white gap-2 shadow-sm shadow-blue-200 px-6 py-6 rounded-xl font-bold">
+                            <Plus size={18} />
+                            Tambah Usulan
+                        </Button>
+                    )}
+                </div>
             </div>
 
-            {/* Content Card */}
             <div className={styles.formSection} style={{ padding: 0, overflow: 'hidden' }}>
-                {/* Table Filters (Visual Only) */}
-                <div style={{ padding: '1rem 1.5rem', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#fafafa' }}>
-                    <div className="relative group min-w-[300px]">
+                <div style={{ padding: '1rem 1.5rem', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#fafafa', flexWrap: 'wrap', gap: '1rem' }}>
+                    <div className="relative group min-w-[300px] flex-1">
                         <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                         <input
                             type="text"
                             placeholder="Cari judul..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
                             className="w-full bg-white border border-gray-200 rounded-xl py-2 pl-9 pr-4 text-sm font-medium text-gray-700 focus:border-blue-500 focus:ring-0 transition-all outline-none"
                         />
                     </div>
 
-                    <div className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl shadow-sm">
-                        <Filter size={14} className="text-blue-600" />
-                        <select
-                            className="bg-transparent border-none text-[13px] font-bold text-gray-700 pr-8 focus:ring-0 cursor-pointer outline-none min-w-[200px]"
-                            value={selectedYear}
-                            onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-                        >
-                            {yearOptions.map(opt => (
-                                <option key={opt.value} value={opt.value}>{opt.label}</option>
-                            ))}
-                        </select>
+                    <div className="min-w-[200px]">
+                        <Select
+                            options={yearOptions}
+                            value={yearOptions.find(opt => opt.value === selectedYear) || yearOptions[0]}
+                            onChange={(option: any) => setSelectedYear(option?.value || null)}
+                            styles={customSelectStyles}
+                            isSearchable={false}
+                        />
                     </div>
                 </div>
 
-                <div className={styles.tableContainer} style={{ border: 'none', borderRadius: 0 }}>
+                <div className={styles.tableContainer}>
                     <table className={styles.table}>
                         <thead>
                             <tr>
@@ -125,19 +178,13 @@ const PageUsulan: React.FC<PageUsulanProps> = ({
                                 <th style={{ textAlign: 'center', paddingRight: '1.5rem' }}>Aksi</th>
                             </tr>
                         </thead>
-
                         <tbody>
                             {filteredUsulanList.length === 0 ? (
                                 <tr>
-                                    <td colSpan={5} style={{ textAlign: "center", padding: "6rem 2rem" }}>
-                                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', color: '#94a3b8' }}>
-                                            <div style={{ padding: '2rem', background: '#f8fafc', borderRadius: '50%' }}>
-                                                <FileText size={64} strokeWidth={1} />
-                                            </div>
-                                            <div style={{ maxWidth: '300px' }}>
-                                                <h3 style={{ color: '#475569', fontWeight: 700, margin: 0 }}>Belum Ada Usulan</h3>
-                                                <p style={{ marginTop: '0.5rem', fontSize: '0.875rem' }}>Mulai pengabdian Anda dengan mengklik tombol tambah di atas.</p>
-                                            </div>
+                                    <td colSpan={5} className="text-center py-8 text-gray-500">
+                                        <div className="flex flex-col items-center gap-2">
+                                            <FileText size={48} className="text-gray-300" />
+                                            <p>Belum ada usulan yang diajukan</p>
                                         </div>
                                     </td>
                                 </tr>
@@ -151,7 +198,9 @@ const PageUsulan: React.FC<PageUsulanProps> = ({
                                             animate={{ opacity: 1, x: 0 }}
                                             transition={{ duration: 0.3, delay: idx * 0.05 }}
                                         >
-                                            <td style={{ fontWeight: 700, color: '#94a3b8', paddingLeft: '1.5rem' }}>{u.no || idx + 1}</td>
+                                            <td style={{ fontWeight: 700, color: '#94a3b8', paddingLeft: '1.5rem' }}>
+                                                {(usulanList.current_page - 1) * usulanList.per_page + idx + 1}
+                                            </td>
                                             <td className={styles.judulCell} style={{ padding: '1.25rem 0.75rem' }}>
                                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
                                                     <span style={{ fontSize: '0.7rem', color: 'var(--primary)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.025em' }}>
@@ -174,22 +223,16 @@ const PageUsulan: React.FC<PageUsulanProps> = ({
                                                 </div>
                                             </td>
                                             <td>
-                                                <span
-                                                    className={styles.badge}
-                                                    style={{
-                                                        background: status.bg,
-                                                        color: status.color,
-                                                        display: 'inline-flex',
-                                                        alignItems: 'center',
-                                                        gap: '6px',
-                                                        border: `1px solid ${status.bg === '#ffffff' ? '#eee' : 'transparent'}`
-                                                    }}
-                                                >
-                                                    <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: status.dot }}></span>
+                                                <span className={styles.badge} style={{
+                                                    backgroundColor: status.bg,
+                                                    color: status.color,
+                                                    border: `1px solid ${status.bg === '#ffffff' ? '#e2e8f0' : 'transparent'}`
+                                                }}>
+                                                    <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: status.dot, marginRight: '6px' }}></span>
                                                     {status.label}
                                                 </span>
                                             </td>
-                                            <td style={{ textAlign: 'center', paddingRight: '1.5rem' }}>
+                                            <td className="text-center px-4">
                                                 <DropdownMenu>
                                                     <DropdownMenuTrigger asChild>
                                                         <Button variant="ghost" className="h-9 w-9 p-0 hover:bg-slate-100 rounded-full">
@@ -200,11 +243,11 @@ const PageUsulan: React.FC<PageUsulanProps> = ({
                                                         <DropdownMenuLabel className="text-[10px] uppercase text-slate-400 font-bold px-3 py-2">Navigasi Usulan</DropdownMenuLabel>
                                                         {u.peran === 'Ketua' ? (
                                                             <>
-                                                                <DropdownMenuItem onClick={() => onViewUsulan?.(u)} className="rounded-md cursor-pointer">
+                                                                <DropdownMenuItem onClick={() => onViewUsulan && onViewUsulan(u)} className="rounded-md cursor-pointer">
                                                                     <Eye className="mr-3 h-4 w-4 text-slate-500" /> Lihat Detail Preview
                                                                 </DropdownMenuItem>
                                                                 <DropdownMenuItem
-                                                                    onClick={() => onEditUsulan?.(u)}
+                                                                    onClick={() => onEditUsulan && onEditUsulan(u)}
                                                                     disabled={!['draft', 'revision_dosen', 'needs_revision'].includes(u.status)}
                                                                     className="rounded-md cursor-pointer"
                                                                 >
@@ -225,7 +268,7 @@ const PageUsulan: React.FC<PageUsulanProps> = ({
                                                                 <DropdownMenuItem
                                                                     onClick={() => {
                                                                         if (confirm('Apakah Anda yakin ingin menghapus usulan ini?')) {
-                                                                            onDeleteUsulan?.(u.id);
+                                                                            onDeleteUsulan && onDeleteUsulan(u.id);
                                                                         }
                                                                     }}
                                                                     disabled={u.status !== 'draft'}
@@ -236,10 +279,7 @@ const PageUsulan: React.FC<PageUsulanProps> = ({
                                                             </>
                                                         ) : (
                                                             <>
-                                                                <DropdownMenuItem
-                                                                    onClick={() => onViewUsulan?.(u)}
-                                                                    className="rounded-md cursor-pointer"
-                                                                >
+                                                                <DropdownMenuItem onClick={() => onViewUsulan && onViewUsulan(u)} className="rounded-md cursor-pointer">
                                                                     <Eye className="mr-3 h-4 w-4 text-slate-500" /> Lihat Detail (Read Only)
                                                                 </DropdownMenuItem>
                                                             </>
@@ -253,6 +293,10 @@ const PageUsulan: React.FC<PageUsulanProps> = ({
                             )}
                         </tbody>
                     </table>
+                </div>
+
+                <div className="mt-4">
+                    <Pagination links={links} />
                 </div>
             </div>
         </div>

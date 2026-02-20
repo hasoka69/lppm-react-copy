@@ -6,6 +6,7 @@ import styles from '../../../../../css/pengajuan.module.css';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Filter, Search, BookOpen } from 'lucide-react';
 import { formatAcademicYear, getAcademicYearOptions, getCurrentAcademicYearCode } from '@/utils/academicYear';
+import Select from 'react-select'; // Added react-select
 
 const containerVariants = {
     hidden: { opacity: 0, y: 20 },
@@ -24,10 +25,50 @@ interface Props {
 }
 
 export default function Index({ fundedUsulan }: Props) {
-    const [selectedYear, setSelectedYear] = React.useState<number>(getCurrentAcademicYearCode());
-    const yearOptions = getAcademicYearOptions();
+    const [selectedYear, setSelectedYear] = React.useState<number | null>(null); // Default: All Years
+    const [searchQuery, setSearchQuery] = React.useState<string>(''); // Search State
 
-    const filteredList = fundedUsulan.filter(item => item.tahun === selectedYear);
+    const yearOptions = [
+        { value: null, label: 'Semua Tahun Akademik' },
+        ...getAcademicYearOptions().map(opt => ({ value: opt.value, label: opt.label }))
+    ];
+
+    const filteredList = fundedUsulan.filter(item => {
+        const matchesYear = selectedYear ? item.tahun === selectedYear : true;
+        const matchesSearch = item.judul.toLowerCase().includes(searchQuery.toLowerCase());
+        return matchesYear && matchesSearch;
+    });
+
+    const customSelectStyles = {
+        control: (provided: any, state: any) => ({
+            ...provided,
+            border: '1px solid #e2e8f0',
+            borderRadius: '0.75rem',
+            padding: '2px 8px',
+            fontSize: '0.875rem',
+            fontWeight: 500,
+            boxShadow: 'none',
+            '&:hover': {
+                border: '1px solid #cbd5e1'
+            }
+        }),
+        option: (provided: any, state: any) => ({
+            ...provided,
+            fontSize: '0.875rem',
+            backgroundColor: state.isSelected ? '#3b82f6' : state.isFocused ? '#eff6ff' : 'white',
+            color: state.isSelected ? 'white' : '#1e293b',
+        }),
+        singleValue: (provided: any) => ({
+            ...provided,
+            color: '#1e293b',
+            fontWeight: 600
+        }),
+        placeholder: (provided: any) => ({
+            ...provided,
+            color: '#94a3b8',
+            fontSize: '0.875rem'
+        })
+    };
 
     return (
         <div className={styles.masterContainer}>
@@ -84,25 +125,21 @@ export default function Index({ fundedUsulan }: Props) {
                                 <input
                                     type="text"
                                     placeholder="Cari judul..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
                                     className="bg-white border-2 border-gray-100 rounded-2xl py-2.5 pl-10 pr-4 text-[13px] font-medium text-gray-700 w-64 focus:border-blue-500 focus:ring-0 transition-all outline-none"
                                 />
                             </div>
 
-                            <div className="flex items-center gap-3 bg-white px-6 py-3 rounded-2xl shadow-sm border border-gray-100 shadow-blue-500/5">
-                                <div className="p-2 bg-blue-50 text-blue-600 rounded-xl">
-                                    <Filter className="w-4 h-4" />
-                                </div>
-                                <select
-                                    className="bg-transparent border-none text-[13px] font-bold text-gray-700 pr-10 focus:ring-0 cursor-pointer outline-none"
-                                    value={selectedYear}
-                                    onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-                                >
-                                    {yearOptions.map((opt) => (
-                                        <option key={opt.value} value={opt.value}>
-                                            {opt.label}
-                                        </option>
-                                    ))}
-                                </select>
+                            <div className="flex items-center gap-3 min-w-[250px]">
+                                <Select
+                                    options={yearOptions}
+                                    value={yearOptions.find(opt => opt.value === selectedYear)}
+                                    onChange={(option: any) => setSelectedYear(option ? option.value : null)}
+                                    styles={customSelectStyles}
+                                    placeholder="Filter Tahun Akademik..."
+                                    className="w-full"
+                                />
                             </div>
                         </div>
                     </div>

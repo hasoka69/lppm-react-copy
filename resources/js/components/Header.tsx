@@ -39,6 +39,7 @@ const ROLE_MENU: Record<string, NavItem[]> = {
                 { href: "/lppm/users", label: "Manajemen Pengguna" },
                 { href: "/lppm/berita", label: "Manajemen Berita" },
                 { href: "/lppm/pengumuman", label: "Manajemen Pengumuman" },
+                { href: "/lppm/panduan", label: "Manajemen Panduan" },
                 { href: "/lppm/data", label: "Master Data" },
                 { href: "/lppm/periods", label: "Periode Kegiatan" },
                 { href: "/lppm/reviewers", label: "Plotting Reviewer" },

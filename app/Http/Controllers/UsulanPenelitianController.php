@@ -49,9 +49,9 @@ class UsulanPenelitianController extends Controller
             // UPDATE: User requested to SHOW revision status in main list.
 
             ->latest()
-            ->get()
-            ->map(fn($u, $i) => [
-                'no' => $i + 1,
+            ->paginate(10)
+            ->through(fn($u, $i) => [
+                'no' => $i + 1, // Will be 1-based index relative to page. Frontend should calculate absolute number.
                 'id' => $u->id,
                 'skema' => $u->kelompok_skema ?? 'N/A',
                 'judul' => $u->judul,

@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Link, Head } from '@inertiajs/react';
 import Header from '@/components/Header';
 import Footer from '@/components/footer';
+import Pagination from '@/components/Pagination';
+import { PaginatedResponse } from '@/types';
 import { Home, ChevronRight, Eye, Layers } from 'lucide-react';
 import { formatAcademicYear } from '@/utils/academicYear';
 
@@ -18,17 +20,16 @@ interface Usulan {
 }
 
 interface PageProps {
-    penelitianList: Usulan[];
-    pengabdianList: Usulan[];
+    penelitianList: PaginatedResponse<Usulan>;
+    pengabdianList: PaginatedResponse<Usulan>;
     prodiName: string;
-    // Fallback for types if needed
-    usulanList?: Usulan[];
 }
 
-export default function KaprodiUsulanIndex({ penelitianList = [], pengabdianList = [], prodiName }: PageProps) {
+export default function KaprodiUsulanIndex({ penelitianList, pengabdianList, prodiName }: PageProps) {
     const [activeTab, setActiveTab] = useState<'penelitian' | 'pengabdian'>('penelitian');
 
     const activeList = activeTab === 'penelitian' ? penelitianList : pengabdianList;
+    const items = activeList.data || [];
 
     return (
         <div className="min-h-screen bg-gray-50 font-sans">
@@ -91,17 +92,18 @@ export default function KaprodiUsulanIndex({ penelitianList = [], pengabdianList
                                 </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
-                                {activeList.length === 0 ? (
+                                {items.length === 0 ? (
                                     <tr>
-                                        <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
+                                        <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
                                             Tidak ada data usulan {activeTab}.
                                         </td>
                                     </tr>
                                 ) : (
-                                    activeList.map((usulan, idx) => (
+                                    items.map((usulan, idx) => (
                                         <tr key={usulan.id} className="hover:bg-gray-50 transition">
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                {idx + 1}
+                                                {/* Correct numbering across pages: (current_page - 1) * per_page + idx + 1 */}
+                                                {(activeList.current_page - 1) * activeList.per_page + idx + 1}
                                             </td>
                                             <td className="px-6 py-4">
                                                 <div className="text-sm font-semibold text-gray-900 line-clamp-2">{usulan.judul}</div>
@@ -148,6 +150,10 @@ export default function KaprodiUsulanIndex({ penelitianList = [], pengabdianList
                             </tbody>
                         </table>
                     </div>
+                </div>
+
+                <div className="mt-6">
+                    <Pagination links={activeList.links} />
                 </div>
             </div>
             <Footer />

@@ -11,6 +11,8 @@ import PageTinjauan from '././steps/page-tinjauan-4';
 import { Layout, FileText, PieChart, CheckCircle, ClipboardList, Filter, Search, Plus } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import styles from '../../../../css/pengajuan.module.css';
+import Pagination from '@/components/Pagination'; // Added import
+import { PaginatedResponse } from '@/types'; // Added import
 
 export interface Usulan {
     no: number;
@@ -48,7 +50,7 @@ const containerVariants = {
 
 const PenelitianIndex = () => {
     const { props } = usePage<{
-        usulanList: Usulan[];
+        usulanList: PaginatedResponse<Usulan>;
         latestDraft?: Partial<UsulanData>;
         currentStep?: string | number;
         usulan?: Partial<UsulanData>;
@@ -57,7 +59,7 @@ const PenelitianIndex = () => {
         isReadOnly?: boolean;
         title?: string;
     }>();
-    const usulanList = props.usulanList || [];
+    const usulanList = props.usulanList;
     const latestDraft = props.latestDraft || null;
     const serverCurrentStep = props.currentStep ? Number(props.currentStep) : null;
     const serverUsulan = props.usulan || null;

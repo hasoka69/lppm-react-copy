@@ -39,8 +39,8 @@ class UsulanPengabdianController extends Controller
             })
             // ->whereNotIn('status', ['under_revision_admin', 'revision_dosen']) // User requested to show all statuses
             ->latest()
-            ->get()
-            ->map(fn($u, $i) => [
+            ->paginate(10)
+            ->through(fn($u, $i) => [
                 'no' => $i + 1,
                 'id' => $u->id,
                 'skema' => $u->kelompok_skema ?? 'N/A',

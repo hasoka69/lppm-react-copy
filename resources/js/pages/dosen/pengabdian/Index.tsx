@@ -11,6 +11,7 @@ import PageKonfirmasi from '././steps/page-konfirmasi-5';
 import PageStatus from '././steps/page-status';
 import { motion, AnimatePresence } from 'framer-motion';
 import styles from '../../../../css/pengajuan.module.css';
+import { PaginatedResponse } from '@/types'; // Added import
 
 export interface Usulan {
     no: number;
@@ -47,7 +48,7 @@ const containerVariants = {
 
 const PengabdianIndex = () => {
     const { props } = usePage<{
-        usulanList: Usulan[];
+        usulanList: PaginatedResponse<Usulan>;
         latestDraft?: Partial<UsulanData>;
         currentStep?: string | number;
         usulan?: Partial<UsulanData>;
@@ -56,7 +57,7 @@ const PengabdianIndex = () => {
         title?: string;
         provinsiList?: any[];
     }>();
-    const usulanList = props.usulanList || [];
+    const usulanList = props.usulanList;
     const latestDraft = props.latestDraft || null;
     const serverCurrentStep = props.currentStep ? Number(props.currentStep) : null;
     const serverUsulan = props.usulan || null;

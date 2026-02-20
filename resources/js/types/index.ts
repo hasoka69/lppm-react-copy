@@ -26,19 +26,19 @@ export interface Setting {
     logo?: string;
     warna?: string;
     seo?: {
-      title?: string;
-      description?: string;
-      keywords?: string;
+        title?: string;
+        description?: string;
+        keywords?: string;
     };
-  }
-  
-  export interface SharedData {
-      name: string;
-      quote: { message: string; author: string };
-      auth: Auth;
-      setting?: Setting;
-      [key: string]: unknown;
-  }
+}
+
+export interface SharedData {
+    name: string;
+    quote: { message: string; author: string };
+    auth: Auth;
+    setting?: Setting;
+    [key: string]: unknown;
+}
 
 export interface User {
     id: number;
@@ -58,5 +58,27 @@ export interface Permission {
     guard_name?: string;
     created_at?: string;
     updated_at?: string;
-  }
-  
+}
+
+export interface Link {
+    url: string | null;
+    label: string;
+    active: boolean;
+}
+
+export interface PaginatedResponse<T> {
+    current_page: number;
+    data: T[];
+    first_page_url: string;
+    from: number | null;
+    last_page: number;
+    last_page_url: string;
+    links: Link[];
+    next_page_url: string | null;
+    path: string;
+    per_page: number;
+    prev_page_url: string | null;
+    to: number | null;
+    total: number;
+}
+
