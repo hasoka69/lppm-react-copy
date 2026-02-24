@@ -32,11 +32,20 @@ class LuaranPenelitian extends Model
         'url_artikel',
         'doi',
         'keterangan',
+        'kemajuan_data',
+        'akhir_data',
+        'pengkinian_data',
         'judul_realisasi_akhir',
         'file_bukti_akhir',
         'url_bukti_akhir',
         'status_akhir',
         'keterangan_akhir',
+    ];
+
+    protected $casts = [
+        'kemajuan_data' => 'array',
+        'akhir_data' => 'array',
+        'pengkinian_data' => 'array',
     ];
 
     /**

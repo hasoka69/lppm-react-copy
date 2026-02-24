@@ -386,12 +386,14 @@ export const LuaranForm: React.FC<LuaranFormProps> = ({
                             >
                                 <option value="">Pilih Kategori Luaran</option>
                                 {isPengabdian ? [
+                                    'Peningkatan Pemberdayaan Mitra',
+                                    'Publikasi Media Massa',
+                                    'Video Pelaksanaan Program',
                                     'Jurnal Internasional Bereputasi Scopus',
                                     'Jurnal Internasional',
                                     'Jurnal Terakreditasi SINTA 1',
                                     'Jurnal Terakreditasi SINTA 2',
                                     'Jurnal Terakreditasi SINTA 3',
-                                    'Lainnya'
                                 ].map((opt) => (
                                     <option key={opt} value={opt}>{opt}</option>
                                 )) : [
@@ -400,14 +402,6 @@ export const LuaranForm: React.FC<LuaranFormProps> = ({
                                     'Jurnal Terakreditasi SINTA 1',
                                     'Jurnal Terakreditasi SINTA 2',
                                     'Jurnal Terakreditasi SINTA 3',
-                                    'Jurnal Terakreditasi SINTA 4',
-                                    'Jurnal Terakreditasi SINTA 5',
-                                    'Jurnal Terakreditasi SINTA 6',
-                                    'Prosiding Internasional',
-                                    'Prosiding Nasional',
-                                    'Buku',
-                                    'HKI',
-                                    'Lainnya'
                                 ].map((opt) => (
                                     <option key={opt} value={opt}>{opt}</option>
                                 ))}

@@ -4,9 +4,11 @@ import Header from '@/components/Header';
 import Footer from '@/components/footer';
 import styles from '../../../../../css/pengajuan.module.css';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Filter, Search, BookOpen } from 'lucide-react';
+import { Filter, Search, BookOpen, Calendar, AlertCircle } from 'lucide-react';
 import { formatAcademicYear, getAcademicYearOptions, getCurrentAcademicYearCode } from '@/utils/academicYear';
 import Select from 'react-select'; // Added react-select
+import Pagination from '@/components/Pagination';
+import { PaginatedResponse } from '@/types';
 
 const containerVariants = {
     hidden: { opacity: 0, y: 20 },
@@ -21,7 +23,7 @@ const containerVariants = {
 };
 
 interface Props {
-    fundedUsulan: any[];
+    fundedUsulan: PaginatedResponse<any>;
 }
 
 export default function Index({ fundedUsulan }: Props) {
@@ -33,7 +35,7 @@ export default function Index({ fundedUsulan }: Props) {
         ...getAcademicYearOptions().map(opt => ({ value: opt.value, label: opt.label }))
     ];
 
-    const filteredList = fundedUsulan.filter(item => {
+    const filteredList = fundedUsulan.data.filter(item => {
         const matchesYear = selectedYear ? item.tahun === selectedYear : true;
         const matchesSearch = item.judul.toLowerCase().includes(searchQuery.toLowerCase());
         return matchesYear && matchesSearch;
@@ -113,10 +115,13 @@ export default function Index({ fundedUsulan }: Props) {
                     {/* Page Header */}
                     <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                         <div className="space-y-1">
-                            <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
-                                Catatan <span className="text-blue-600 font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">Harian</span>
+                            <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight flex items-center gap-3 uppercase">
+                                <div className="p-2 bg-blue-600 rounded-xl">
+                                    <BookOpen className="w-6 h-6 text-white" />
+                                </div>
+                                Catatan <span className="text-blue-600">Harian</span>
                             </h1>
-                            <p className="text-gray-500 text-[13px] font-medium uppercase tracking-[0.05em]">Modul Pengabdian</p>
+                            <p className="text-gray-500 text-[13px] font-medium uppercase tracking-[0.1em] ml-14">Modul Pengabdian</p>
                         </div>
 
                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -144,41 +149,48 @@ export default function Index({ fundedUsulan }: Props) {
                         </div>
                     </div>
 
-                    <div className="bg-white rounded-[2.5rem] shadow-2xl shadow-blue-900/5 border border-gray-100 overflow-hidden">
+                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                         <div className="overflow-x-auto">
                             <table className="w-full text-left border-collapse">
                                 <thead>
                                     <tr className="bg-gray-50/50 border-b border-gray-100">
                                         <th className="px-6 py-5 text-[11px] font-bold text-gray-500 uppercase tracking-wider w-16 text-center">No</th>
-                                        <th className="px-6 py-5 text-[11px] font-bold text-gray-500 uppercase tracking-wider w-40">Program & Skema</th>
-                                        <th className="px-6 py-5 text-[11px] font-bold text-gray-500 uppercase tracking-wider">Judul & Anggaran</th>
-                                        <th className="px-6 py-5 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center w-48">Progress</th>
-                                        <th className="px-6 py-5 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center w-24">Aksi</th>
+                                        <th className="px-6 py-5 text-[11px] font-bold text-gray-500 uppercase tracking-wider">Informasi Program</th>
+                                        <th className="px-6 py-5 text-[11px] font-bold text-gray-500 uppercase tracking-wider">Judul Pengabdian</th>
+                                        <th className="px-6 py-5 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center">Progress</th>
+                                        <th className="px-6 py-5 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-50">
                                     {filteredList.length > 0 ? (
                                         filteredList.map((item, index) => (
-                                            <tr key={item.id} className="hover:bg-blue-50/20 transition group">
-                                                <td className="px-6 py-6 text-sm text-gray-400 font-bold text-center">{index + 1}</td>
-                                                <td className="px-6 py-6">
-                                                    <div className="space-y-1">
-                                                        <p className="text-[11px] font-bold text-blue-600 leading-tight uppercase mb-1">{item.skema}</p>
-                                                        <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Tahun Pelaksanaan : {formatAcademicYear(item.tahun)}</p>
+                                            <tr key={item.id} className="hover:bg-blue-50/30 transition-colors group">
+                                                <td className="px-6 py-8 text-sm text-gray-400 font-medium text-center">{index + 1}</td>
+                                                <td className="px-6 py-8">
+                                                    <div className="flex flex-col gap-1.5">
+                                                        <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-50 text-blue-700 w-fit uppercase border border-blue-100">
+                                                            {item.skema}
+                                                        </span>
+                                                        <div className="flex items-center gap-1.5 text-gray-500">
+                                                            <Calendar size={12} />
+                                                            <span className="text-[11px] font-medium">{formatAcademicYear(item.tahun)}</span>
+                                                        </div>
                                                     </div>
                                                 </td>
-                                                <td className="px-6 py-6 font-medium">
-                                                    <div className="space-y-2">
-                                                        <p className="text-sm text-gray-900 leading-snug max-w-xl font-semibold group-hover:text-blue-700 transition-colors uppercase">{item.judul}</p>
-                                                        <div className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded-md text-[10px] font-bold border border-emerald-100/50">
-                                                            <div className="w-1 h-1 bg-emerald-400 rounded-full animate-pulse" />
+                                                <td className="px-6 py-8">
+                                                    <div className="flex flex-col gap-2">
+                                                        <p className="text-sm text-gray-800 font-semibold leading-relaxed max-w-lg group-hover:text-blue-700 transition-colors uppercase">
+                                                            {item.judul}
+                                                        </p>
+                                                        <div className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-blue-50 text-blue-700 rounded-md text-[10px] font-bold border border-blue-100/50 w-fit">
+                                                            <div className="w-1 h-1 bg-blue-400 rounded-full" />
                                                             DANA DISETUJUI: Rp {new Intl.NumberFormat('id-ID').format(item.dana_disetujui)}
                                                         </div>
                                                     </div>
                                                 </td>
-                                                <td className="px-6 py-6">
+                                                <td className="px-6 py-8">
                                                     <div className="space-y-3">
-                                                        <div className="flex items-center justify-between text-[11px] font-black uppercase tracking-tight">
+                                                        <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-tight">
                                                             <span className="text-gray-400">Total Log</span>
                                                             <span className="text-blue-600">{item.total_logs} ENTRI</span>
                                                         </div>
@@ -187,34 +199,32 @@ export default function Index({ fundedUsulan }: Props) {
                                                                 initial={{ width: 0 }}
                                                                 animate={{ width: `${item.last_percentage}%` }}
                                                                 transition={{ duration: 1, ease: "easeOut" }}
-                                                                className="h-full bg-gradient-to-r from-emerald-500 to-teal-600 rounded-full"
+                                                                className="h-full bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full"
                                                             />
                                                         </div>
-                                                        <div className="flex items-center justify-between text-[11px] font-black uppercase tracking-tight">
+                                                        <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-tight">
                                                             <span className="text-gray-400">Progress</span>
                                                             <span className="text-emerald-600 font-extrabold">{item.last_percentage}%</span>
                                                         </div>
                                                     </div>
                                                 </td>
-                                                <td className="px-6 py-6 text-center">
+                                                <td className="px-6 py-8 text-center">
                                                     <Link
                                                         href={route('dosen.pengabdian.catatan-harian.show', item.id)}
-                                                        className="inline-flex items-center justify-center w-10 h-10 border-2 border-emerald-100 bg-white text-emerald-600 rounded-xl hover:bg-emerald-600 hover:text-white hover:border-emerald-600 transition-all shadow-sm group-hover:-translate-y-1 shadow-emerald-200/20"
+                                                        className="inline-flex items-center justify-center w-10 h-10 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-600 hover:text-white transition-all shadow-sm"
                                                         title="Buka Catatan Harian"
                                                     >
-                                                        <BookOpen className="w-5 h-5" />
+                                                        <BookOpen size={16} />
                                                     </Link>
                                                 </td>
                                             </tr>
                                         ))
                                     ) : (
                                         <tr>
-                                            <td colSpan={5} className="px-6 py-16 text-center">
-                                                <div className="flex flex-col items-center gap-2">
-                                                    <div className="p-4 bg-gray-50 rounded-full text-gray-300">
-                                                        <Filter className="w-8 h-8 opacity-20" />
-                                                    </div>
-                                                    <p className="text-sm font-bold text-gray-400 uppercase tracking-widest italic">Tidak ada data pengabdian yang didanai.</p>
+                                            <td colSpan={5} className="px-6 py-20 text-center">
+                                                <div className="flex flex-col items-center gap-3 text-gray-400">
+                                                    <AlertCircle className="w-12 h-12 stroke-1" />
+                                                    <p className="italic text-sm">Tidak ada data pengabdian yang didanai.</p>
                                                 </div>
                                             </td>
                                         </tr>
@@ -222,6 +232,10 @@ export default function Index({ fundedUsulan }: Props) {
                                 </tbody>
                             </table>
                         </div>
+                    </div>
+
+                    <div className="mt-8">
+                        <Pagination links={fundedUsulan.links} />
                     </div>
                 </motion.div>
             </main>

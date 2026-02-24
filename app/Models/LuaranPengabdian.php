@@ -33,6 +33,9 @@ class LuaranPengabdian extends Model
         'doi',
         'keterangan',
         'attribute', // JSON field for dynamic attributes
+        'kemajuan_data',
+        'akhir_data',
+        'pengkinian_data',
         'judul_realisasi_akhir',
         'file_bukti_akhir',
         'url_bukti_akhir',
@@ -42,6 +45,9 @@ class LuaranPengabdian extends Model
 
     protected $casts = [
         'attribute' => 'array',
+        'kemajuan_data' => 'array',
+        'akhir_data' => 'array',
+        'pengkinian_data' => 'array',
     ];
 
     /**

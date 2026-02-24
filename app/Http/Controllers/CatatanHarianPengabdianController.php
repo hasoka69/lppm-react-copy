@@ -22,8 +22,8 @@ class CatatanHarianPengabdianController extends Controller
         $fundedUsulan = UsulanPengabdian::where('user_id', '=', $user->id, 'and')
             ->where('status', '=', 'didanai', 'and')
             ->latest()
-            ->get()
-            ->map(function ($u) {
+            ->paginate(10)
+            ->through(function ($u) {
                 $logs = CatatanHarianPengabdian::where('usulan_id', '=', $u->id, 'and')->get();
                 return [
                     'id' => $u->id,

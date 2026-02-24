@@ -4,7 +4,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/footer';
 import styles from '../../../../../css/pengajuan.module.css';
 import { formatAcademicYear, getAcademicYearOptions, getCurrentAcademicYearCode } from '@/utils/academicYear';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
     FileText,
     Edit,
@@ -13,10 +13,12 @@ import {
     ChevronRight,
     AlertCircle,
     CheckCircle2,
-    Clock,
+    Calendar,
     Search
 } from 'lucide-react';
 import Select from 'react-select'; // Added react-select
+import Pagination from '@/components/Pagination';
+import { PaginatedResponse } from '@/types';
 
 interface FundedUsulan {
     id: number;
@@ -32,24 +34,27 @@ interface FundedUsulan {
 }
 
 interface Props {
-    fundedUsulan: FundedUsulan[];
+    fundedUsulan: PaginatedResponse<FundedUsulan>;
 }
 
+
+
+
 const containerVariants = {
-    hidden: { opacity: 0, y: 20 },
+    hidden: { opacity: 0, y: 10 },
     visible: {
         opacity: 1,
         y: 0,
         transition: {
-            duration: 0.5,
-            staggerChildren: 0.1
+            duration: 0.4,
+            staggerChildren: 0.05
         }
     }
 };
 
 const itemVariants = {
-    hidden: { opacity: 0, x: -20 },
-    visible: { opacity: 1, x: 0 }
+    hidden: { opacity: 0, y: 10 },
+    visible: { opacity: 1, y: 0 }
 };
 
 export default function Index({ fundedUsulan }: Props) {
@@ -61,7 +66,7 @@ export default function Index({ fundedUsulan }: Props) {
         ...getAcademicYearOptions().map(opt => ({ value: opt.value, label: opt.label }))
     ];
 
-    const filteredList = fundedUsulan.filter(u => {
+    const filteredList = fundedUsulan.data.filter(u => {
         const matchesYear = selectedYear ? u.tahun_pertama === selectedYear : true;
         const matchesSearch = u.judul.toLowerCase().includes(searchQuery.toLowerCase());
         return matchesYear && matchesSearch;
@@ -115,7 +120,7 @@ export default function Index({ fundedUsulan }: Props) {
                             <button
                                 key={idx}
                                 onClick={() => !tab.active && router.visit(tab.route)}
-                                className={`px-5 py-4 text-[13px] font-semibold transition-all whitespace-nowrap relative ${tab.active ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
+                                className={`px-5 py-4 text-[13px] font-semibold transition-all whitespace-nowrap relative ${tab.active ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
                             >
                                 {tab.label}
                                 {tab.active && (
@@ -132,15 +137,15 @@ export default function Index({ fundedUsulan }: Props) {
             <Head title="Laporan Akhir Pengabdian" />
 
             <motion.main
-                className={styles.contentArea}
                 initial="hidden"
                 animate="visible"
                 variants={containerVariants}
+                className={styles.contentArea}
             >
                 <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
                     <div className="space-y-1">
                         <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight flex items-center gap-3 uppercase">
-                            <div className="p-2 bg-blue-600 rounded-xl shadow-lg shadow-blue-200">
+                            <div className="p-2 bg-blue-600 rounded-xl">
                                 <FileText className="w-6 h-6 text-white" />
                             </div>
                             Laporan <span className="text-blue-600">Akhir</span>
@@ -150,13 +155,13 @@ export default function Index({ fundedUsulan }: Props) {
 
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div className="relative group">
-                            <Search className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
+                            <Search className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
                             <input
                                 type="text"
                                 placeholder="Cari judul pengabdian..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="bg-white border-2 border-gray-100 rounded-2xl py-3 pl-12 pr-6 text-[13px] font-semibold text-gray-700 w-80 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/5 transition-all outline-none shadow-sm"
+                                className="bg-white border-2 border-gray-100 rounded-2xl py-3 pl-12 pr-6 text-[13px] font-semibold text-gray-700 w-80 focus:border-blue-500 transition-all outline-none"
                             />
                         </div>
 
@@ -173,7 +178,7 @@ export default function Index({ fundedUsulan }: Props) {
                     </div>
                 </div>
 
-                <div className="bg-white rounded-[2.5rem] shadow-2xl shadow-blue-900/5 border border-gray-100 overflow-hidden">
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                     <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse">
                             <thead>
@@ -197,86 +202,91 @@ export default function Index({ fundedUsulan }: Props) {
                                         </td>
                                     </tr>
                                 ) : (
-                                    filteredList.map((usulan, index) => (
-                                        <motion.tr
-                                            key={usulan.id}
-                                            variants={itemVariants}
-                                            className="hover:bg-blue-50/30 transition-colors group cursor-default"
-                                        >
-                                            <td className="px-6 py-8 text-sm text-gray-400 font-medium text-center">{index + 1}</td>
-                                            <td className="px-6 py-8">
-                                                <div className="flex flex-col gap-1.5">
-                                                    <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-green-50 text-green-700 w-fit uppercase border border-green-100">
-                                                        {usulan.skema}
-                                                    </span>
-                                                    <p className="text-[12px] text-gray-900 font-bold leading-tight">Pengabdian Masyarakat</p>
-                                                    <div className="flex items-center gap-1.5 text-gray-500">
-                                                        <Clock className="w-3 h-3" />
-                                                        <span className="text-[11px] font-medium">{formatAcademicYear(usulan.tahun_pertama)}</span>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-8">
-                                                <div className="flex flex-col gap-2">
-                                                    <p className="text-sm text-gray-800 font-semibold leading-relaxed max-w-lg group-hover:text-blue-700 transition-colors uppercase">
-                                                        {usulan.judul}
-                                                    </p>
-                                                    <div className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded-md text-[10px] font-bold border border-emerald-100/50 w-fit">
-                                                        <div className="w-1 h-1 bg-emerald-400 rounded-full animate-pulse" />
-                                                        DANA DISETUJUI: Rp {new Intl.NumberFormat('id-ID').format(usulan.dana_disetujui || 0)}
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-8">
-                                                <div className="flex justify-center">
-                                                    {!usulan.report ? (
-                                                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold bg-gray-100 text-gray-500 uppercase border border-gray-200">
-                                                            <div className="w-1.5 h-1.5 rounded-full bg-gray-400" />
-                                                            Belum Mengisi
+                                    <AnimatePresence mode="popLayout">
+                                        {filteredList.map((usulan, index) => (
+                                            <motion.tr
+                                                key={usulan.id}
+                                                variants={itemVariants}
+                                                className="hover:bg-blue-50/30 transition-colors group"
+                                            >
+                                                <td className="px-6 py-8 text-sm text-gray-400 font-medium text-center">{index + 1}</td>
+                                                <td className="px-6 py-8">
+                                                    <div className="flex flex-col gap-1.5">
+                                                        <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-50 text-blue-700 w-fit uppercase border border-blue-100">
+                                                            {usulan.skema}
                                                         </span>
-                                                    ) : usulan.report.status === 'Draft' ? (
-                                                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 uppercase border border-amber-100 shadow-sm shadow-amber-500/10">
-                                                            <div className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-                                                            Draft
-                                                        </span>
+                                                        <div className="flex items-center gap-1.5 text-gray-500">
+                                                            <Calendar className="w-3 h-3" />
+                                                            <span className="text-[11px] font-medium">{formatAcademicYear(usulan.tahun_pertama)}</span>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-8">
+                                                    <div className="flex flex-col gap-2">
+                                                        <p className="text-sm text-gray-800 font-semibold leading-relaxed max-w-lg group-hover:text-blue-700 transition-colors uppercase">
+                                                            {usulan.judul}
+                                                        </p>
+                                                        <div className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-blue-50 text-blue-700 rounded-md text-[10px] font-bold border border-blue-100/50 w-fit">
+                                                            <div className="w-1 h-1 bg-blue-400 rounded-full" />
+                                                            DANA DISETUJUI: Rp {new Intl.NumberFormat('id-ID').format(usulan.dana_disetujui || 0)}
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-8">
+                                                    <div className="flex justify-center">
+                                                        {!usulan.report ? (
+                                                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold bg-gray-100 text-gray-500 uppercase border border-gray-200">
+                                                                <div className="w-1.5 h-1.5 rounded-full bg-gray-400" />
+                                                                Belum Mengisi
+                                                            </span>
+                                                        ) : usulan.report.status === 'Draft' ? (
+                                                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 uppercase border border-amber-100">
+                                                                <div className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                                                                Draft
+                                                            </span>
+                                                        ) : (
+                                                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 uppercase border border-emerald-100">
+                                                                <CheckCircle2 className="w-3 h-3" />
+                                                                Submitted
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-8 text-center">
+                                                    {usulan.report?.file_laporan ? (
+                                                        <a
+                                                            href={`/storage/${usulan.report.file_laporan}`}
+                                                            target="_blank"
+                                                            className="inline-flex items-center justify-center w-10 h-10 bg-white border border-gray-100 text-blue-600 rounded-xl hover:bg-blue-600 hover:text-white transition-all shadow-sm"
+                                                            title="Unduh Laporan"
+                                                        >
+                                                            <Download className="w-5 h-5" />
+                                                        </a>
                                                     ) : (
-                                                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 uppercase border border-emerald-100 shadow-sm shadow-emerald-500/10">
-                                                            <CheckCircle2 className="w-3 h-3" />
-                                                            Submitted
-                                                        </span>
+                                                        <div className="w-10 h-10 mx-auto flex items-center justify-center text-gray-200">
+                                                            <FileText className="w-5 h-5 opacity-20" />
+                                                        </div>
                                                     )}
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-8 text-center">
-                                                {usulan.report?.file_laporan ? (
-                                                    <a
-                                                        href={`/storage/${usulan.report.file_laporan}`}
-                                                        target="_blank"
-                                                        className="inline-flex items-center justify-center w-10 h-10 bg-white border border-gray-100 text-blue-600 rounded-xl hover:bg-blue-600 hover:text-white transition-all duration-300 shadow-sm hover:shadow-blue-500/20 group/btn"
-                                                        title="Unduh Laporan"
+                                                </td>
+                                                <td className="px-6 py-8 text-center">
+                                                    <Link
+                                                        href={route('dosen.pengabdian.laporan-akhir.show', usulan.id)}
+                                                        className="inline-flex items-center justify-center w-10 h-10 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-600 hover:text-white transition-all shadow-sm"
                                                     >
-                                                        <Download className="w-5 h-5 group-hover/btn:scale-110 transition-transform" />
-                                                    </a>
-                                                ) : (
-                                                    <div className="w-10 h-10 mx-auto flex items-center justify-center text-gray-200">
-                                                        <FileText className="w-5 h-5 opacity-20" />
-                                                    </div>
-                                                )}
-                                            </td>
-                                            <td className="px-6 py-8 text-center">
-                                                <Link
-                                                    href={route('dosen.pengabdian.laporan-akhir.show', usulan.id)}
-                                                    className="inline-flex items-center justify-center w-10 h-10 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-600 hover:text-white transition-all duration-300 shadow-sm hover:shadow-blue-500/30 group/edit"
-                                                >
-                                                    <Edit className="w-5 h-5 group-hover/edit:scale-110 transition-transform" />
-                                                </Link>
-                                            </td>
-                                        </motion.tr>
-                                    ))
+                                                        <Edit className="w-5 h-5" />
+                                                    </Link>
+                                                </td>
+                                            </motion.tr>
+                                        ))}
+                                    </AnimatePresence>
                                 )}
                             </tbody>
                         </table>
                     </div>
+                </div>
+
+                <div className="mt-8">
+                    <Pagination links={fundedUsulan.links} />
                 </div>
             </motion.main>
             <Footer />

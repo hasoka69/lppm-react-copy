@@ -130,169 +130,97 @@ class DashboardController extends Controller
 
     public function lppm()
     {
-        // 1. KPI Stats (Global or Filtered? Ideally Global for "Overview", or Filtered?)
-        // Let's keep them Global for now as "Total Assets",
-        // OR filter them if user wants "How many proposals in 2024?"
-        // Usually Dashboard KPIs are "Current State".
-        // Let's Keep Global for consistency with "Total Dosen" etc.
+        // 1. Initial counts (Corrected role casing)
+        $dosenCount = (int) User::whereHas('roles', fn($q) => $q->where('name', 'Dosen'))->count();
 
-        $dosenCount = User::whereHas('roles', fn($q) => $q->where('name', 'dosen'))->count();
-        $usulanPenelitian = \App\Models\UsulanPenelitian::count();
-        $usulanPengabdian = \App\Models\UsulanPengabdian::count();
+        // Determine active semester code
+        $request = \Illuminate\Support\Facades\Request::instance();
+        $filterCode = $request->input('tahun_akademik');
 
-        // Calculate total funded amount
-        $fundsPenelitian = \App\Models\UsulanPenelitian::where('status', 'didanai')->sum('dana_disetujui');
-        $fundsPengabdian = \App\Models\UsulanPengabdian::where('status', 'didanai')->sum('dana_disetujui');
+        // Logic to determine "Current" based on date
+        $now = now();
+        $isGanjil = $now->month >= 8 || $now->month === 1;
+        $calcEndYear = ($now->month === 1) ? $now->year : ($isGanjil ? $now->year + 1 : $now->year);
+        $currentCode = (int) ($calcEndYear . ($isGanjil ? '1' : '2'));
+
+        // IF NO FILTER PROVIDED: Try to find latest code with data
+        if (!$filterCode) {
+            $hasData = \App\Models\UsulanPenelitian::where('tahun_pertama', $currentCode)->exists() ||
+                \App\Models\UsulanPengabdian::where('tahun_pertama', $currentCode)->exists();
+
+            if ($hasData) {
+                $filterCode = $currentCode;
+            } else {
+                $latestP = \App\Models\UsulanPenelitian::max('tahun_pertama') ?: 0;
+                $latestPg = \App\Models\UsulanPengabdian::max('tahun_pertama') ?: 0;
+                $filterCode = max((int) $latestP, (int) $latestPg) ?: $currentCode;
+            }
+        }
+
+        // --- Robust Filtering Helper ---
+        $filterCodes = [(int) $filterCode];
+        if (strlen((string) $filterCode) === 5) {
+            $baseYear = substr((string) $filterCode, 0, 4);
+            $filterCodes[] = (int) $baseYear;
+        }
+
+        // Filter KPIs by Academic Year code
+
+        // Filter KPIs by Academic Year code
+        $usulanPenelitian = (int) \App\Models\UsulanPenelitian::whereIn('tahun_pertama', $filterCodes)->count();
+        $usulanPengabdian = (int) \App\Models\UsulanPengabdian::whereIn('tahun_pertama', $filterCodes)->count();
+        $fundsPenelitian = (float) \App\Models\UsulanPenelitian::where('status', 'didanai')->whereIn('tahun_pertama', $filterCodes)->sum('dana_disetujui');
+        $fundsPengabdian = (float) \App\Models\UsulanPengabdian::where('status', 'didanai')->whereIn('tahun_pertama', $filterCodes)->sum('dana_disetujui');
         $totalFunds = $fundsPenelitian + $fundsPengabdian;
 
-        // 4. Recent Activites (Global)
-        $recentPenelitian = \App\Models\UsulanPenelitian::with('ketua')
-            ->latest()
-            ->take(5)
+        // Recently submitted activities (Unified)
+        $activities = \App\Models\ReviewHistory::with(['usulan', 'reviewer'])
+            ->whereIn('action', ['submit', 'resubmit_revision', 'approve', 'reject', 'return'])
+            ->latest('reviewed_at')
+            ->limit(7)
             ->get()
-            ->map(fn($item) => [
-                'id' => $item->id,
-                'title' => $item->judul,
-                'user' => $item->ketua->name ?? 'Unknown',
-                'type' => 'Penelitian',
-                'status' => $item->status,
-                'time' => $item->created_at->diffForHumans(),
-                'unix' => $item->created_at->timestamp
-            ]);
+            ->map(function ($h) {
+                return [
+                    'id' => $h->id,
+                    'user' => $h->reviewer->name ?? 'System',
+                    'action' => $h->action,
+                    'title' => $h->usulan->judul ?? 'Pesan Sistem',
+                    'time' => $h->reviewed_at ? $h->reviewed_at->diffForHumans() : '-',
+                    'type' => str_contains($h->usulan_type ?? '', 'Penelitian') ? 'Penelitian' : 'Pengabdian',
+                    'status' => $h->usulan->status ?? 'unknown'
+                ];
+            });
 
-        $recentPengabdian = \App\Models\UsulanPengabdian::with('ketua')
-            ->latest()
-            ->take(5)
-            ->get()
-            ->map(fn($item) => [
-                'id' => $item->id,
-                'title' => $item->judul,
-                'user' => $item->ketua->name ?? 'Unknown',
-                'type' => 'Pengabdian',
-                'status' => $item->status,
-                'time' => $item->created_at->diffForHumans(),
-                'unix' => $item->created_at->timestamp
-            ]);
-
-        $activities = $recentPenelitian->merge($recentPengabdian)
-            ->sortByDesc('unix')
-            ->take(7)
-            ->values();
-
-        // 2. Chart Data
-        $filterCode = \Illuminate\Support\Facades\Request::input('tahun_akademik');
+        // Chart Data (Sync with filter)
         $chartData = collect();
-        $baseQueryPenelitian = \App\Models\UsulanPenelitian::query();
-        $baseQueryPengabdian = \App\Models\UsulanPengabdian::query();
+        $year = (int) substr((string) $filterCode, 0, 4);
+        $sem = (int) substr((string) $filterCode, 4, 1);
 
-        if ($filterCode) {
-            // Semester Filter Logic
-            $year = (int) substr($filterCode, 0, 4);
-            $sem = (int) substr($filterCode, 4, 1);
-
-            if ($sem === 1) {
-                // Ganjil: Aug (Year-1) to Jan (Year)
-                $startDate = \Carbon\Carbon::create($year - 1, 8, 1)->startOfDay();
-                $endDate = \Carbon\Carbon::create($year, 1, 31)->endOfDay();
-                $months = [
-                    'Agu' => [8, $year - 1],
-                    'Sep' => [9, $year - 1],
-                    'Okt' => [10, $year - 1],
-                    'Nov' => [11, $year - 1],
-                    'Des' => [12, $year - 1],
-                    'Jan' => [1, $year]
-                ];
-            } else {
-                // Genap: Feb (Year) to Jul (Year)
-                $startDate = \Carbon\Carbon::create($year, 2, 1)->startOfDay();
-                $endDate = \Carbon\Carbon::create($year, 7, 31)->endOfDay();
-                $months = [
-                    'Feb' => [2, $year],
-                    'Mar' => [3, $year],
-                    'Apr' => [4, $year],
-                    'Mei' => [5, $year],
-                    'Jun' => [6, $year],
-                    'Jul' => [7, $year]
-                ];
-            }
-
-            // Filter KPIs by this period as well?
-            // Usually KPIs like "Total Count" should reflect the filter.
-            $usulanPenelitian = $baseQueryPenelitian->whereBetween('created_at', [$startDate, $endDate])->count();
-            $usulanPengabdian = $baseQueryPengabdian->whereBetween('created_at', [$startDate, $endDate])->count();
-            $fundsPenelitian = \App\Models\UsulanPenelitian::where('status', 'didanai')->whereBetween('created_at', [$startDate, $endDate])->sum('dana_disetujui');
-            $fundsPengabdian = \App\Models\UsulanPengabdian::where('status', 'didanai')->whereBetween('created_at', [$startDate, $endDate])->sum('dana_disetujui');
-            $totalFunds = $fundsPenelitian + $fundsPengabdian;
-
-            // Generate Monthly Data for Chart
-            foreach ($months as $label => $dateInfo) {
-                $m = $dateInfo[0];
-                $y = $dateInfo[1];
-
-                $monthStart = \Carbon\Carbon::create($y, $m, 1)->startOfDay();
-                $monthEnd = $monthStart->copy()->endOfMonth();
-
-                $pCount = \App\Models\UsulanPenelitian::whereBetween('created_at', [$monthStart, $monthEnd])->count();
-                $pgCount = \App\Models\UsulanPengabdian::whereBetween('created_at', [$monthStart, $monthEnd])->count();
-
-                $chartData->push([
-                    'name' => $label, // e.g. "Aug"
-                    'penelitian' => $pCount,
-                    'pengabdian' => $pgCount
-                ]);
-            }
-
-        } else {
-            // Default: 5 Year Annual Trend (No Filter)
-            // Academic Year: Aug Y to Jul Y+1
-            $currentDate = now();
-            $currentMonth = $currentDate->month;
-            $currentYear = $currentDate->year;
-
-            $baseYear = ($currentMonth >= 8) ? $currentYear : $currentYear - 1;
-
-            for ($i = 4; $i >= 0; $i--) {
-                $startY = $baseYear - $i;
-                $endY = $startY + 1;
-                $label = "$startY/$endY";
-
-                $startDate = \Carbon\Carbon::create($startY, 8, 1)->startOfDay();
-                $endDate = \Carbon\Carbon::create($endY, 7, 31)->endOfDay();
-
-                $penelitianCount = \App\Models\UsulanPenelitian::whereBetween('created_at', [$startDate, $endDate])->count();
-                $pengabdianCount = \App\Models\UsulanPengabdian::whereBetween('created_at', [$startDate, $endDate])->count();
-
-                $chartData->push([
-                    'name' => $label,
-                    'penelitian' => $penelitianCount,
-                    'pengabdian' => $pengabdianCount,
-                ]);
-            }
+        if ($sem === 1) { // Ganjil
+            $months = ['Agu' => [8, $year - 1], 'Sep' => [9, $year - 1], 'Okt' => [10, $year - 1], 'Nov' => [11, $year - 1], 'Des' => [12, $year - 1], 'Jan' => [1, $year]];
+        } else { // Genap
+            $months = ['Feb' => [2, $year], 'Mar' => [3, $year], 'Apr' => [4, $year], 'Mei' => [5, $year], 'Jun' => [6, $year], 'Jul' => [7, $year]];
         }
 
-        // 3. Status Distribution (Filtered if needed, or All Time?)
-        // If filtered, should reflect period.
-        // Re-query with filter if present.
-
-        $pStatusQuery = \App\Models\UsulanPenelitian::selectRaw('status, count(*) as count');
-        $pgStatusQuery = \App\Models\UsulanPengabdian::selectRaw('status, count(*) as count');
-
-        if ($filterCode && isset($startDate) && isset($endDate)) {
-            $pStatusQuery->whereBetween('created_at', [$startDate, $endDate]);
-            $pgStatusQuery->whereBetween('created_at', [$startDate, $endDate]);
+        foreach ($months as $label => $info) {
+            $mStart = \Carbon\Carbon::create($info[1], $info[0], 1)->startOfMonth();
+            $mEnd = $mStart->copy()->endOfMonth();
+            $chartData->push([
+                'name' => $label,
+                'penelitian' => \App\Models\UsulanPenelitian::whereBetween('created_at', [$mStart, $mEnd])->count(),
+                'pengabdian' => \App\Models\UsulanPengabdian::whereBetween('created_at', [$mStart, $mEnd])->count(),
+            ]);
         }
 
-        $penelitianStatus = $pStatusQuery->groupBy('status')->pluck('count', 'status')->toArray();
-        $pengabdianStatus = $pgStatusQuery->groupBy('status')->pluck('count', 'status')->toArray();
-
-
-        // ... Recent Activities (Keep logic or filter? Let's keep latest global for now as "Activities" are usually recent logs)
-        // Actually, if I filter by year 2020, seeing current activities is weird.
-        // Let's leave activities simply "Latest" regardless of filter, as it's an "Activity Log".
+        // Distribution by Status
+        $pStatus = \App\Models\UsulanPenelitian::whereIn('tahun_pertama', $filterCodes)
+            ->selectRaw('status, count(*) as count')->groupBy('status')->pluck('count', 'status')->toArray();
+        $pgStatus = \App\Models\UsulanPengabdian::whereIn('tahun_pertama', $filterCodes)
+            ->selectRaw('status, count(*) as count')->groupBy('status')->pluck('count', 'status')->toArray();
 
         return Inertia::render('lppm/Dashboard', [
             'stats' => [
-                'dosen' => $dosenCount, // Users count doesn't change by proposal date
+                'dosen' => $dosenCount,
                 'penelitian' => $usulanPenelitian,
                 'pengabdian' => $usulanPengabdian,
                 'total_funds' => $totalFunds,
@@ -300,10 +228,12 @@ class DashboardController extends Controller
             'chartData' => $chartData,
             'activities' => $activities,
             'statusDist' => [
-                'penelitian' => $penelitianStatus,
-                'pengabdian' => $pengabdianStatus
+                'penelitian' => $pStatus,
+                'pengabdian' => $pgStatus,
             ],
-            'filters' => \Illuminate\Support\Facades\Request::only(['tahun_akademik'])
+            'filters' => [
+                'tahun_akademik' => (string) $filterCode
+            ]
         ]);
     }
 }

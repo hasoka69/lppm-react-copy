@@ -4,7 +4,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/footer';
 import styles from '../../../../../css/pengajuan.module.css';
 import { formatAcademicYear, getAcademicYearOptions, getCurrentAcademicYearCode } from '@/utils/academicYear';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
     FileText,
     Edit,
@@ -40,33 +40,35 @@ interface Props {
     fundedUsulan: PaginatedResponse<FundedUsulan>; // Updated to PaginatedResponse
 }
 
+
+
+
 const containerVariants = {
-    hidden: { opacity: 0, y: 20 },
+    hidden: { opacity: 0, y: 10 },
     visible: {
         opacity: 1,
         y: 0,
         transition: {
-            duration: 0.5,
-            staggerChildren: 0.1
+            duration: 0.4,
+            staggerChildren: 0.05
         }
     }
 };
 
 const itemVariants = {
-    hidden: { opacity: 0, x: -20 },
-    visible: { opacity: 1, x: 0 }
+    hidden: { opacity: 0, y: 10 },
+    visible: { opacity: 1, y: 0 }
 };
 
 export default function Index({ fundedUsulan }: Props) {
-    const [selectedYear, setSelectedYear] = React.useState<number | null>(null); // Default: All Years
-    const [searchQuery, setSearchQuery] = React.useState<string>(''); // Search State
+    const [selectedYear, setSelectedYear] = React.useState<number | null>(null);
+    const [searchQuery, setSearchQuery] = React.useState<string>('');
 
     const yearOptions = [
         { value: null, label: 'Semua Tahun Akademik' },
         ...getAcademicYearOptions().map(opt => ({ value: opt.value, label: opt.label }))
     ];
 
-    // Filter logic on current page items
     const filteredList = fundedUsulan.data.filter(u => {
         const matchesYear = selectedYear ? u.tahun_pertama === selectedYear : true;
         const matchesSearch = u.judul.toLowerCase().includes(searchQuery.toLowerCase());
@@ -76,14 +78,14 @@ export default function Index({ fundedUsulan }: Props) {
     const customSelectStyles = {
         control: (provided: any, state: any) => ({
             ...provided,
-            border: '1px solid #e2e8f0',
-            borderRadius: '0.75rem',
-            padding: '2px 8px',
+            border: '2px solid #f1f5f9',
+            borderRadius: '1rem',
+            padding: '4px 12px',
             fontSize: '0.875rem',
-            fontWeight: 500,
+            fontWeight: 600,
             boxShadow: 'none',
             '&:hover': {
-                border: '1px solid #cbd5e1'
+                border: '2px solid #e2e8f0'
             }
         }),
         option: (provided: any, state: any) => ({
@@ -105,205 +107,192 @@ export default function Index({ fundedUsulan }: Props) {
     };
 
     return (
-        <>
+        <div className={styles.masterContainer}>
             <Header />
+            <div className="bg-white border-b border-gray-100 sticky top-0 z-30">
+                <div className="max-w-7xl mx-auto px-6">
+                    <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
+                        {[
+                            { label: 'Daftar Pengabdian', route: route('dosen.pengabdian.index') },
+                            { label: 'Perbaikan Usulan', route: route('dosen.pengabdian.perbaikan') },
+                            { label: 'Laporan Kemajuan', active: true, route: route('dosen.pengabdian.laporan-kemajuan.index') },
+                            { label: 'Catatan Harian', route: route('dosen.pengabdian.catatan-harian.index') },
+                            { label: 'Laporan Akhir', route: route('dosen.pengabdian.laporan-akhir.index') },
+                            { label: 'Pengkinian Capaian Luaran', route: route('dosen.pengabdian.pengkinian-luaran.index') }
+                        ].map((tab, idx) => (
+                            <button
+                                key={idx}
+                                onClick={() => !tab.active && router.visit(tab.route)}
+                                className={`px-5 py-4 text-[13px] font-semibold transition-all whitespace-nowrap relative ${tab.active ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
+                            >
+                                {tab.label}
+                                {tab.active && (
+                                    <motion.div
+                                        layoutId="activeTab"
+                                        className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 rounded-full"
+                                    />
+                                )}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            </div>
             <Head title="Laporan Kemajuan Pengabdian" />
 
-            <div className={styles.container} style={{ minHeight: '80vh', paddingTop: '2rem' }}>
-                <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 1rem' }}>
-
-                    {/* Page Header */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '3rem' }}>
-                        <h1 className={styles.title} style={{ fontSize: '2rem' }}>Laporan Kemajuan</h1>
-                        <p className={styles.subtitle} style={{ fontSize: '1rem' }}>
-                            Kelola dan laporkan perkembangan pengabdian Anda yang sedang didanai
-                        </p>
+            <motion.main
+                initial="hidden"
+                animate="visible"
+                variants={containerVariants}
+                className={styles.contentArea}
+            >
+                <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
+                    <div className="space-y-1">
+                        <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight flex items-center gap-3 uppercase">
+                            <div className="p-2 bg-blue-600 rounded-xl">
+                                <FileText className="w-6 h-6 text-white" />
+                            </div>
+                            Laporan <span className="text-blue-600">Kemajuan</span>
+                        </h1>
+                        <p className="text-gray-500 text-[13px] font-medium uppercase tracking-[0.1em] ml-14">Manajemen dan pengumpulan laporan kemajuan pengabdian</p>
                     </div>
 
-                    {/* Filters */}
-                    <div style={{
-                        background: 'white',
-                        padding: '1.25rem',
-                        borderRadius: '1rem',
-                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)',
-                        marginBottom: '2rem',
-                        display: 'flex',
-                        gap: '1rem',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        flexWrap: 'wrap'
-                    }}>
-                        <div className="relative group w-full md:w-auto flex-1 md:max-w-md">
-                            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-hover:text-blue-500 transition-colors" />
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div className="relative group">
+                            <Search className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
                             <input
                                 type="text"
                                 placeholder="Cari judul pengabdian..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 pl-10 pr-4 text-sm font-medium text-slate-700 focus:border-blue-500 focus:ring-0 transition-all outline-none"
+                                className="bg-white border-2 border-gray-100 rounded-2xl py-3 pl-12 pr-6 text-[13px] font-semibold text-gray-700 w-80 focus:border-blue-500 transition-all outline-none"
                             />
                         </div>
-                        <div className="w-full md:w-[250px]">
+
+                        <div className="flex items-center gap-3 min-w-[250px]">
                             <Select
                                 options={yearOptions}
                                 value={yearOptions.find(opt => opt.value === selectedYear)}
                                 onChange={(option: any) => setSelectedYear(option ? option.value : null)}
                                 styles={customSelectStyles}
-                                placeholder="Tahun Pelaksanaan..."
-                                isSearchable={false}
+                                placeholder="Filter Tahun Akademik..."
+                                className="w-full"
                             />
                         </div>
                     </div>
+                </div>
 
-                    {/* List */}
-                    <motion.div
-                        variants={containerVariants}
-                        initial="hidden"
-                        animate="visible"
-                        style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}
-                    >
-                        {filteredList.length === 0 ? (
-                            <motion.div
-                                variants={itemVariants}
-                                style={{
-                                    background: 'white',
-                                    borderRadius: '1rem',
-                                    padding: '4rem 2rem',
-                                    textAlign: 'center',
-                                    border: '2px dashed #e2e8f0'
-                                }}
-                            >
-                                <div style={{
-                                    width: '80px',
-                                    height: '80px',
-                                    background: '#f1f5f9',
-                                    borderRadius: '50%',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    margin: '0 auto 1.5rem auto'
-                                }}>
-                                    <FileText size={40} className="text-slate-400" />
-                                </div>
-                                <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#1e293b', marginBottom: '0.5rem' }}>
-                                    Belum Ada Pengabdian
-                                </h3>
-                                <p style={{ color: '#64748b' }}>
-                                    Tidak ada pengabdian didanai yang ditemukan untuk kriteria pencarian Anda.
-                                </p>
-                            </motion.div>
-                        ) : (
-                            filteredList.map((usulan) => (
-                                <motion.div
-                                    key={usulan.id}
-                                    variants={itemVariants}
-                                    style={{
-                                        background: 'white',
-                                        borderRadius: '1rem',
-                                        padding: '1.5rem',
-                                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)',
-                                        border: '1px solid #f1f5f9',
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        gap: '1rem'
-                                    }}
-                                >
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem' }}>
-                                        <div style={{ flex: 1 }}>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
-                                                <span style={{
-                                                    fontSize: '0.7rem',
-                                                    fontWeight: 800,
-                                                    textTransform: 'uppercase',
-                                                    letterSpacing: '0.05em',
-                                                    background: '#eff6ff',
-                                                    color: '#3b82f6',
-                                                    padding: '0.25rem 0.5rem',
-                                                    borderRadius: '0.375rem'
-                                                }}>
-                                                    {usulan.skema}
-                                                </span>
-                                                <span style={{ fontSize: '0.875rem', color: '#64748b', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                                                    <Calendar size={14} /> {usulan.tahun_pertama}
-                                                </span>
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left border-collapse">
+                            <thead>
+                                <tr className="bg-gray-50/50 border-b border-gray-100">
+                                    <th className="px-6 py-5 text-[11px] font-bold text-gray-500 uppercase tracking-wider w-16 text-center">No</th>
+                                    <th className="px-6 py-5 text-[11px] font-bold text-gray-500 uppercase tracking-wider">Informasi Program</th>
+                                    <th className="px-6 py-5 text-[11px] font-bold text-gray-500 uppercase tracking-wider">Judul Pengabdian</th>
+                                    <th className="px-6 py-5 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center">Status Laporan</th>
+                                    <th className="px-6 py-5 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center">Berkas</th>
+                                    <th className="px-6 py-5 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-50">
+                                {filteredList.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={6} className="px-6 py-20 text-center">
+                                            <div className="flex flex-col items-center gap-3 text-gray-400">
+                                                <AlertCircle className="w-12 h-12 stroke-1" />
+                                                <p className="italic text-sm">Tidak ada usulan pengabdian yang memerlukan laporan kemajuan.</p>
                                             </div>
-                                            <h3 style={{ fontSize: '1.125rem', fontWeight: 700, color: '#0f172a', lineHeight: 1.4, marginBottom: '0.5rem' }}>
-                                                {usulan.judul}
-                                            </h3>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#64748b', fontSize: '0.875rem' }}>
-                                                <DollarSign size={14} />
-                                                <span>Dana Disetujui: <span style={{ color: '#0f172a', fontWeight: 600 }}>Rp {new Intl.NumberFormat('id-ID').format(usulan.dana_disetujui)}</span></span>
-                                            </div>
-                                        </div>
-
-                                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.5rem' }}>
-                                            {!usulan.report ? (
-                                                <span style={{
-                                                    fontSize: '0.75rem', fontWeight: 600, color: '#64748b', bg: '#f1f5f9',
-                                                    padding: '0.25rem 0.75rem', borderRadius: '999px', background: '#f8fafc', border: '1px solid #e2e8f0'
-                                                }}>
-                                                    Belum Ada Laporan
-                                                </span>
-                                            ) : (
-                                                <span style={{
-                                                    fontSize: '0.75rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.25rem',
-                                                    padding: '0.25rem 0.75rem', borderRadius: '999px',
-                                                    background: usulan.report.status === 'submitted' ? '#eff6ff' :
-                                                        usulan.report.status === 'accepted' ? '#f0fdf4' :
-                                                            usulan.report.status === 'rejected' ? '#fef2f2' : '#fffbeb',
-                                                    color: usulan.report.status === 'submitted' ? '#1d4ed8' :
-                                                        usulan.report.status === 'accepted' ? '#15803d' :
-                                                            usulan.report.status === 'rejected' ? '#b91c1c' : '#b45309',
-                                                    border: `1px solid ${usulan.report.status === 'submitted' ? '#dbeafe' :
-                                                            usulan.report.status === 'accepted' ? '#dcfce7' :
-                                                                usulan.report.status === 'rejected' ? '#fee2e2' : '#fef3c7'
-                                                        }`
-                                                }}>
-                                                    {usulan.report.status === 'submitted' ? <CheckCircle2 size={12} /> :
-                                                        usulan.report.status === 'accepted' ? <CheckCircle2 size={12} /> :
-                                                            usulan.report.status === 'rejected' ? <AlertCircle size={12} /> : <Clock size={12} />}
-                                                    {usulan.report.status === 'submitted' ? 'Diajukan' :
-                                                        usulan.report.status === 'accepted' ? 'Diterima' :
-                                                            usulan.report.status === 'rejected' ? 'Revisi' : 'Draft'}
-                                                </span>
-                                            )}
-                                        </div>
-                                    </div>
-
-                                    <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: '1rem', display: 'flex', justifyContent: 'flex-end' }}>
-                                        <Link
-                                            href={route('dosen.pengabdian.laporan-kemajuan.show', usulan.id)}
-                                            style={{
-                                                display: 'inline-flex',
-                                                alignItems: 'center',
-                                                gap: '0.5rem',
-                                                background: usulan.report ? '#0f172a' : '#2563eb',
-                                                color: 'white',
-                                                padding: '0.5rem 1rem',
-                                                borderRadius: '0.5rem',
-                                                fontSize: '0.875rem',
-                                                fontWeight: 600,
-                                                transition: 'all 0.2s'
-                                            }}
-                                            className="hover:opacity-90 active:scale-95"
-                                        >
-                                            {usulan.report ? <Edit size={14} /> : <FileText size={14} />}
-                                            {usulan.report ? 'Edit Laporan' : 'Buat Laporan'}
-                                            <ChevronRight size={14} />
-                                        </Link>
-                                    </div>
-                                </motion.div>
-                            ))
-                        )}
-                    </motion.div>
-
-                    {/* Pagination */}
-                    <div className="mt-8">
-                        <Pagination links={fundedUsulan.links} />
+                                        </td>
+                                    </tr>
+                                ) : (
+                                    <AnimatePresence mode="popLayout">
+                                        {filteredList.map((usulan, index) => (
+                                            <motion.tr
+                                                key={usulan.id}
+                                                variants={itemVariants}
+                                                className="hover:bg-blue-50/30 transition-colors group"
+                                            >
+                                                <td className="px-6 py-8 text-sm text-gray-400 font-medium text-center">{index + 1}</td>
+                                                <td className="px-6 py-8">
+                                                    <div className="flex flex-col gap-1.5">
+                                                        <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-50 text-blue-700 w-fit uppercase border border-blue-100">
+                                                            {usulan.skema}
+                                                        </span>
+                                                        <div className="flex items-center gap-1.5 text-gray-500">
+                                                            <Calendar size={12} />
+                                                            <span className="text-[11px] font-medium">{formatAcademicYear(usulan.tahun_pertama)}</span>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-8">
+                                                    <div className="flex flex-col gap-2">
+                                                        <p className="text-sm text-gray-800 font-semibold leading-relaxed max-w-lg group-hover:text-blue-700 transition-colors uppercase">
+                                                            {usulan.judul}
+                                                        </p>
+                                                        <div className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-blue-50 text-blue-700 rounded-md text-[10px] font-bold border border-blue-100/50 w-fit">
+                                                            <div className="w-1 h-1 bg-blue-400 rounded-full" />
+                                                            DANA DISETUJUI: Rp {new Intl.NumberFormat('id-ID').format(usulan.dana_disetujui || 0)}
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-8">
+                                                    <div className="flex justify-center">
+                                                        {!usulan.report ? (
+                                                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold bg-gray-100 text-gray-500 uppercase border border-gray-200">
+                                                                <div className="w-1.5 h-1.5 rounded-full bg-gray-400" />
+                                                                Belum Mengisi
+                                                            </span>
+                                                        ) : usulan.report.status === 'Draft' ? (
+                                                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 uppercase border border-amber-100">
+                                                                <div className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                                                                Draft
+                                                            </span>
+                                                        ) : (
+                                                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 uppercase border border-emerald-100">
+                                                                <CheckCircle2 className="w-3 h-3" />
+                                                                Submitted
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-8 text-center">
+                                                    {usulan.report?.file_laporan ? (
+                                                        <a
+                                                            href={`/storage/${usulan.report.file_laporan}`}
+                                                            target="_blank"
+                                                            className="inline-flex items-center justify-center w-10 h-10 bg-white border border-gray-100 text-blue-600 rounded-xl hover:bg-blue-600 hover:text-white transition-all shadow-sm"
+                                                            title="Unduh Laporan"
+                                                        >
+                                                            <Download className="w-5 h-5" />
+                                                        </a>
+                                                    ) : (
+                                                        <div className="w-10 h-10 mx-auto flex items-center justify-center text-gray-200">
+                                                            <FileText className="w-5 h-5 opacity-20" />
+                                                        </div>
+                                                    )}
+                                                </td>
+                                                <td className="px-6 py-8 text-center">
+                                                    <Link
+                                                        href={route('dosen.pengabdian.laporan-kemajuan.show', usulan.id)}
+                                                        className="inline-flex items-center justify-center w-10 h-10 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-600 hover:text-white transition-all shadow-sm"
+                                                    >
+                                                        <Edit className="w-5 h-5" />
+                                                    </Link>
+                                                </td>
+                                            </motion.tr>
+                                        ))}
+                                    </AnimatePresence>
+                                )}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
-            </div>
+
+                <div className="mt-8">
+                    <Pagination links={fundedUsulan.links} />
+                </div>
+            </motion.main>
             <Footer />
-        </>
+        </div>
     );
 }

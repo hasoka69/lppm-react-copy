@@ -31,25 +31,12 @@ import {
     Eye
 } from 'lucide-react';
 import { formatAcademicYear } from '@/utils/academicYear';
-import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { Toaster } from '@/components/ui/sonner';
 
 import { createPortal } from 'react-dom';
 
-const containerVariants = {
-    hidden: { opacity: 0, y: 10 },
-    visible: {
-        opacity: 1,
-        y: 0,
-        transition: { duration: 0.5 }
-    },
-    exit: {
-        opacity: 0,
-        y: -10,
-        transition: { duration: 0.3 }
-    }
-};
+
 
 interface Props {
     usulan: any;
@@ -98,7 +85,6 @@ export default function Detail({ usulan, laporan_akhir, outputs, isAdminView = f
             <Head title={`Laporan Akhir - ${usulan.judul}`} />
             <Header />
 
-            {/* Professional Tab Navigation */}
             <div className="bg-white border-b border-gray-100 sticky top-0 z-30">
                 <div className="max-w-7xl mx-auto px-6">
                     <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
@@ -113,15 +99,9 @@ export default function Detail({ usulan, laporan_akhir, outputs, isAdminView = f
                             <button
                                 key={idx}
                                 onClick={() => tab.route !== '#' && router.visit(tab.route)}
-                                className={`px-5 py-4 text-[13px] font-semibold transition-all whitespace-nowrap relative ${tab.active ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
+                                className={`px-5 py-4 text-[13px] font-semibold transition-all whitespace-nowrap relative ${tab.active ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
                             >
                                 {tab.label}
-                                {tab.active && (
-                                    <motion.div
-                                        layoutId="activeTab"
-                                        className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 rounded-full"
-                                    />
-                                )}
                             </button>
                         ))}
                     </div>
@@ -129,12 +109,7 @@ export default function Detail({ usulan, laporan_akhir, outputs, isAdminView = f
             </div>
 
             <main className="max-w-7xl mx-auto px-6 py-10">
-                <motion.div
-                    initial="hidden"
-                    animate="visible"
-                    variants={containerVariants}
-                    className="space-y-8"
-                >
+                <div className="space-y-8">
                     {/* Header Section */}
                     <div className="flex flex-col gap-6">
                         <div className="space-y-1">
@@ -144,14 +119,14 @@ export default function Detail({ usulan, laporan_akhir, outputs, isAdminView = f
                             >
                                 <ArrowLeft className="w-3.5 h-3.5" /> Kembali ke Daftar
                             </Link>
-                            <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
-                                Laporan <span className="text-blue-600 font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">Akhir</span>
+                            <h1 className="text-3xl font-bold text-gray-900 tracking-tight uppercase">
+                                Laporan <span className="text-blue-600">Akhir</span>
                             </h1>
                             <p className="text-gray-500 text-[13px] font-medium uppercase tracking-[0.05em]">Modul Penelitian</p>
                         </div>
 
                         {/* Proposal Summary Card */}
-                        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 flex flex-col md:flex-row items-center justify-between gap-6 relative group overflow-hidden w-full">
+                        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden w-full">
                             <div className="absolute top-0 left-0 w-1.5 h-full bg-blue-600" />
                             <div className="flex-1 space-y-3">
                                 <div className="flex items-center gap-3">
@@ -163,7 +138,7 @@ export default function Detail({ usulan, laporan_akhir, outputs, isAdminView = f
                                     {usulan.judul}
                                 </h2>
                                 <div className="flex items-center gap-2 text-[11px] font-bold text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-100 w-fit">
-                                    <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />
+                                    <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full" />
                                     DANA DISETUJUI: Rp {new Intl.NumberFormat('id-ID').format(usulan.dana_disetujui || usulan.total_anggaran || 0)}
                                 </div>
                             </div>
@@ -180,11 +155,7 @@ export default function Detail({ usulan, laporan_akhir, outputs, isAdminView = f
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-10">
-                        <motion.div
-                            initial={{ opacity: 0, x: 20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            className="space-y-10"
-                        >
+                        <div className="space-y-10">
                             {/* Section 1: Metadata */}
                             <section className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                                 <div className="p-6 border-b border-gray-50 bg-gray-50/30 font-bold text-gray-700 text-sm flex items-center gap-2">
@@ -226,9 +197,12 @@ export default function Detail({ usulan, laporan_akhir, outputs, isAdminView = f
                                                     <span className="truncate">{data.file_laporan ? data.file_laporan.name : 'Pilih Laporan Akhir (PDF)'}</span>
                                                     <Upload className="w-4 h-4 opacity-40" />
                                                 </button>
+                                                <a href="/storage/templates/template_laporan_akhir_penelitian.docx" target="_blank" className="bg-gray-50 text-gray-600 px-4 py-3.5 rounded-xl border border-gray-100 hover:bg-white hover:border-blue-500 hover:text-blue-600 transition-all flex items-center group relative cursor-pointer" title="Unduh Template Laporan Akhir">
+                                                    <Download className="w-4 h-4" />
+                                                </a>
                                                 {laporan_akhir?.file_laporan && (
-                                                    <a href={`/storage/${laporan_akhir.file_laporan}`} target="_blank" className="bg-blue-50 text-blue-600 px-4 py-3.5 rounded-xl border border-blue-100 hover:bg-blue-100 transition-all flex items-center">
-                                                        <Download className="w-4 h-4" />
+                                                    <a href={`/storage/${laporan_akhir.file_laporan}`} target="_blank" className="bg-blue-50 text-blue-600 px-4 py-3.5 rounded-xl border border-blue-100 hover:bg-blue-100 transition-all flex items-center" title="Lihat Berkas">
+                                                        <Eye className="w-4 h-4" />
                                                     </a>
                                                 )}
                                             </div>
@@ -252,14 +226,15 @@ export default function Detail({ usulan, laporan_akhir, outputs, isAdminView = f
                                             <thead>
                                                 <tr className="bg-gray-50/50 border-b border-gray-50">
                                                     <th className="px-8 py-5 text-[11px] font-bold text-gray-400 uppercase tracking-wider w-16 text-center">No</th>
-                                                    <th className="px-8 py-5 text-[11px] font-bold text-gray-400 uppercase tracking-wider">Target Capaian</th>
-                                                    <th className="px-8 py-5 text-[11px] font-bold text-gray-400 uppercase tracking-wider">Status & Dokumen</th>
-                                                    <th className="px-8 py-5 text-[11px] font-bold text-gray-400 uppercase tracking-wider w-40 text-center">Aksi</th>
+                                                    <th className="px-8 py-5 text-[11px] font-bold text-gray-400 uppercase tracking-wider w-40">Kategori Luaran</th>
+                                                    <th className="px-8 py-5 text-[11px] font-bold text-gray-400 uppercase tracking-wider w-32">Status</th>
+                                                    <th className="px-8 py-5 text-[11px] font-bold text-gray-400 uppercase tracking-wider">Judul Artikel</th>
+                                                    <th className="px-8 py-5 text-[11px] font-bold text-gray-400 uppercase tracking-wider w-32 text-center">Aksi</th>
                                                 </tr>
                                             </thead>
                                             <tbody className="divide-y divide-gray-50">
                                                 {outputs.map((output, idx) => (
-                                                    <OutputRow key={output.id} output={output} index={idx + 1} isAdminView={isAdminView} />
+                                                    <OutputRow key={output.id} output={output} index={idx + 1} isAdminView={isAdminView} isLaporanDraft={laporan_akhir?.status === 'Draft' || !laporan_akhir?.status} />
                                                 ))}
                                             </tbody>
                                         </table>
@@ -274,7 +249,7 @@ export default function Detail({ usulan, laporan_akhir, outputs, isAdminView = f
                                     <div className="p-6 border-b border-gray-50 bg-gray-50/30 flex items-center justify-between">
                                         <h3 className="text-sm font-bold text-gray-700 flex items-center gap-2">
                                             <ImageIcon className="w-4 h-4 text-indigo-500" />
-                                            Poster Diseminasi
+                                            Poster Diseminasi (Opsional)
                                         </h3>
                                     </div>
                                     <div className="p-8 flex-1 flex flex-col items-center justify-center text-center space-y-6">
@@ -297,7 +272,7 @@ export default function Detail({ usulan, laporan_akhir, outputs, isAdminView = f
 
                                         <div className="space-y-4 w-full">
                                             <div className="text-center">
-                                                <p className="text-[13px] font-bold text-gray-700">Unggah Poster Penelitian</p>
+                                                <p className="text-[13px] font-bold text-gray-700">Unggah Poster Penelitian (Opsional)</p>
                                                 <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-wider mt-1">Image format (JPG/PNG) • Max 5MB</p>
                                             </div>
                                             <input type="file" ref={filePosterRef} className="hidden" onChange={e => setData('file_poster', e.target.files?.[0] || null)} accept="image/*" />
@@ -318,7 +293,7 @@ export default function Detail({ usulan, laporan_akhir, outputs, isAdminView = f
                                     <div className="p-6 border-b border-gray-50 bg-gray-50/30 flex items-center justify-between">
                                         <h3 className="text-sm font-bold text-gray-700 flex items-center gap-2">
                                             <Video className="w-4 h-4 text-rose-500" />
-                                            Tautan Video Produk
+                                            Tautan Video Produk (Opsional)
                                         </h3>
                                     </div>
                                     <div className="p-8 flex-1 space-y-8 flex flex-col justify-center">
@@ -355,7 +330,7 @@ export default function Detail({ usulan, laporan_akhir, outputs, isAdminView = f
                             </section>
 
                             <div className="flex gap-4 justify-end pt-6">
-                                {!isAdminView && (
+                                {(!isAdminView && (laporan_akhir?.status === 'Draft' || !laporan_akhir?.status)) && (
                                     <>
                                         <button
                                             type="submit"
@@ -375,10 +350,10 @@ export default function Detail({ usulan, laporan_akhir, outputs, isAdminView = f
                                     </>
                                 )}
                             </div>
-                        </motion.div>
+                        </div>
                     </form>
                     <Toaster />
-                </motion.div>
+                </div>
             </main>
 
             <Footer />
@@ -386,28 +361,22 @@ export default function Detail({ usulan, laporan_akhir, outputs, isAdminView = f
     );
 }
 
-function OutputRow({ output, index, isAdminView = false }: { output: any, index: number, isAdminView?: boolean }) {
+function OutputRow({ output, index, isAdminView = false, isLaporanDraft = true }: { output: any, index: number, isAdminView?: boolean, isLaporanDraft?: boolean }) {
     const [isEditing, setIsEditing] = useState(false);
-    const isReadOnly = isAdminView;
+    const isReadOnly = isAdminView || !isLaporanDraft;
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const { data, setData, post, processing, errors } = useForm({
-        judul_realisasi: output.judul_realisasi || '',
-        status: output.status || 'Rencana',
-        peran_penulis: output.peran_penulis || '',
-        nama_jurnal: output.nama_jurnal || '',
-        issn: output.issn || '',
-        // pengindek: output.pengindek || '', // Removed
-        // tahun_realisasi: output.tahun_realisasi || '', // Removed
-        volume: output.volume || '',
-        nomor: output.nomor || '',
-        halaman_awal: output.halaman_awal || '',
-        halaman_akhir: output.halaman_akhir || '',
-        url_bukti: output.url_bukti || '',
-        url_artikel: output.url_artikel || '',
-        doi: output.doi || '',
-        keterangan: output.keterangan || '',
-        // file_bukti: null as File | null, // Removed
+        judul_realisasi_akhir: output.akhir_data?.judul_realisasi_akhir || output.judul_realisasi_akhir || output.kemajuan_data?.judul_realisasi || output.judul_realisasi || '',
+        status_akhir: output.akhir_data?.status_akhir || output.status_akhir || output.kemajuan_data?.status || output.status || 'Published',
+        peran_penulis: output.akhir_data?.peran_penulis || output.peran_penulis || output.kemajuan_data?.peran_penulis || '',
+        nama_jurnal: output.akhir_data?.nama_jurnal || output.nama_jurnal || output.kemajuan_data?.nama_jurnal || '',
+        issn: output.akhir_data?.issn || output.issn || output.kemajuan_data?.issn || '',
+        volume: output.akhir_data?.volume || output.volume || output.kemajuan_data?.volume || '',
+        nomor: output.akhir_data?.nomor || output.nomor || output.kemajuan_data?.nomor || '',
+        halaman_awal: output.akhir_data?.halaman_awal || output.halaman_awal || output.kemajuan_data?.halaman_awal || '',
+        halaman_akhir: output.akhir_data?.halaman_akhir || output.halaman_akhir || output.kemajuan_data?.halaman_akhir || '',
+        keterangan_akhir: output.akhir_data?.keterangan_akhir || output.keterangan_akhir || output.kemajuan_data?.keterangan || output.keterangan || '',
     });
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -424,191 +393,194 @@ function OutputRow({ output, index, isAdminView = false }: { output: any, index:
     return (
         <>
 
-            <motion.tr
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="hover:bg-blue-50/20 transition-all align-top group"
-            >
+            <tr className="hover:bg-blue-50/20 transition-all align-top group">
                 <td className="px-8 py-8 text-sm text-gray-400 font-bold text-center opacity-40">{index.toString().padStart(2, '0')}</td>
                 <td className="px-8 py-8">
-                    <div className="space-y-2">
-                        <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-md uppercase tracking-wider border border-blue-100">
-                            {output.kategori}
-                        </span>
-                        <p className="text-[13px] font-bold text-gray-800 leading-relaxed italic line-clamp-2">
-                            {output.deskripsi}
-                        </p>
+                    <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-md uppercase tracking-wider border border-blue-100 whitespace-nowrap inline-block">
+                        {output.kategori}
+                    </span>
+                </td>
+                <td className="px-8 py-8">
+                    <div className={`inline-flex items-center px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest ${(() => { const s = output.akhir_data?.status_akhir || output.status_akhir || output.kemajuan_data?.status || output.status; if (s === 'Published' || s === 'LOA') return 'bg-emerald-500 text-white shadow-sm'; if (s === 'Submit') return 'bg-blue-600 text-white shadow-sm'; if (s === 'Under Review') return 'bg-amber-500 text-white shadow-sm'; return 'bg-gray-400 text-white shadow-sm'; })()}`}>
+                        {output.akhir_data?.status_akhir || output.status_akhir || output.kemajuan_data?.status || output.status || 'Belum Diisi'}
                     </div>
                 </td>
                 <td className="px-8 py-8">
-                    <div className="space-y-4">
-                        <div className={`inline-flex items-center px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest ${output.status === 'Published' || output.status === 'LOA' ? 'bg-emerald-500 text-white' : 'bg-blue-600 text-white'}`}>
-                            {output.status}
-                        </div>
-                        {output.judul_realisasi && (
+                    {(output.akhir_data?.judul_realisasi_akhir || output.judul_realisasi_akhir || output.kemajuan_data?.judul_realisasi || output.judul_realisasi) && (
+                        <div className="space-y-4">
                             <div className="p-4 bg-gray-50 border border-gray-100 rounded-xl group-hover:bg-white transition-colors">
-                                <p className="text-[12px] text-gray-700 font-bold leading-snug">{output.judul_realisasi}</p>
+                                <p className="text-[13px] text-gray-700 font-bold leading-snug">{output.akhir_data?.judul_realisasi_akhir || output.judul_realisasi_akhir || output.kemajuan_data?.judul_realisasi || output.judul_realisasi}</p>
                                 <div className="flex items-center gap-4 mt-3">
-                                    {output.file_bukti && (
-                                        <a href={`/storage/${output.file_bukti}`} target="_blank" className="flex items-center gap-1.5 text-blue-600 hover:text-blue-800 transition-colors">
+                                    {(output.akhir_data?.file_bukti_akhir || output.file_bukti_akhir || output.kemajuan_data?.file_bukti || output.file_bukti) && (
+                                        <a href={`/storage/${output.akhir_data?.file_bukti_akhir || output.file_bukti_akhir || output.kemajuan_data?.file_bukti || output.file_bukti}`} target="_blank" className="flex items-center gap-1.5 text-blue-600 hover:text-blue-800 transition-colors">
                                             <Paperclip className="w-3.5 h-3.5" />
-                                            <span className="text-[10px] font-bold uppercase tracking-wider">Dokumen Bukti</span>
+                                            <span className="text-[10px] font-bold uppercase tracking-wider">Berkas Bukti</span>
                                         </a>
                                     )}
+
                                 </div>
                             </div>
+                        </div>
+                    )}
+                </td>
+                <td className="px-8 py-8 text-center">
+                    <div className="flex items-center justify-center gap-2">
+                        {!isReadOnly ? (
+                            <button
+                                type="button"
+                                onClick={() => setIsEditing(true)}
+                                className="bg-white border border-gray-100 p-3 rounded-xl hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all shadow-sm"
+                            >
+                                <Edit className="w-4 h-4 text-gray-400 group-hover:text-white" />
+                            </button>
+                        ) : (
+                            <button
+                                type="button"
+                                onClick={() => setIsEditing(true)}
+                                className="bg-white border border-gray-100 p-3 rounded-xl hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all shadow-sm group/view"
+                            >
+                                <Eye className="w-4 h-4 text-gray-400 group-hover/view:text-white" />
+                            </button>
                         )}
                     </div>
                 </td>
-                <td className="px-8 py-8 text-center">
-                    {!isReadOnly ? (
-                        <button
-                            onClick={() => setIsEditing(true)}
-                            className="bg-white border border-gray-100 p-3 rounded-xl hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all shadow-sm"
-                        >
-                            <Edit className="w-4 h-4 text-gray-400 group-hover:text-white" />
-                        </button>
-                    ) : (
-                        <button
-                            onClick={() => setIsEditing(true)}
-                            className="bg-white border border-gray-100 p-3 rounded-xl hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all shadow-sm group/view"
-                        >
-                            <Eye className="w-4 h-4 text-gray-400 group-hover/view:text-white" />
-                        </button>
-                    )}
-                </td>
-            </motion.tr>
+            </tr>
 
-            {createPortal(
-                <AnimatePresence>
-                    {isEditing && (
-                        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                            <motion.div
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                exit={{ opacity: 0 }}
-                                onClick={() => setIsEditing(false)}
-                                className="absolute inset-0 bg-gray-900/40 backdrop-blur-md"
-                            />
-                            <motion.div
-                                initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                                animate={{ opacity: 1, scale: 1, y: 0 }}
-                                exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                                className="bg-white rounded-[2rem] shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col relative z-10 border border-gray-100"
-                            >
-                                <div className="px-10 py-6 bg-gradient-to-r from-gray-900 to-blue-900 flex items-center justify-between">
-                                    <div className="flex items-center gap-5">
-                                        <div className="p-2.5 bg-white/10 rounded-xl border border-white/10 backdrop-blur-md">
-                                            <BadgeCheck className="w-5 h-5 text-white" />
-                                        </div>
-                                        <div>
-                                            <h3 className="text-lg font-bold text-white tracking-tight">Capaian Akhir Luaran</h3>
-                                            <p className="text-[10px] text-blue-100/60 font-bold uppercase tracking-widest mt-0.5">Dokumentasi Luaran Wajib</p>
-                                        </div>
-                                    </div>
-                                    <button onClick={() => setIsEditing(false)} className="p-2 bg-white/10 text-white rounded-xl hover:bg-white/20 transition-all">
-                                        <X className="w-5 h-5" />
-                                    </button>
+            {isEditing && createPortal(
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                    <div
+                        onClick={() => setIsEditing(false)}
+                        className="absolute inset-0 bg-gray-900/40 backdrop-blur-md"
+                    />
+                    <div className="bg-white rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col relative z-10 border border-gray-100">
+                        <div className="px-10 py-6 bg-blue-600 flex items-center justify-between">
+                            <div className="flex items-center gap-5">
+                                <div className="p-2.5 bg-white/10 rounded-xl border border-white/10 backdrop-blur-md">
+                                    <BadgeCheck className="w-5 h-5 text-white" />
                                 </div>
-
-                                <div className="flex-1 overflow-y-auto p-10 space-y-8">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                        <div className="md:col-span-2 space-y-2">
-                                            <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">Judul Artikel</label>
-                                            <textarea
-                                                className="w-full bg-gray-50 border-gray-100 rounded-xl focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500 py-4 px-6 text-sm font-medium min-h-[100px] transition-all"
-                                                value={data.judul_realisasi}
-                                                onChange={e => setData('judul_realisasi', e.target.value)}
-                                                placeholder="Masukkan judul artikel..."
-                                                readOnly={isAdminView}
-                                            />
-                                        </div>
-
-                                        <div className="space-y-2">
-                                            <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">Status Capaian Akhir</label>
-                                            <select
-                                                className="w-full bg-gray-50 border-gray-100 rounded-xl py-3.5 px-6 text-sm font-bold"
-                                                value={data.status}
-                                                onChange={e => setData('status', e.target.value)}
-                                                disabled={isAdminView}
-                                            >
-                                                <option value="Submit">Submit</option>
-                                                <option value="Under Review">Under Review</option>
-                                                <option value="LOA">LOA</option>
-                                                <option value="Published">Published</option>
-                                            </select>
-                                        </div>
-
-                                        <div className="space-y-2">
-                                            <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">Peran Penulis</label>
-                                            <select
-                                                className="w-full bg-gray-50 border-gray-100 rounded-xl py-3.5 px-6 text-sm font-bold"
-                                                value={data.peran_penulis}
-                                                onChange={e => setData('peran_penulis', e.target.value)}
-                                                disabled={isAdminView}
-                                            >
-                                                <option value="">-- Pilih Peran --</option>
-                                                <option value="Penulis Pertama">Penulis Pertama</option>
-                                                <option value="Penulis Pendamping">Penulis Pendamping</option>
-                                                <option value="Penulis Korespondensi">Penulis Korespondensi</option>
-                                            </select>
-                                        </div>
-
-                                        <div className="space-y-2">
-                                            <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">Nama Jurnal</label>
-                                            <input
-                                                type="text"
-                                                className="w-full bg-gray-50 border-gray-100 rounded-xl py-3.5 px-6 text-sm font-bold"
-                                                value={data.nama_jurnal}
-                                                onChange={e => setData('nama_jurnal', e.target.value)}
-                                                placeholder="Nama Jurnal..."
-                                                readOnly={isAdminView}
-                                            />
-                                        </div>
-
-                                        <div className="space-y-2">
-                                            <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">ISSN / ISBN / No. Paten</label>
-                                            <input
-                                                type="text"
-                                                className="w-full bg-gray-50 border-gray-100 rounded-xl py-3.5 px-6 text-sm font-bold"
-                                                value={data.issn}
-                                                onChange={e => setData('issn', e.target.value)}
-                                                placeholder="XXXX-XXXX"
-                                                readOnly={isAdminView}
-                                            />
-                                        </div>
-
-                                        <div className="space-y-2">
-                                            <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">Kategori Luaran</label>
-                                            <div className="w-full bg-gray-100 border-gray-100 rounded-xl py-3.5 px-6 text-sm font-bold text-gray-500 cursor-not-allowed">
-                                                {output.kategori}
-                                            </div>
-                                        </div>
-
-                                        {/* Removed Tahun Realisasi and Bukti Unggah where applicable */}
-
-                                        <div className="md:col-span-2 pt-6 flex justify-end gap-3">
-                                            <button type="button" onClick={() => setIsEditing(false)} className="px-8 py-3 text-[13px] font-bold text-gray-400 hover:text-gray-700 transition-colors">
-                                                {isAdminView ? 'Tutup' : 'Batalkan'}
-                                            </button>
-                                            {!isAdminView && (
-                                                <button
-                                                    type="button"
-                                                    onClick={handleSubmit}
-                                                    disabled={processing}
-                                                    className="px-14 py-3 bg-blue-600 text-white rounded-xl text-[13px] font-bold shadow-lg shadow-blue-100 hover:bg-blue-700 transition-all flex items-center gap-2"
-                                                >
-                                                    {processing ? '...' : <Save className="w-4 h-4" />}
-                                                    Simpan Capaian Luaran
-                                                </button>
-                                            )}
-                                        </div>
-                                    </div>
+                                <div>
+                                    <h3 className="text-lg font-bold text-white tracking-tight">Capaian Akhir Luaran</h3>
+                                    <p className="text-[10px] text-blue-100/60 font-bold uppercase tracking-widest mt-0.5">Dokumentasi Luaran Wajib</p>
                                 </div>
-                            </motion.div>
+                            </div>
+                            <button onClick={() => setIsEditing(false)} className="p-2 bg-white/10 text-white rounded-xl hover:bg-white/20 transition-all">
+                                <X className="w-5 h-5" />
+                            </button>
                         </div>
-                    )}
-                </AnimatePresence>,
+
+                        <div className="flex-1 overflow-y-auto p-10 space-y-8 no-scrollbar">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div className="md:col-span-2 space-y-2">
+                                    <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">Judul Artikel</label>
+                                    <textarea
+                                        className="w-full bg-gray-50 border-gray-100 rounded-xl focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500 py-4 px-6 text-sm font-medium min-h-[100px] transition-all"
+                                        value={data.judul_realisasi_akhir}
+                                        onChange={e => setData('judul_realisasi_akhir', e.target.value)}
+                                        placeholder="Masukkan judul artikel..."
+                                        readOnly={isAdminView}
+                                    />
+                                    {errors.judul_realisasi_akhir && <div className="text-red-500 text-xs mt-1">{errors.judul_realisasi_akhir}</div>}
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">Status Capaian Akhir</label>
+                                    <select
+                                        className="w-full bg-gray-50 border-gray-100 rounded-xl py-3.5 px-6 text-sm font-bold"
+                                        value={data.status_akhir}
+                                        onChange={e => setData('status_akhir', e.target.value)}
+                                        disabled={isAdminView}
+                                    >
+                                        <option value="Submit">Submit</option>
+                                        <option value="Under Review">Under Review</option>
+                                        <option value="LOA">LOA</option>
+                                        <option value="Published">Published</option>
+                                    </select>
+                                    {errors.status_akhir && <div className="text-red-500 text-xs mt-1">{errors.status_akhir}</div>}
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">Peran Penulis</label>
+                                    <select
+                                        className="w-full bg-gray-50 border-gray-100 rounded-xl py-3.5 px-6 text-sm font-bold"
+                                        value={data.peran_penulis}
+                                        onChange={e => setData('peran_penulis', e.target.value)}
+                                        disabled={isAdminView}
+                                    >
+                                        <option value="">-- Pilih Peran --</option>
+                                        <option value="Penulis Pertama">Penulis Pertama</option>
+                                        <option value="Penulis Pendamping">Penulis Pendamping</option>
+                                        <option value="Penulis Korespondensi">Penulis Korespondensi</option>
+                                    </select>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">Nama Jurnal</label>
+                                    <input
+                                        type="text"
+                                        className="w-full bg-gray-50 border-gray-100 rounded-xl py-3.5 px-6 text-sm font-bold"
+                                        value={data.nama_jurnal}
+                                        onChange={e => setData('nama_jurnal', e.target.value)}
+                                        placeholder="Nama Jurnal..."
+                                        readOnly={isAdminView}
+                                    />
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">ISSN / ISBN / No. Paten</label>
+                                    <input
+                                        type="text"
+                                        className="w-full bg-gray-50 border-gray-100 rounded-xl py-3.5 px-6 text-sm font-bold"
+                                        value={data.issn}
+                                        onChange={e => setData('issn', e.target.value)}
+                                        placeholder="XXXX-XXXX"
+                                        readOnly={isAdminView}
+                                    />
+                                    {errors.issn && <div className="text-red-500 text-xs mt-1">{errors.issn}</div>}
+                                </div>
+
+
+
+                                <div className="md:col-span-2 space-y-2">
+                                    <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">Keterangan Capaian</label>
+                                    <textarea
+                                        className="w-full bg-gray-50 border-gray-100 rounded-xl focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500 py-4 px-6 text-sm font-medium min-h-[100px] transition-all"
+                                        value={data.keterangan_akhir}
+                                        onChange={e => setData('keterangan_akhir', e.target.value)}
+                                        placeholder="Catatan tambahan mengenai status luaran..."
+                                        readOnly={isAdminView}
+                                    />
+                                    {errors.keterangan_akhir && <div className="text-red-500 text-xs mt-1">{errors.keterangan_akhir}</div>}
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">Kategori Luaran</label>
+                                    <div className="w-full bg-gray-100 border-gray-100 rounded-xl py-3.5 px-6 text-sm font-bold text-gray-500 cursor-not-allowed">
+                                        {output.kategori}
+                                    </div>
+                                </div>
+
+                                {/* Removed Tahun Realisasi and Bukti Unggah where applicable */}
+
+                                <div className="md:col-span-2 pt-6 flex justify-end gap-3">
+                                    <button type="button" onClick={() => setIsEditing(false)} className="px-8 py-3 text-[13px] font-bold text-gray-400 hover:text-gray-700 transition-colors">
+                                        {isAdminView ? 'Tutup' : 'Batalkan'}
+                                    </button>
+                                    {!isReadOnly && (
+                                        <button
+                                            type="button"
+                                            onClick={handleSubmit}
+                                            disabled={processing}
+                                            className="px-14 py-3 bg-blue-600 text-white rounded-xl text-[13px] font-bold shadow-lg shadow-blue-100 hover:bg-blue-700 transition-all flex items-center gap-2"
+                                        >
+                                            {processing ? '...' : <Save className="w-4 h-4" />}
+                                            Simpan Capaian Luaran
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>,
                 document.body
             )}
         </>

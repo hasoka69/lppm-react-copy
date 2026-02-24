@@ -4,6 +4,10 @@ import Header from '@/components/Header';
 import Footer from '@/components/footer';
 import Pagination from '@/components/Pagination';
 import { PaginatedResponse } from '@/types';
+import {
+    Eye, FileText, Search, BookOpen, AlertCircle, CheckCircle2, Clock, CheckCircle, Download, Calendar
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { formatAcademicYear, getAcademicYearOptions } from '@/utils/academicYear';
 import { router } from '@inertiajs/react';
 import Select from 'react-select';
@@ -176,40 +180,51 @@ export default function AdminPenelitianIndex({ proposals, activeTab = 'daftar', 
             <Head title="Admin LPPM - Monitoring Penelitian" />
             <Header />
 
-            {/* Simple Sub Navbar */}
-            <div className="bg-white border-b border-gray-200">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex space-x-8 overflow-x-auto no-scrollbar">
+            {/* Premium Sticky Sub Navbar */}
+            <div className="bg-white border-b border-gray-100 sticky top-0 z-30 shadow-sm/5">
+                <div className="max-w-7xl mx-auto px-6">
+                    <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
                         {tabs.map((tab) => (
                             <Link
                                 key={tab.id}
                                 href={tab.href}
-                                className={`py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap transition-all ${activeTab === tab.id
-                                    ? 'border-blue-600 text-blue-600'
-                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                className={`px-5 py-4 text-[13px] font-semibold transition-all whitespace-nowrap relative ${activeTab === tab.id
+                                    ? 'text-blue-600'
+                                    : 'text-gray-500 hover:text-gray-700'
                                     }`}
                             >
                                 {tab.label}
+                                {activeTab === tab.id && (
+                                    <motion.div
+                                        layoutId="activeTabUnderline"
+                                        className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 rounded-full"
+                                    />
+                                )}
                             </Link>
                         ))}
                     </div>
                 </div>
             </div>
 
-            <div className="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+                className="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8"
+            >
 
                 {/* Header Section */}
-                <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="mb-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
                     <div>
-                        <h1 className="text-xl font-bold text-gray-900">
+                        <h1 className="text-3xl font-black text-slate-900 tracking-tighter uppercase">
                             {tabs.find(t => t.id === activeTab)?.label || 'Monitoring Penelitian'}
                         </h1>
-                        <p className="text-gray-500 text-sm mt-1">
-                            Monitoring data usulan penelitian.
+                        <p className="text-slate-500 text-sm mt-3 font-medium">
+                            Monitoring data usulan penelitian LPPM.
                         </p>
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-4">
+                    <div className="flex flex-wrap items-center gap-5">
                         <div className="w-full sm:w-56">
                             <Select
                                 options={getAcademicYearOptions().map(opt => ({ value: opt.value.toString(), label: opt.label }))}
@@ -254,7 +269,7 @@ export default function AdminPenelitianIndex({ proposals, activeTab = 'daftar', 
                 <div className="mt-12 flex justify-center pb-12">
                     <Pagination links={proposals.links} />
                 </div>
-            </div>
+            </motion.div>
             {/* Contract Modal */}
             <Dialog open={isContractModalOpen} onOpenChange={setIsContractModalOpen}>
                 <DialogContent className="sm:max-w-[500px]">
@@ -591,7 +606,7 @@ function CatatanHarianTable({ proposals, currentPage, perPage }: { proposals: Us
                         <tr className="bg-slate-50/50 border-b border-slate-100">
                             <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] w-16 text-center">No</th>
                             <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Peneliti</th>
-                            <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Judul & Anggaran</th>
+                            <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Judul Penelitian</th>
                             <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Tahun</th>
                             <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-center">Progress</th>
                             <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-center">Aksi</th>
@@ -616,12 +631,15 @@ function CatatanHarianTable({ proposals, currentPage, perPage }: { proposals: Us
                                     <div className="space-y-2">
                                         <p className="text-sm text-slate-700 leading-snug line-clamp-2 font-bold uppercase tracking-tight">{item.judul}</p>
                                         <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-blue-50 text-blue-700 rounded-lg text-[10px] font-black tracking-widest border border-blue-100 leading-none">
-                                            ANGGARAN: Rp {new Intl.NumberFormat('id-ID').format(item.dana_disetujui || 0)}
+                                            DANA DISETUJUI: Rp {new Intl.NumberFormat('id-ID').format(item.dana_disetujui || 0)}
                                         </div>
                                     </div>
                                 </td>
-                                <td className="px-8 py-8 text-sm font-bold text-slate-500">
-                                    {formatAcademicYear(item.tahun_pertama)}
+                                <td className="px-8 py-8">
+                                    <div className="flex items-center gap-1.5 text-slate-500 font-bold">
+                                        <Calendar className="w-3.5 h-3.5" />
+                                        <span className="text-sm">{formatAcademicYear(item.tahun_pertama)}</span>
+                                    </div>
                                 </td>
                                 <td className="px-8 py-8">
                                     <div className="space-y-3 min-w-[180px]">
@@ -692,8 +710,11 @@ function PengkinianLuaranTable({ proposals, currentPage, perPage }: { proposals:
                                         </span>
                                     </div>
                                 </td>
-                                <td className="px-8 py-8 text-sm font-bold text-slate-500">
-                                    {formatAcademicYear(usulan.tahun_pertama)}
+                                <td className="px-8 py-8">
+                                    <div className="flex items-center gap-1.5 text-slate-500 font-bold">
+                                        <Calendar className="w-3.5 h-3.5" />
+                                        <span className="text-sm">{formatAcademicYear(usulan.tahun_pertama)}</span>
+                                    </div>
                                 </td>
                                 <td className="px-8 py-8 text-center text-center">
                                     <Link href={route('lppm.penelitian.pengkinian-luaran.show', usulan.id)} className="h-9 px-5 inline-flex items-center rounded-xl bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white text-[10px] font-black uppercase tracking-widest transition-all shadow-sm">

@@ -4,7 +4,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/footer';
 import styles from '../../../../../css/pengajuan.module.css';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Filter, Search, BookOpen } from 'lucide-react';
+import { Filter, Search, BookOpen, Calendar } from 'lucide-react';
 import { formatAcademicYear, getAcademicYearOptions, getCurrentAcademicYearCode } from '@/utils/academicYear';
 import Select from 'react-select'; // Added react-select
 
@@ -151,7 +151,7 @@ export default function Index({ fundedUsulan }: Props) {
                                     <tr className="bg-gray-50/50 border-b border-gray-100">
                                         <th className="px-6 py-5 text-[11px] font-bold text-gray-500 uppercase tracking-wider w-16 text-center">No</th>
                                         <th className="px-6 py-5 text-[11px] font-bold text-gray-500 uppercase tracking-wider w-40">Program & Skema</th>
-                                        <th className="px-6 py-5 text-[11px] font-bold text-gray-500 uppercase tracking-wider">Judul & Anggaran</th>
+                                        <th className="px-6 py-5 text-[11px] font-bold text-gray-500 uppercase tracking-wider">Judul Penelitian</th>
                                         <th className="px-6 py-5 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center w-48">Progress</th>
                                         <th className="px-6 py-5 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center w-24">Aksi</th>
                                     </tr>
@@ -162,9 +162,14 @@ export default function Index({ fundedUsulan }: Props) {
                                             <tr key={item.id} className="hover:bg-blue-50/20 transition group">
                                                 <td className="px-6 py-6 text-sm text-gray-400 font-bold text-center">{index + 1}</td>
                                                 <td className="px-6 py-6">
-                                                    <div className="space-y-1">
-                                                        <p className="text-[11px] font-bold text-blue-600 leading-tight uppercase mb-1">{item.skema}</p>
-                                                        <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Tahun Pelaksanaan : {formatAcademicYear(item.tahun)}</p>
+                                                    <div className="flex flex-col gap-1.5">
+                                                        <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-50 text-blue-700 w-fit uppercase border border-blue-100">
+                                                            {item.skema}
+                                                        </span>
+                                                        <div className="flex items-center gap-1.5 text-gray-500">
+                                                            <Calendar className="w-3 h-3" />
+                                                            <span className="text-[11px] font-medium">{formatAcademicYear(item.tahun)}</span>
+                                                        </div>
                                                     </div>
                                                 </td>
                                                 <td className="px-6 py-6 font-medium">
@@ -178,7 +183,7 @@ export default function Index({ fundedUsulan }: Props) {
                                                 </td>
                                                 <td className="px-6 py-6">
                                                     <div className="space-y-3">
-                                                        <div className="flex items-center justify-between text-[11px] font-black uppercase tracking-tight">
+                                                        <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-tight">
                                                             <span className="text-gray-400">Total Log</span>
                                                             <span className="text-blue-600">{item.total_logs} ENTRI</span>
                                                         </div>
@@ -190,7 +195,7 @@ export default function Index({ fundedUsulan }: Props) {
                                                                 className="h-full bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full"
                                                             />
                                                         </div>
-                                                        <div className="flex items-center justify-between text-[11px] font-black uppercase tracking-tight">
+                                                        <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-tight">
                                                             <span className="text-gray-400">Progress</span>
                                                             <span className="text-emerald-600 font-extrabold">{item.last_percentage}%</span>
                                                         </div>

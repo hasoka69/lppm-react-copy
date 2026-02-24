@@ -4,9 +4,11 @@ import Header from '@/components/Header';
 import Footer from '@/components/footer';
 import styles from '../../../../../css/pengajuan.module.css';
 import { motion } from 'framer-motion';
-import { ArrowRight, Filter, Search, BookOpen, Clock, BadgeCheck } from 'lucide-react';
+import { ArrowRight, Filter, Search, BookOpen, Calendar, BadgeCheck, AlertCircle } from 'lucide-react';
 import { formatAcademicYear, getAcademicYearOptions, getCurrentAcademicYearCode } from '@/utils/academicYear';
 import Select from 'react-select'; // Added react-select
+import Pagination from '@/components/Pagination';
+import { PaginatedResponse } from '@/types';
 
 interface FundedUsulan {
     id: number;
@@ -18,7 +20,7 @@ interface FundedUsulan {
 }
 
 interface Props {
-    fundedUsulan: FundedUsulan[];
+    fundedUsulan: PaginatedResponse<FundedUsulan>;
 }
 
 export default function Index({ fundedUsulan }: Props) {
@@ -30,7 +32,7 @@ export default function Index({ fundedUsulan }: Props) {
         ...getAcademicYearOptions().map(opt => ({ value: opt.value, label: opt.label }))
     ];
 
-    const filteredList = fundedUsulan.filter(u => {
+    const filteredList = fundedUsulan.data.filter(u => {
         const matchesYear = selectedYear ? u.tahun_pertama === selectedYear : true;
         const matchesSearch = u.judul.toLowerCase().includes(searchQuery.toLowerCase());
         return matchesYear && matchesSearch;
@@ -162,68 +164,60 @@ export default function Index({ fundedUsulan }: Props) {
                     </div>
 
                     {/* Table Section */}
-                    <div className="bg-white rounded-[2.5rem] shadow-2xl border border-gray-100 overflow-hidden transition-all duration-500 hover:shadow-blue-900/10">
+                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                         <div className="overflow-x-auto">
                             <table className="w-full text-left border-collapse">
                                 <thead>
-                                    <tr className="bg-gradient-to-r from-gray-50/50 to-white border-b border-gray-100">
-                                        <th className="px-8 py-6 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] w-16">No</th>
-                                        <th className="px-8 py-6 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Program & Skema</th>
-                                        <th className="px-8 py-6 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Judul Pengabdian</th>
-                                        <th className="px-8 py-6 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] text-center w-40">Capaian</th>
-                                        <th className="px-8 py-6 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] text-center w-32">Aksi</th>
+                                    <tr className="bg-gray-50/50 border-b border-gray-100">
+                                        <th className="px-6 py-5 text-[11px] font-bold text-gray-500 uppercase tracking-wider w-16 text-center">No</th>
+                                        <th className="px-6 py-5 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-left">Program &amp; Skema</th>
+                                        <th className="px-6 py-5 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-left">Judul Pengabdian</th>
+                                        <th className="px-6 py-5 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center w-40">Capaian</th>
+                                        <th className="px-6 py-5 text-[11px] font-bold text-gray-500 uppercase tracking-wider text-center w-32">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-50">
                                     {filteredList.length === 0 ? (
                                         <tr>
-                                            <td colSpan={5} className="px-8 py-24 text-center">
-                                                <div className="flex flex-col items-center gap-4">
-                                                    <div className="p-6 bg-gray-50 rounded-full">
-                                                        <Search className="w-10 h-10 text-gray-300" />
-                                                    </div>
-                                                    <p className="text-gray-400 font-bold tracking-tight">Tidak ada usulan pengabdian yang memerlukan pengkinian luaran.</p>
+                                            <td colSpan={5} className="px-6 py-20 text-center">
+                                                <div className="flex flex-col items-center gap-3 text-gray-400">
+                                                    <AlertCircle className="w-12 h-12 stroke-1" />
+                                                    <p className="italic text-sm">Tidak ada usulan pengabdian yang memerlukan pengkinian luaran.</p>
                                                 </div>
                                             </td>
                                         </tr>
                                     ) : (
                                         filteredList.map((usulan, index) => (
-                                            <motion.tr
-                                                key={usulan.id}
-                                                variants={itemVariants}
-                                                className="hover:bg-blue-50/30 transition-all duration-300 group"
-                                            >
-                                                <td className="px-8 py-8 text-sm text-gray-400 font-black tracking-tighter">{(index + 1).toString().padStart(2, '0')}</td>
-                                                <td className="px-8 py-8">
-                                                    <div className="space-y-2">
-                                                        <div className="flex items-center gap-2">
-                                                            <span className="px-3 py-1 bg-emerald-50 text-emerald-600 text-[10px] font-black rounded-lg border border-emerald-100 uppercase tracking-widest leading-none">
-                                                                {usulan.skema}
-                                                            </span>
-                                                        </div>
-                                                        <div className="flex items-center gap-2 text-gray-400">
-                                                            <Clock className="w-3.5 h-3.5" />
-                                                            <span className="text-[10px] font-bold uppercase tracking-widest">{formatAcademicYear(usulan.tahun_pertama)}</span>
+                                            <tr key={usulan.id} className="hover:bg-blue-50/30 transition-colors group">
+                                                <td className="px-6 py-8 text-sm text-gray-400 font-medium text-center">{index + 1}</td>
+                                                <td className="px-6 py-8">
+                                                    <div className="flex flex-col gap-1.5">
+                                                        <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-50 text-blue-700 w-fit uppercase border border-blue-100">
+                                                            {usulan.skema}
+                                                        </span>
+                                                        <div className="flex items-center gap-1.5 text-gray-500">
+                                                            <Calendar className="w-3 h-3" />
+                                                            <span className="text-[11px] font-medium">{formatAcademicYear(usulan.tahun_pertama)}</span>
                                                         </div>
                                                     </div>
                                                 </td>
-                                                <td className="px-8 py-8">
-                                                    <div className="space-y-3">
-                                                        <p className="text-sm font-bold text-gray-800 leading-relaxed max-w-xl group-hover:text-blue-700 transition-colors uppercase">
+                                                <td className="px-6 py-8">
+                                                    <div className="flex flex-col gap-2">
+                                                        <span className="text-sm text-gray-800 font-semibold leading-relaxed max-w-lg group-hover:text-blue-700 transition-colors uppercase">
                                                             {usulan.judul}
-                                                        </p>
-                                                        <div className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded-md text-[10px] font-bold border border-emerald-100/50">
-                                                            <div className="w-1 h-1 bg-emerald-400 rounded-full animate-pulse" />
+                                                        </span>
+                                                        <div className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-blue-50 text-blue-700 rounded-md text-[10px] font-bold border border-blue-100/50 w-fit">
+                                                            <div className="w-1 h-1 bg-blue-400 rounded-full" />
                                                             DANA DISETUJUI: Rp {new Intl.NumberFormat('id-ID').format(usulan.dana_disetujui || 0)}
                                                         </div>
                                                     </div>
                                                 </td>
-                                                <td className="px-8 py-8">
+                                                <td className="px-6 py-8">
                                                     <div className="flex justify-center">
                                                         <div className="flex flex-col items-center gap-1.5 p-3 rounded-2xl bg-gray-50 border border-gray-100 group-hover:bg-white group-hover:shadow-xl group-hover:shadow-blue-900/5 transition-all duration-500 min-w-[140px]">
                                                             <div className="flex items-center gap-2">
                                                                 <BadgeCheck className="w-4 h-4 text-blue-600" />
-                                                                <span className="text-[10px] font-black text-gray-700 uppercase tracking-widest">Progress</span>
+                                                                <span className="text-[10px] font-bold text-gray-700 uppercase tracking-widest">Tervalidasi</span>
                                                             </div>
                                                             <div className="w-full bg-gray-200 h-1.5 rounded-full overflow-hidden">
                                                                 <div
@@ -231,29 +225,31 @@ export default function Index({ fundedUsulan }: Props) {
                                                                     style={{ width: `${usulan.progress}%` }}
                                                                 />
                                                             </div>
-                                                            <span className="text-[9px] font-black text-blue-600 uppercase tracking-widest mt-0.5">
+                                                            <span className="text-[9px] font-bold text-blue-600 uppercase tracking-widest mt-0.5">
                                                                 {Math.round(usulan.progress)}% Complete
                                                             </span>
                                                         </div>
                                                     </div>
                                                 </td>
-                                                <td className="px-8 py-8">
-                                                    <div className="flex justify-center">
-                                                        <Link
-                                                            href={route('dosen.pengabdian.pengkinian-luaran.show', usulan.id)}
-                                                            className="flex items-center gap-3 px-6 py-3 bg-white border-2 border-gray-100 text-gray-600 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-600 hover:border-blue-600 hover:text-white hover:shadow-2xl hover:shadow-blue-200 transition-all duration-300"
-                                                        >
-                                                            Update
-                                                            <ArrowRight className="w-4 h-4" />
-                                                        </Link>
-                                                    </div>
+                                                <td className="px-6 py-8 text-center">
+                                                    <Link
+                                                        href={route('dosen.pengabdian.pengkinian-luaran.show', usulan.id)}
+                                                        className="flex items-center gap-3 px-6 py-3 bg-white border-2 border-gray-100 text-gray-600 rounded-2xl text-[10px] font-bold uppercase tracking-widest hover:bg-blue-600 hover:border-blue-600 hover:text-white hover:shadow-2xl hover:shadow-blue-200 transition-all duration-300 w-fit mx-auto"
+                                                    >
+                                                        Update
+                                                        <ArrowRight className="w-4 h-4" />
+                                                    </Link>
                                                 </td>
-                                            </motion.tr>
+                                            </tr>
                                         ))
                                     )}
                                 </tbody>
                             </table>
                         </div>
+                    </div>
+
+                    <div className="mt-8">
+                        <Pagination links={fundedUsulan.links} />
                     </div>
                 </motion.div>
             </main>

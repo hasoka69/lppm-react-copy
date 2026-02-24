@@ -121,25 +121,30 @@ class LaporanKemajuanPenelitianController extends Controller
             return back()->with('error', 'Laporan sudah disubmit dan tidak dapat diubah.');
         }
 
+        $oldKemajuanData = $luaran->kemajuan_data ?? [];
         $data = $request->except(['file_bukti', 'file_bukti_submit']);
 
+        $kemajuanData = array_merge($oldKemajuanData, $data);
+
         if ($request->hasFile('file_bukti')) {
-            if ($luaran->file_bukti) {
-                Storage::disk('public')->delete($luaran->file_bukti);
+            if (isset($oldKemajuanData['file_bukti'])) {
+                Storage::disk('public')->delete($oldKemajuanData['file_bukti']);
             }
             $path = $request->file('file_bukti')->store('bukti_luaran_penelitian', 'public');
-            $data['file_bukti'] = $path;
+            $kemajuanData['file_bukti'] = $path;
         }
 
         if ($request->hasFile('file_bukti_submit')) {
-            if ($luaran->file_bukti_submit) {
-                Storage::disk('public')->delete($luaran->file_bukti_submit);
+            if (isset($oldKemajuanData['file_bukti_submit'])) {
+                Storage::disk('public')->delete($oldKemajuanData['file_bukti_submit']);
             }
             $path = $request->file('file_bukti_submit')->store('bukti_submit_penelitian', 'public');
-            $data['file_bukti_submit'] = $path;
+            $kemajuanData['file_bukti_submit'] = $path;
         }
 
-        $luaran->update($data);
+        $luaran->update([
+            'kemajuan_data' => $kemajuanData
+        ]);
 
         return back()->with('success', 'Realisasi luaran berhasil diperbarui.');
     }
@@ -176,13 +181,20 @@ class LaporanKemajuanPenelitianController extends Controller
             ->where('user_id', '=', Auth::id(), 'and')
             ->firstOrFail();
 
+        if (empty($report->ringkasan) || empty($report->keyword) || empty($report->file_laporan)) {
+            return back()->with('error', 'Semua field dan dokumen unggah laporan harus terisi sebelum finalisasi.');
+        }
+
         // Check if all mandatory outputs are filled
         $mandatoryOutputs = LuaranPenelitian::where('usulan_id', '=', $usulanId, 'and')
             ->where('is_wajib', '=', true, 'and')
             ->get();
 
         foreach ($mandatoryOutputs as $output) {
-            if ($output->status === 'Rencana' || !$output->judul_realisasi) {
+            $status = $output->kemajuan_data['status'] ?? $output->status;
+            $judul = $output->kemajuan_data['judul_realisasi'] ?? $output->judul_realisasi;
+
+            if ($status === 'Rencana' || empty($judul)) {
                 return back()->with('error', "Luaran Wajib '{$output->kategori}' harus diisi realisasinya.");
             }
         }

@@ -127,13 +127,17 @@ class AdminLPPMController extends Controller
                     $outputs = $item->luaranList;
                     if ($outputs && $outputs->count() > 0) {
                         $totalScore = $outputs->map(function ($out) {
-                            switch (strtolower($out->status)) {
+                            $status = $out->pengkinian_data['status'] ?? $out->status;
+                            switch (strtolower($status)) {
                                 case 'published':
                                     return 100;
+                                case 'loa':
                                 case 'accepted':
                                     return 80;
                                 case 'in_review':
+                                case 'under review':
                                     return 60;
+                                case 'submit':
                                 case 'submitted':
                                     return 40;
                                 default:
@@ -278,13 +282,17 @@ class AdminLPPMController extends Controller
                     $outputs = $item->luaranList;
                     if ($outputs && $outputs->count() > 0) {
                         $totalScore = $outputs->map(function ($out) {
-                            switch (strtolower($out->status)) {
+                            $status = $out->pengkinian_data['status'] ?? $out->status;
+                            switch (strtolower($status)) {
                                 case 'published':
                                     return 100;
+                                case 'loa':
                                 case 'accepted':
                                     return 80;
                                 case 'in_review':
+                                case 'under review':
                                     return 60;
+                                case 'submit':
                                 case 'submitted':
                                     return 40;
                                 default:

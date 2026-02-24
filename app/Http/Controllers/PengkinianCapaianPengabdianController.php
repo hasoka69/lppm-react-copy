@@ -22,8 +22,8 @@ class PengkinianCapaianPengabdianController extends Controller
             ->where('status', '=', 'didanai', 'and')
             ->with('luaranList')
             ->latest()
-            ->get()
-            ->map(fn($u) => [
+            ->paginate(10)
+            ->through(fn($u) => [
                 'id' => $u->id,
                 'judul' => $u->judul,
                 'skema' => $u->kelompok_skema,
@@ -31,10 +31,9 @@ class PengkinianCapaianPengabdianController extends Controller
                 'dana_disetujui' => (float) ($u->dana_disetujui ?? 0),
                 'progress' => $u->luaranList->count() > 0 ? $u->luaranList->avg(function ($luaran) {
                     return match ($luaran->status) {
-                        'Draft' => 20,
-                        'Submitted' => 40,
-                        'In Review' => 60,
-                        'Accepted' => 80,
+                        'Submit' => 25,
+                        'Under Review' => 50,
+                        'LOA' => 75,
                         'Published' => 100,
                         default => 0,
                     };
@@ -91,17 +90,22 @@ class PengkinianCapaianPengabdianController extends Controller
             $q->where('user_id', Auth::id());
         })->findOrFail($luaranId);
 
+        $oldPengkinianData = $luaran->pengkinian_data ?? [];
         $data = $request->except(['file_bukti']);
 
+        $pengkinianData = array_merge($oldPengkinianData, $data);
+
         if ($request->hasFile('file_bukti')) {
-            if ($luaran->file_bukti) {
-                Storage::disk('public')->delete($luaran->file_bukti);
+            if (isset($oldPengkinianData['file_bukti'])) {
+                Storage::disk('public')->delete($oldPengkinianData['file_bukti']);
             }
             $path = $request->file('file_bukti')->store('bukti_luaran_pengabdian', 'public');
-            $data['file_bukti'] = $path;
+            $pengkinianData['file_bukti'] = $path;
         }
 
-        $luaran->update($data);
+        $luaran->update([
+            'pengkinian_data' => $pengkinianData
+        ]);
 
         return back()->with('success', 'Pengkinian luaran berhasil diperbarui.');
     }

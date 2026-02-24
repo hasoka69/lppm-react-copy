@@ -19,8 +19,8 @@ class LaporanAkhirPengabdianController extends Controller
         $fundedUsulan = UsulanPengabdian::where('user_id', '=', $user->id, 'and')
             ->where('status', '=', 'didanai', 'and')
             ->latest()
-            ->get()
-            ->map(fn($u) => [
+            ->paginate(10)
+            ->through(fn($u) => [
                 'id' => $u->id,
                 'judul' => $u->judul,
                 'skema' => $u->kelompok_skema,
@@ -115,17 +115,23 @@ class LaporanAkhirPengabdianController extends Controller
             return back()->with('error', 'Laporan sudah disubmit dan tidak dapat diubah.');
         }
 
+        $oldAkhirData = $luaran->akhir_data ?? [];
         $data = $request->except(['file_bukti_akhir']);
 
+        $akhirData = array_merge($oldAkhirData, $data);
+
+        // Upload new if present
         if ($request->hasFile('file_bukti_akhir')) {
-            if ($luaran->file_bukti_akhir) {
-                Storage::disk('public')->delete($luaran->file_bukti_akhir);
+            if (isset($oldAkhirData['file_bukti_akhir'])) {
+                Storage::disk('public')->delete($oldAkhirData['file_bukti_akhir']);
             }
             $path = $request->file('file_bukti_akhir')->store('bukti_luaran_pengabdian_akhir', 'public');
-            $data['file_bukti_akhir'] = $path;
+            $akhirData['file_bukti_akhir'] = $path;
         }
 
-        $luaran->update($data);
+        $luaran->update([
+            'akhir_data' => $akhirData
+        ]);
 
         return back()->with('success', 'Realisasi luaran akhir berhasil diperbarui.');
     }
@@ -159,16 +165,24 @@ class LaporanAkhirPengabdianController extends Controller
             ->where('user_id', '=', Auth::id(), 'and')
             ->firstOrFail();
 
+        if (empty($report->ringkasan) || empty($report->keyword) || empty($report->file_laporan)) {
+            return back()->with('error', 'Semua field dan dokumen unggah laporan harus terisi sebelum finalisasi (kecuali poster dan video).');
+        }
+
+        // Poster is now optional
+        /*
         if (!$report->file_poster) {
             return back()->with('error', "Dokumen Poster (Wajib) harus diunggah.");
         }
+        */
 
         $mandatoryOutputs = LuaranPengabdian::where('usulan_id', '=', $usulanId, 'and')
             ->where('is_wajib', '=', true, 'and')
             ->get();
 
         foreach ($mandatoryOutputs as $output) {
-            if (!$output->judul_realisasi_akhir) {
+            $judulAkhir = $output->akhir_data['judul_realisasi_akhir'] ?? $output->judul_realisasi_akhir;
+            if (empty($judulAkhir)) {
                 return back()->with('error', "Luaran Wajib '{$output->kategori}' harus diisi realisasi akhirnya.");
             }
         }
