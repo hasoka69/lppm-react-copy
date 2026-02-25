@@ -17,6 +17,7 @@ import {
     Calendar,
     Target
 } from 'lucide-react';
+import ReviewFeedbackPanel from '../../../../components/ReviewFeedbackPanel';
 
 interface SubstansiData {
     file_substansi: string | null;
@@ -36,6 +37,7 @@ const PageSubstansi: React.FC<PageSubstansiProps> = ({
     const { props } = usePage<{
         substansi?: SubstansiData;
         usulanId?: number;
+        usulan?: any;
     }>();
 
     const usulanId = propUsulanId ?? props.usulanId;
@@ -136,6 +138,9 @@ const PageSubstansi: React.FC<PageSubstansiProps> = ({
 
     return (
         <div className={styles.container}>
+            {/* Tampilkan panel feedback jika ada usulan */}
+            <ReviewFeedbackPanel reviewers={props.usulan?.reviewers as any} danaAwal={props.usulan?.dana_usulan_awal} danaDisetujui={props.usulan?.dana_disetujui} />
+
             {/* 2.1 Dokumen Substansi */}
             <div className={styles.pageSection}>
                 <div className={styles.formSection}>

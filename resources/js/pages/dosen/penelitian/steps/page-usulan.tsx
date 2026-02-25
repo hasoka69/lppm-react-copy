@@ -58,8 +58,8 @@ const PageUsulan: React.FC<PageUsulanProps> = ({
     const { props } = usePage<PageProps>();
     const usulanList = propUsulanList || props.usulanList;
 
-    const items = usulanList?.data || [];
-    const links = usulanList?.links || [];
+    const items = Array.isArray(usulanList) ? usulanList : (usulanList?.data || []);
+    const links = Array.isArray(usulanList) ? [] : (usulanList?.links || []);
 
     const getStatusStyle = (status: string) => {
         const statusMap: Record<string, { label: string; bg: string; color: string; dot: string }> = {
@@ -202,7 +202,7 @@ const PageUsulan: React.FC<PageUsulanProps> = ({
                                             transition={{ delay: index * 0.05 }}
                                         >
                                             <td className="font-medium text-gray-500">
-                                                {(usulanList.current_page - 1) * usulanList.per_page + index + 1}
+                                                {(usulanList?.current_page ? (usulanList.current_page - 1) * usulanList.per_page : 0) + index + 1}
                                             </td>
                                             <td className={styles.judulCell} style={{ padding: '1.25rem 0.75rem' }}>
                                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
@@ -245,10 +245,16 @@ const PageUsulan: React.FC<PageUsulanProps> = ({
                                                             <Eye className="mr-2 h-4 w-4" />
                                                             Detail
                                                         </DropdownMenuItem>
-                                                        {(usulan.status === 'draft' || usulan.status === 'needs_revision' || usulan.status === 'revision_dosen') && (
+                                                        {(!isPerbaikanView && usulan.status === 'draft') && (
                                                             <DropdownMenuItem onClick={() => onEditUsulan && onEditUsulan(usulan)}>
                                                                 <Edit className="mr-2 h-4 w-4" />
-                                                                Edit
+                                                                Lanjutkan Pengisian
+                                                            </DropdownMenuItem>
+                                                        )}
+                                                        {(isPerbaikanView && (usulan.status === 'needs_revision' || usulan.status === 'revision_dosen' || usulan.status === 'under_revision_admin')) && (
+                                                            <DropdownMenuItem onClick={() => onEditUsulan && onEditUsulan(usulan)}>
+                                                                <Edit className="mr-2 h-4 w-4" />
+                                                                Revisi Usulan
                                                             </DropdownMenuItem>
                                                         )}
                                                         {usulan.status === 'draft' && (

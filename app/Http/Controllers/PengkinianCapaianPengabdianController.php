@@ -30,7 +30,8 @@ class PengkinianCapaianPengabdianController extends Controller
                 'tahun_pertama' => $u->tahun_pertama,
                 'dana_disetujui' => (float) ($u->dana_disetujui ?? 0),
                 'progress' => $u->luaranList->count() > 0 ? $u->luaranList->avg(function ($luaran) {
-                    return match ($luaran->status) {
+                    $status = $luaran->pengkinian_data['status'] ?? $luaran->akhir_data['status_akhir'] ?? $luaran->kemajuan_data['status'] ?? $luaran->status ?? 'Rencana';
+                    return match ($status) {
                         'Submit' => 25,
                         'Under Review' => 50,
                         'LOA' => 75,

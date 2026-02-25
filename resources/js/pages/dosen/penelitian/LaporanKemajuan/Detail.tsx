@@ -259,7 +259,7 @@ export default function Detail({ usulan, laporan_kemajuan, outputs, isAdminView 
                                             type="button"
                                             onClick={() => {
                                                 if (confirm('Review kembali semua data. Setelah finalisasi, data tidak dapat diubah. Lanjutkan?')) {
-                                                    post(route('dosen.penelitian.laporan-kemajuan.submit', usulan.id));
+                                                    post(route('dosen.penelitian.laporan-kemajuan.submit', usulan.id), { forceFormData: true });
                                                 }
                                             }}
                                             className="px-12 py-4 bg-blue-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all flex items-center gap-3"

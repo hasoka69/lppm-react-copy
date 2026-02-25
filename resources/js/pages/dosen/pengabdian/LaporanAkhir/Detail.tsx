@@ -73,9 +73,8 @@ export default function Detail({ usulan, laporan_akhir, outputs, isAdminView = f
 
     const handleFinalisasi = () => {
         if (confirm('Review kembali semua data dan dokumen. Setelah finalisasi, laporan akhir pengabdian tidak dapat diubah kembali. Lanjutkan?')) {
-            router.post(route('dosen.pengabdian.laporan-akhir.submit', usulan.id), {
-                _method: 'POST',
-                is_final: true
+            post(route('dosen.pengabdian.laporan-akhir.submit', usulan.id), {
+                forceFormData: true
             });
         }
     };

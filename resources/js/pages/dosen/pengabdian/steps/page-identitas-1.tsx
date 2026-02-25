@@ -16,6 +16,7 @@ import {
     Users,
     Layers
 } from 'lucide-react';
+import ReviewFeedbackPanel from '../../../../components/ReviewFeedbackPanel';
 
 axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 axios.interceptors.request.use((config) => {
@@ -200,6 +201,9 @@ const PageIdentitas: React.FC<PageIdentitasProps> = ({
 
     return (
         <div className={styles.container}>
+            {/* Tampilkan panel feedback jika ada usulan */}
+            <ReviewFeedbackPanel reviewers={usulan?.reviewers as any} />
+
             <form onSubmit={handleNext}>
                 {/* Section 1: Dasar Usulan */}
                 <div className={styles.pageSection}>

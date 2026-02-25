@@ -167,6 +167,16 @@ export default function ReviewPengabdian({
             toast.error('Harap berikan komentar/alasan terlebih dahulu.');
             return;
         }
+
+        // Validasi Peluang Luaran untuk Minta Revisi
+        if (type === 'revise') {
+            const luaranScore = data.scores.find(s => s.section === 'selected_luaran');
+            if (!luaranScore || !luaranScore.comments || luaranScore.comments.trim() === '') {
+                toast.error('Harap pilih minimal satu Peluang Luaran Pengabdian sebelum meminta revisi.');
+                return;
+            }
+        }
+
         setActionType(type);
         setData('action', type);
         setIsConfirming(true);

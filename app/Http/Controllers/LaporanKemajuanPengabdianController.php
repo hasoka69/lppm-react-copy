@@ -173,11 +173,26 @@ class LaporanKemajuanPengabdianController extends Controller
     /**
      * Submit Laporan Kemajuan
      */
-    public function submit($usulanId)
+    public function submit(Request $request, $usulanId)
     {
         $report = LaporanKemajuanPengabdian::where('usulan_id', '=', $usulanId, 'and')
             ->where('user_id', '=', Auth::id(), 'and')
             ->firstOrFail();
+
+        // Save incoming draft data before finalization check
+        $data = $request->only(['ringkasan', 'keyword']);
+        if ($request->hasFile('file_laporan')) {
+            if ($report->file_laporan) {
+                Storage::disk('public')->delete($report->file_laporan);
+            }
+            $path = $request->file('file_laporan')->store('laporan_kemajuan_pengabdian', 'public');
+            $data['file_laporan'] = $path;
+        }
+
+        if (!empty($data)) {
+            $report->update($data);
+            $report->refresh();
+        }
 
         if (empty($report->ringkasan) || empty($report->keyword) || empty($report->file_laporan)) {
             return back()->with('error', 'Semua field dan dokumen unggah laporan harus terisi sebelum finalisasi.');

@@ -6,7 +6,7 @@ import Pagination from '@/components/Pagination';
 import { PaginatedResponse } from '@/types';
 import {
     Home, ChevronRight, Eye, Users, FileText, Search, Filter,
-    BookOpen, AlertCircle, CheckCircle2, Clock, CheckCircle, Download, Calendar
+    BookOpen, AlertCircle, CheckCircle2, Clock, CheckCircle, Download, Calendar, BadgeCheck
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { formatAcademicYear, getAcademicYearOptions } from '@/utils/academicYear';
@@ -210,7 +210,7 @@ export default function AdminPengabdianIndex({ proposals, activeTab = 'daftar', 
                 {/* Header Section */}
                 <div className="mb-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
                     <div>
-                        <h1 className="text-3xl font-black text-slate-900 tracking-tighter uppercase">
+                        <h1 className="text-3xl font-extrabold text-slate-900 tracking-tighter uppercase">
                             {tabs.find(t => t.id === activeTab)?.label || 'Monitoring Pengabdian'}
                         </h1>
                         <p className="text-slate-500 text-sm mt-3 font-medium">
@@ -231,20 +231,28 @@ export default function AdminPengabdianIndex({ proposals, activeTab = 'daftar', 
                                     control: (base) => ({
                                         ...base,
                                         borderRadius: '1rem',
-                                        borderColor: '#f1f5f9',
-                                        backgroundColor: '#f8fafc',
-                                        padding: '0.2rem',
+                                        border: '2px solid #f1f5f9',
+                                        backgroundColor: '#ffffff',
+                                        padding: '4px 8px',
                                         fontSize: '0.875rem',
                                         fontWeight: '600',
                                         minHeight: '48px',
                                         boxShadow: 'none',
                                         '&:hover': { borderColor: '#e2e8f0' }
                                     }),
+                                    option: (base, state) => ({
+                                        ...base,
+                                        fontSize: '0.875rem',
+                                        backgroundColor: state.isSelected ? '#059669' : state.isFocused ? '#ecfdf5' : 'white',
+                                        color: state.isSelected ? 'white' : '#1e293b',
+                                        fontWeight: '500'
+                                    }),
+                                    singleValue: (base) => ({ ...base, color: '#1e293b', fontWeight: '600' }),
                                     menu: (base) => ({ ...base, borderRadius: '1rem', overflow: 'hidden', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' })
                                 }}
                             />
                         </div>
-                        <div className="relative group w-full sm:w-72">
+                        <div className="relative group w-full sm:w-80">
                             <Search className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-500 transition-colors" />
                             <input
                                 type="text"
@@ -252,7 +260,7 @@ export default function AdminPengabdianIndex({ proposals, activeTab = 'daftar', 
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 onKeyDown={handleSearchKeyDown}
-                                className="bg-slate-50 border border-slate-100 text-sm font-semibold rounded-2xl py-3.5 pl-12 pr-6 w-full focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 outline-none transition-all placeholder:text-slate-400 shadow-xs"
+                                className="bg-white border-2 border-slate-100 text-sm font-semibold rounded-2xl py-3.5 pl-12 pr-6 w-full focus:bg-white focus:border-emerald-500 focus:ring-0 outline-none transition-all placeholder:text-slate-400 shadow-sm"
                             />
                         </div>
                     </div>
@@ -347,12 +355,12 @@ function DaftarUsulanTable({ proposals, activeTab, onContractClick, currentPage,
                 <table className="min-w-full divide-y divide-slate-100">
                     <thead className="bg-slate-50/50">
                         <tr>
-                            <th className="px-8 py-5 text-left text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">No</th>
-                            <th className="px-8 py-5 text-left text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Usulan / Skema</th>
-                            <th className="px-8 py-5 text-left text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Pelaksana</th>
-                            <th className="px-8 py-5 text-left text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Tahun</th>
-                            <th className="px-8 py-5 text-center text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Status</th>
-                            <th className="px-8 py-5 text-right text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Aksi</th>
+                            <th className="px-8 py-5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-widest">No</th>
+                            <th className="px-8 py-5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-widest">Usulan / Skema</th>
+                            <th className="px-8 py-5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-widest">Pelaksana</th>
+                            <th className="px-8 py-5 text-left text-[11px] font-bold text-slate-500 uppercase tracking-widest text-center">Tahun</th>
+                            <th className="px-8 py-5 text-center text-[11px] font-bold text-slate-500 uppercase tracking-widest">Status</th>
+                            <th className="px-8 py-5 text-right text-[11px] font-bold text-slate-500 uppercase tracking-widest">Aksi</th>
                         </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-slate-50">
@@ -375,17 +383,20 @@ function DaftarUsulanTable({ proposals, activeTab, onContractClick, currentPage,
                                 >
                                     <td className="px-8 py-6 whitespace-nowrap text-sm font-bold text-slate-300">{startingIndex + idx + 1}</td>
                                     <td className="px-8 py-6">
-                                        <div className="text-sm font-extrabold text-slate-800 line-clamp-2 leading-relaxed mb-2 group-hover:text-emerald-700 transition-colors uppercase tracking-tight">{item.judul}</div>
-                                        <div className="inline-flex items-center px-2.5 py-1 rounded-lg text-[10px] font-black tracking-widest bg-emerald-50 text-emerald-600 border border-emerald-100 uppercase">
+                                        <div className="text-sm font-bold text-slate-800 line-clamp-2 leading-relaxed mb-2 group-hover:text-emerald-700 transition-colors uppercase tracking-tight">{item.judul}</div>
+                                        <div className="inline-flex items-center px-2.5 py-1 rounded-lg text-[10px] font-bold tracking-widest bg-emerald-50 text-emerald-600 border border-emerald-100 uppercase">
                                             {item.skema}
                                         </div>
                                     </td>
                                     <td className="px-8 py-6">
-                                        <div className="text-sm font-bold text-slate-700">{item.ketua}</div>
-                                        <div className="text-xs font-semibold text-slate-400 mt-0.5">{item.prodi}</div>
+                                        <div className="text-sm font-semibold text-slate-700">{item.ketua}</div>
+                                        <div className="text-xs font-medium text-slate-400 mt-0.5">{item.prodi}</div>
                                     </td>
-                                    <td className="px-8 py-6 whitespace-nowrap text-sm font-bold text-slate-500">
-                                        {formatAcademicYear(item.tahun_pertama || parseInt(item.tanggal.split('-')[0]))}
+                                    <td className="px-8 py-6 text-center whitespace-nowrap">
+                                        <div className="flex items-center justify-center gap-1.5 text-slate-500 font-bold">
+                                            <Calendar className="w-3.5 h-3.5" />
+                                            <span className="text-sm">{formatAcademicYear(item.tahun_pertama || parseInt(item.tanggal.split('-')[0]))}</span>
+                                        </div>
                                     </td>
                                     <td className="px-8 py-6 whitespace-nowrap text-center">
                                         <StatusBadge status={item.status} />
@@ -406,7 +417,7 @@ function DaftarUsulanTable({ proposals, activeTab, onContractClick, currentPage,
                                                             <a
                                                                 href={route('lppm.kontrak.generate', { id: item.id, type: 'pengabdian' })}
                                                                 target="_blank"
-                                                                className="h-9 px-4 inline-flex items-center rounded-xl bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white text-xs font-black transition-all border border-emerald-100 uppercase tracking-wider"
+                                                                className="h-9 px-4 inline-flex items-center rounded-xl bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white text-xs font-bold transition-all border border-emerald-100 uppercase tracking-wider"
                                                             >
                                                                 <Download className="w-3.5 h-3.5 mr-2" /> Kontrak
                                                             </a>
@@ -421,7 +432,7 @@ function DaftarUsulanTable({ proposals, activeTab, onContractClick, currentPage,
                                                     ) : (
                                                         <button
                                                             onClick={() => onContractClick(item)}
-                                                            className="h-9 px-4 inline-flex items-center rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 text-xs font-black transition-all shadow-lg shadow-emerald-200 uppercase tracking-wider"
+                                                            className="h-9 px-4 inline-flex items-center rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 text-xs font-bold transition-all shadow-lg shadow-emerald-200 uppercase tracking-wider"
                                                         >
                                                             <FileText className="w-3.5 h-3.5 mr-2" /> Buat Kontrak
                                                         </button>
@@ -455,7 +466,7 @@ function StatusBadge({ status }: { status: string }) {
     const config = configs[status] || { bg: 'bg-slate-50', text: 'text-slate-700', border: 'border-slate-200' };
 
     return (
-        <span className={`inline-flex items-center px-4 py-1.5 rounded-full text-[10px] font-black tracking-widest border uppercase ${config.bg} ${config.text} ${config.border} shadow-sm`}>
+        <span className={`inline-flex items-center px-4 py-1.5 rounded-full text-[10px] font-bold tracking-widest border uppercase ${config.bg} ${config.text} ${config.border} shadow-sm`}>
             {status.replace('_', ' ')}
         </span>
     );
@@ -469,12 +480,12 @@ function LaporanKemajuanTable({ proposals, currentPage, perPage }: { proposals: 
                 <table className="w-full text-left border-collapse">
                     <thead>
                         <tr className="bg-slate-50/50 border-b border-slate-100">
-                            <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] w-16 text-center">No</th>
-                            <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Pelaksana</th>
-                            <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Judul Pengabdian</th>
-                            <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Tahun</th>
-                            <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-center">Status Laporan</th>
-                            <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-center">Aksi</th>
+                            <th className="px-8 py-6 text-[11px] font-bold text-slate-500 uppercase tracking-widest w-16 text-center">No</th>
+                            <th className="px-8 py-6 text-[11px] font-bold text-slate-500 uppercase tracking-widest">Pelaksana</th>
+                            <th className="px-8 py-6 text-[11px] font-bold text-slate-500 uppercase tracking-widest">Judul Pengabdian</th>
+                            <th className="px-8 py-6 text-[11px] font-bold text-slate-500 uppercase tracking-widest text-center">Tahun</th>
+                            <th className="px-8 py-6 text-[11px] font-bold text-slate-500 uppercase tracking-widest text-center">Status Laporan</th>
+                            <th className="px-8 py-6 text-[11px] font-bold text-slate-500 uppercase tracking-widest text-center">Aksi</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-50">
@@ -488,31 +499,34 @@ function LaporanKemajuanTable({ proposals, currentPage, perPage }: { proposals: 
                                 <td className="px-8 py-8 text-sm text-slate-300 font-bold text-center">{startingIndex + index + 1}</td>
                                 <td className="px-8 py-8">
                                     <div className="flex flex-col">
-                                        <span className="text-sm font-extrabold text-slate-800">{usulan.ketua}</span>
-                                        <span className="text-xs font-semibold text-slate-400 mt-1">{usulan.prodi}</span>
+                                        <span className="text-sm font-semibold text-slate-800">{usulan.ketua}</span>
+                                        <span className="text-xs font-medium text-slate-400 mt-1">{usulan.prodi}</span>
                                     </div>
                                 </td>
                                 <td className="px-8 py-8">
                                     <p className="text-sm text-slate-700 font-bold leading-relaxed line-clamp-2 uppercase tracking-tight">{usulan.judul}</p>
-                                    <span className="text-[10px] uppercase font-black tracking-widest text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-100 mt-2 inline-block leading-none">{usulan.skema}</span>
+                                    <span className="text-[10px] uppercase font-bold tracking-widest text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-100 mt-2 inline-block leading-none">{usulan.skema}</span>
                                 </td>
-                                <td className="px-8 py-8 text-sm font-bold text-slate-500">
-                                    {formatAcademicYear(usulan.tahun_pertama)}
+                                <td className="px-8 py-6 text-center whitespace-nowrap">
+                                    <div className="flex items-center justify-center gap-1.5 text-slate-500 font-bold">
+                                        <Calendar className="w-3.5 h-3.5" />
+                                        <span className="text-sm">{formatAcademicYear(usulan.tahun_pertama)}</span>
+                                    </div>
                                 </td>
                                 <td className="px-8 py-8 text-center">
                                     {!usulan.report || usulan.report.status === 'Draft' ? (
-                                        <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[10px] font-black bg-amber-50 text-amber-700 uppercase border border-amber-100 tracking-widest leading-none">
+                                        <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 uppercase border border-amber-100 tracking-widest leading-none">
                                             BELUM SELESAI
                                         </span>
                                     ) : (
-                                        <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[10px] font-black bg-emerald-50 text-emerald-700 uppercase border border-emerald-100 tracking-widest leading-none">
+                                        <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 uppercase border border-emerald-100 tracking-widest leading-none">
                                             <CheckCircle2 className="w-3.5 h-3.5" /> SUBMITTED
                                         </span>
                                     )}
                                 </td>
-                                <td className="px-8 py-8 text-center">
-                                    <Link href={route('lppm.pengabdian.laporan-kemajuan.show', usulan.id)} className="h-9 px-5 inline-flex items-center rounded-xl bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white text-[10px] font-black uppercase tracking-widest transition-all shadow-sm">
-                                        <Eye className="w-3.5 h-3.5 mr-2" /> Detail
+                                <td className="px-8 py-8 text-center text-center">
+                                    <Link href={route('lppm.pengabdian.laporan-kemajuan.show', usulan.id)} className="w-10 h-10 inline-flex items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white transition-all shadow-sm" title="Lihat Detail">
+                                        <Eye className="w-5 h-5" />
                                     </Link>
                                 </td>
                             </tr>
@@ -532,12 +546,12 @@ function LaporanAkhirTable({ proposals, currentPage, perPage }: { proposals: Usu
                 <table className="w-full text-left border-collapse">
                     <thead>
                         <tr className="bg-slate-50/50 border-b border-slate-100">
-                            <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] w-16 text-center">No</th>
-                            <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Pelaksana</th>
-                            <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Judul Pengabdian</th>
-                            <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Tahun</th>
-                            <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-center">Status Laporan</th>
-                            <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-center">Aksi</th>
+                            <th className="px-8 py-6 text-[11px] font-bold text-slate-500 uppercase tracking-widest w-16 text-center">No</th>
+                            <th className="px-8 py-6 text-[11px] font-bold text-slate-500 uppercase tracking-widest">Pelaksana</th>
+                            <th className="px-8 py-6 text-[11px] font-bold text-slate-500 uppercase tracking-widest">Judul Pengabdian</th>
+                            <th className="px-8 py-6 text-[11px] font-bold text-slate-500 uppercase tracking-widest text-center">Tahun</th>
+                            <th className="px-8 py-6 text-[11px] font-bold text-slate-500 uppercase tracking-widest text-center">Status Laporan</th>
+                            <th className="px-8 py-6 text-[11px] font-bold text-slate-500 uppercase tracking-widest text-center">Aksi</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-50">
@@ -551,30 +565,33 @@ function LaporanAkhirTable({ proposals, currentPage, perPage }: { proposals: Usu
                                 <td className="px-8 py-8 text-sm text-slate-300 font-bold text-center">{startingIndex + index + 1}</td>
                                 <td className="px-8 py-8">
                                     <div className="flex flex-col">
-                                        <span className="text-sm font-extrabold text-slate-800">{usulan.ketua}</span>
-                                        <span className="text-xs font-semibold text-slate-400 mt-1">{usulan.prodi}</span>
+                                        <span className="text-sm font-semibold text-slate-800">{usulan.ketua}</span>
+                                        <span className="text-xs font-medium text-slate-400 mt-1">{usulan.prodi}</span>
                                     </div>
                                 </td>
                                 <td className="px-8 py-8">
                                     <p className="text-sm text-slate-700 font-bold leading-relaxed line-clamp-2 uppercase tracking-tight">{usulan.judul}</p>
                                 </td>
-                                <td className="px-8 py-8 text-sm font-bold text-slate-500">
-                                    {formatAcademicYear(usulan.tahun_pertama)}
+                                <td className="px-8 py-6 text-center whitespace-nowrap">
+                                    <div className="flex items-center justify-center gap-1.5 text-slate-500 font-bold">
+                                        <Calendar className="w-3.5 h-3.5" />
+                                        <span className="text-sm">{formatAcademicYear(usulan.tahun_pertama)}</span>
+                                    </div>
                                 </td>
                                 <td className="px-8 py-8 text-center">
                                     {!usulan.report || usulan.report.status === 'Draft' ? (
-                                        <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[10px] font-black bg-amber-50 text-amber-700 uppercase border border-amber-100 tracking-widest leading-none">
+                                        <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 uppercase border border-amber-100 tracking-widest leading-none">
                                             BELUM SELESAI
                                         </span>
                                     ) : (
-                                        <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[10px] font-black bg-emerald-50 text-emerald-700 uppercase border border-emerald-100 tracking-widest leading-none">
+                                        <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 uppercase border border-emerald-100 tracking-widest leading-none">
                                             <CheckCircle2 className="w-3.5 h-3.5" /> SUBMITTED
                                         </span>
                                     )}
                                 </td>
-                                <td className="px-8 py-8 text-center">
-                                    <Link href={route('lppm.pengabdian.laporan-akhir.show', usulan.id)} className="h-9 px-5 inline-flex items-center rounded-xl bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white text-[10px] font-black uppercase tracking-widest transition-all shadow-sm">
-                                        <Eye className="w-3.5 h-3.5 mr-2" /> Detail
+                                <td className="px-8 py-8 text-center text-center">
+                                    <Link href={route('lppm.pengabdian.laporan-akhir.show', usulan.id)} className="w-10 h-10 inline-flex items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white transition-all shadow-sm" title="Lihat Detail">
+                                        <Eye className="w-5 h-5" />
                                     </Link>
                                 </td>
                             </tr>
@@ -594,12 +611,12 @@ function CatatanHarianTable({ proposals, currentPage, perPage }: { proposals: Us
                 <table className="w-full text-left border-collapse">
                     <thead>
                         <tr className="bg-slate-50/50 border-b border-slate-100">
-                            <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] w-16 text-center">No</th>
-                            <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Pelaksana</th>
-                            <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Judul Pengabdian</th>
-                            <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Tahun</th>
-                            <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-center">Progress</th>
-                            <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-center">Aksi</th>
+                            <th className="px-8 py-6 text-[11px] font-bold text-slate-500 uppercase tracking-widest w-16 text-center">No</th>
+                            <th className="px-8 py-6 text-[11px] font-bold text-slate-500 uppercase tracking-widest">Pelaksana</th>
+                            <th className="px-8 py-6 text-[11px] font-bold text-slate-500 uppercase tracking-widest">Judul Pengabdian</th>
+                            <th className="px-8 py-6 text-[11px] font-bold text-slate-500 uppercase tracking-widest text-center">Tahun</th>
+                            <th className="px-8 py-6 text-[11px] font-bold text-slate-500 uppercase tracking-widest text-center">Progress</th>
+                            <th className="px-8 py-6 text-[11px] font-bold text-slate-500 uppercase tracking-widest text-center">Aksi</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-50">
@@ -613,44 +630,45 @@ function CatatanHarianTable({ proposals, currentPage, perPage }: { proposals: Us
                                 <td className="px-8 py-8 text-sm text-slate-300 font-bold text-center">{startingIndex + index + 1}</td>
                                 <td className="px-8 py-8">
                                     <div className="flex flex-col">
-                                        <span className="text-sm font-extrabold text-slate-800">{item.ketua}</span>
-                                        <span className="text-xs font-semibold text-slate-400 mt-1">{item.prodi}</span>
+                                        <span className="text-sm font-semibold text-slate-800">{item.ketua}</span>
+                                        <span className="text-xs font-medium text-slate-400 mt-1">{item.prodi}</span>
                                     </div>
                                 </td>
                                 <td className="px-8 py-8 font-medium">
                                     <div className="space-y-2">
                                         <p className="text-sm text-slate-700 leading-snug line-clamp-2 font-bold uppercase tracking-tight">{item.judul}</p>
-                                        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-lg text-[10px] font-black tracking-widest border border-emerald-100 leading-none">
+                                        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-lg text-[10px] font-bold tracking-widest border border-emerald-100 leading-none">
                                             DANA DISETUJUI: Rp {new Intl.NumberFormat('id-ID').format(item.dana_disetujui || 0)}
                                         </div>
                                     </div>
                                 </td>
-                                <td className="px-8 py-8">
-                                    <div className="flex items-center gap-1.5 text-slate-500 font-bold">
+                                <td className="px-8 py-6 text-center whitespace-nowrap">
+                                    <div className="flex items-center justify-center gap-1.5 text-slate-500 font-bold">
                                         <Calendar className="w-3.5 h-3.5" />
                                         <span className="text-sm">{formatAcademicYear(item.tahun_pertama)}</span>
                                     </div>
                                 </td>
                                 <td className="px-8 py-8">
                                     <div className="space-y-3 min-w-[180px]">
-                                        <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-slate-400">
+                                        <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-slate-400">
                                             <span>Total Entri</span>
-                                            <span className="text-emerald-600 font-black">{item.total_logs || 0}</span>
+                                            <span className="text-emerald-600 font-bold">{item.total_logs || 0}</span>
                                         </div>
                                         <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden border border-slate-50 shadow-inner">
                                             <div
                                                 className="h-full bg-gradient-to-r from-emerald-500 to-teal-600 rounded-full shadow-lg shadow-emerald-500/20"
+                                                style={{ width: `${item.last_percentage || 0}%` }}
                                             />
                                         </div>
-                                        <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-tighter">
+                                        <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-tighter">
                                             <span className="text-slate-400">Capaian</span>
-                                            <span className="text-emerald-600 font-black text-xs">{item.last_percentage || 0}%</span>
+                                            <span className="text-emerald-600 font-bold text-xs">{item.last_percentage || 0}%</span>
                                         </div>
                                     </div>
                                 </td>
                                 <td className="px-8 py-8 text-center text-center">
-                                    <Link href={route('lppm.pengabdian.catatan-harian.show', item.id)} className="h-9 px-5 inline-flex items-center rounded-xl bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white text-[10px] font-black uppercase tracking-widest transition-all shadow-sm">
-                                        <Eye className="w-3.5 h-3.5 mr-2" /> Lihat Log
+                                    <Link href={route('lppm.pengabdian.catatan-harian.show', item.id)} className="w-10 h-10 inline-flex items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white transition-all shadow-sm" title="Lihat Detail">
+                                        <Eye className="w-5 h-5" />
                                     </Link>
                                 </td>
                             </tr>
@@ -670,11 +688,12 @@ function PengkinianLuaranTable({ proposals, currentPage, perPage }: { proposals:
                 <table className="w-full text-left border-collapse">
                     <thead>
                         <tr className="bg-slate-50/50 border-b border-slate-100">
-                            <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] w-16 text-center">No</th>
-                            <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Pelaksana</th>
-                            <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Judul Pengabdian</th>
-                            <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Tahun</th>
-                            <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-center">Aksi</th>
+                            <th className="px-8 py-6 text-[11px] font-bold text-slate-500 uppercase tracking-widest w-16 text-center">No</th>
+                            <th className="px-8 py-6 text-[11px] font-bold text-slate-500 uppercase tracking-widest">Pelaksana</th>
+                            <th className="px-8 py-6 text-[11px] font-bold text-slate-500 uppercase tracking-widest">Judul Pengabdian</th>
+                            <th className="px-8 py-6 text-[11px] font-bold text-slate-500 uppercase tracking-widest text-center">Tahun</th>
+                            <th className="px-8 py-6 text-[11px] font-bold text-slate-500 uppercase tracking-widest text-center">Capaian</th>
+                            <th className="px-8 py-6 text-[11px] font-bold text-slate-500 uppercase tracking-widest text-center">Aksi</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-50">
@@ -688,27 +707,46 @@ function PengkinianLuaranTable({ proposals, currentPage, perPage }: { proposals:
                                 <td className="px-8 py-8 text-sm text-slate-300 font-bold text-center">{startingIndex + index + 1}</td>
                                 <td className="px-8 py-8">
                                     <div className="flex flex-col">
-                                        <span className="text-sm font-extrabold text-slate-800">{usulan.ketua}</span>
-                                        <span className="text-xs font-semibold text-slate-400 mt-1">{usulan.prodi}</span>
+                                        <span className="text-sm font-semibold text-slate-800">{usulan.ketua}</span>
+                                        <span className="text-xs font-medium text-slate-400 mt-1">{usulan.prodi}</span>
                                     </div>
                                 </td>
                                 <td className="px-8 py-8">
                                     <div className="space-y-2">
                                         <p className="text-sm text-slate-700 font-bold line-clamp-2 uppercase tracking-tight leading-relaxed">{usulan.judul}</p>
-                                        <span className="px-2.5 py-1 bg-emerald-50 text-emerald-600 text-[10px] font-black tracking-widest rounded-lg border border-emerald-100 uppercase leading-none inline-block">
+                                        <span className="px-2.5 py-1 bg-emerald-50 text-emerald-600 text-[10px] font-bold tracking-widest rounded-lg border border-emerald-100 uppercase leading-none inline-block">
                                             {usulan.skema}
                                         </span>
                                     </div>
                                 </td>
-                                <td className="px-8 py-8">
-                                    <div className="flex items-center gap-1.5 text-slate-500 font-bold">
+                                <td className="px-8 py-6 text-center whitespace-nowrap">
+                                    <div className="flex items-center justify-center gap-1.5 text-slate-500 font-bold">
                                         <Calendar className="w-3.5 h-3.5" />
                                         <span className="text-sm">{formatAcademicYear(usulan.tahun_pertama)}</span>
                                     </div>
                                 </td>
+                                <td className="px-8 py-8">
+                                    <div className="flex justify-center">
+                                        <div className="flex flex-col items-center gap-1.5 p-3 rounded-2xl bg-slate-50 border border-slate-100 group-hover:bg-white group-hover:shadow-xl group-hover:shadow-emerald-900/5 transition-all duration-500 min-w-[140px]">
+                                            <div className="flex items-center gap-2">
+                                                <BadgeCheck className="w-4 h-4 text-emerald-600" />
+                                                <span className="text-[10px] font-bold text-slate-700 uppercase tracking-widest">Tervalidasi</span>
+                                            </div>
+                                            <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
+                                                <div
+                                                    className="bg-emerald-600 h-full rounded-full transition-all duration-500"
+                                                    style={{ width: `${usulan.progress || 0}%` }}
+                                                />
+                                            </div>
+                                            <span className="text-[9px] font-bold text-emerald-600 uppercase tracking-widest mt-0.5">
+                                                {Math.round(usulan.progress || 0)}% Complete
+                                            </span>
+                                        </div>
+                                    </div>
+                                </td>
                                 <td className="px-8 py-8 text-center text-center">
-                                    <Link href={route('lppm.pengabdian.pengkinian-luaran.show', usulan.id)} className="h-9 px-5 inline-flex items-center rounded-xl bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white text-[10px] font-black uppercase tracking-widest transition-all shadow-sm">
-                                        <Eye className="w-3.5 h-3.5 mr-2" /> Detail Luaran
+                                    <Link href={route('lppm.pengabdian.pengkinian-luaran.show', usulan.id)} className="w-10 h-10 inline-flex items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white transition-all shadow-sm" title="Lihat Detail">
+                                        <Eye className="w-5 h-5" />
                                     </Link>
                                 </td>
                             </tr>

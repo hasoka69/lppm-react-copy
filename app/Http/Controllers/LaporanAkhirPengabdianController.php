@@ -159,11 +159,35 @@ class LaporanAkhirPengabdianController extends Controller
         return back()->with('success', 'File SPTB akhir berhasil diunggah.');
     }
 
-    public function submit($usulanId)
+    public function submit(Request $request, $usulanId)
     {
         $report = LaporanAkhirPengabdian::where('usulan_id', '=', $usulanId, 'and')
             ->where('user_id', '=', Auth::id(), 'and')
             ->firstOrFail();
+
+        // Save incoming draft data before finalization check
+        $data = $request->only(['ringkasan', 'keyword', 'url_video']);
+
+        if ($request->hasFile('file_laporan')) {
+            if ($report->file_laporan) {
+                Storage::disk('public')->delete($report->file_laporan);
+            }
+            $path = $request->file('file_laporan')->store('laporan_akhir_pengabdian', 'public');
+            $data['file_laporan'] = $path;
+        }
+
+        if ($request->hasFile('file_poster')) {
+            if ($report->file_poster) {
+                Storage::disk('public')->delete($report->file_poster);
+            }
+            $path = $request->file('file_poster')->store('laporan_akhir_pengabdian/poster', 'public');
+            $data['file_poster'] = $path;
+        }
+
+        if (!empty($data) || $request->hasFile('file_laporan') || $request->hasFile('file_poster')) {
+            $report->update($data);
+            $report->refresh();
+        }
 
         if (empty($report->ringkasan) || empty($report->keyword) || empty($report->file_laporan)) {
             return back()->with('error', 'Semua field dan dokumen unggah laporan harus terisi sebelum finalisasi (kecuali poster dan video).');

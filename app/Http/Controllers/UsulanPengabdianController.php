@@ -239,6 +239,22 @@ class UsulanPengabdianController extends Controller
             abort(404);
         }
 
+        // [NEW] Map reviewer feedback for frontend ReviewFeedbackPanel
+        $reviewersData = $usulan->reviewHistories
+            ->filter(function ($history) {
+                // Filter out system logs like "Reviewer ditunjuk..."
+                // Only take logs where there are actual comments, AND it came from a real reviewer role if possible.
+                return in_array($history->action, ['reviewer_approved', 'reviewer_rejected', 'reviewer_revision_requested']) || ($history->reviewer_id && $history->action === null && $history->comments && !str_contains($history->comments, 'ditunjuk') && !str_contains($history->comments, 'disubmit'));
+            })
+            ->map(function ($history) {
+                return [
+                    'id' => $history->id,
+                    'name' => $history->reviewer->name ?? 'Reviewer',
+                    'catatan' => $history->comments,
+                ];
+            })->values();
+        $usulan->setAttribute('reviewers', $reviewersData);
+
         // Authorization Check
         $user = Auth::user();
         $dosenId = $user->dosen->id ?? null;

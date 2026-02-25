@@ -285,6 +285,7 @@ const PenelitianIndex = () => {
                         }}
                         usulanList={usulanList}
                         title={pageTitle}
+                        isPerbaikanView={isPerbaikanView}
                     />
                 </>
             );

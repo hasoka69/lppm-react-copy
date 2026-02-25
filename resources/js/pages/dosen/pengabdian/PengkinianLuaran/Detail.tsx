@@ -260,6 +260,11 @@ export default function Detail({ usulan, mandatory_outputs = [], additional_outp
 }
 
 function OutputRow({ output, index, isReadOnly, type, onEdit }: { output: any, index: number, isReadOnly: boolean, type: string, onEdit: () => void }) {
+    const currentStatus = output.pengkinian_data?.status || output.akhir_data?.status_akhir || output.kemajuan_data?.status || output.status || 'Rencana';
+    const currentJudul = output.pengkinian_data?.judul_realisasi || output.akhir_data?.judul_realisasi_akhir || output.kemajuan_data?.judul_realisasi || output.judul_realisasi || '';
+    const currentFileBukti = output.pengkinian_data?.file_bukti || output.akhir_data?.file_bukti_akhir || output.kemajuan_data?.file_bukti || output.file_bukti;
+    const currentUrlArtikel = output.pengkinian_data?.url_artikel || output.url_artikel;
+
     return (
         <motion.tr
             initial={{ opacity: 0 }}
@@ -273,23 +278,23 @@ function OutputRow({ output, index, isReadOnly, type, onEdit }: { output: any, i
                 </span>
             </td>
             <td className="px-8 py-8">
-                <div className={`inline-flex items-center px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest ${(output.pengkinian_data?.status || output.status) === 'Published' || (output.pengkinian_data?.status || output.status) === 'LOA' ? 'bg-emerald-500 text-white shadow-sm' : (output.pengkinian_data?.status || output.status) === 'Submit' || (output.pengkinian_data?.status || output.status) === 'Under Review' ? 'bg-blue-600 text-white shadow-sm' : 'bg-gray-400 text-white shadow-sm'}`}>
-                    {output.pengkinian_data?.status || output.status || 'Belum Diisi'}
+                <div className={`inline-flex items-center px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest ${currentStatus === 'Published' || currentStatus === 'LOA' ? 'bg-emerald-500 text-white shadow-sm' : currentStatus === 'Submit' || currentStatus === 'Under Review' ? 'bg-blue-600 text-white shadow-sm' : 'bg-gray-400 text-white shadow-sm'}`}>
+                    {currentStatus || 'Belum Diisi'}
                 </div>
             </td>
             <td className="px-8 py-8">
-                {(output.pengkinian_data?.judul_realisasi || output.judul_realisasi) && (
+                {currentJudul && (
                     <div className="p-4 bg-gray-50 border border-gray-100 rounded-xl group-hover:bg-white transition-colors">
-                        <p className="text-[13px] text-gray-700 font-bold leading-snug">{output.pengkinian_data?.judul_realisasi || output.judul_realisasi}</p>
+                        <p className="text-[13px] text-gray-700 font-bold leading-snug">{currentJudul}</p>
                         <div className="flex items-center gap-4 mt-3">
-                            {(output.pengkinian_data?.file_bukti || output.file_bukti) && (
-                                <a href={`/storage/${output.pengkinian_data?.file_bukti || output.file_bukti}`} target="_blank" className="flex items-center gap-1.5 text-blue-600 hover:text-blue-800 transition-colors">
+                            {currentFileBukti && (
+                                <a href={`/storage/${currentFileBukti}`} target="_blank" className="flex items-center gap-1.5 text-blue-600 hover:text-blue-800 transition-colors">
                                     <Paperclip className="w-3.5 h-3.5" />
                                     <span className="text-[10px] font-bold uppercase tracking-wider">Berkas Bukti</span>
                                 </a>
                             )}
-                            {(output.pengkinian_data?.url_artikel || output.url_artikel) && (
-                                <a href={output.pengkinian_data?.url_artikel || output.url_artikel} target="_blank" className="flex items-center gap-1.5 text-indigo-600 hover:text-indigo-800 transition-colors">
+                            {currentUrlArtikel && (
+                                <a href={currentUrlArtikel} target="_blank" className="flex items-center gap-1.5 text-indigo-600 hover:text-indigo-800 transition-colors">
                                     <Globe className="w-3.5 h-3.5" />
                                     <span className="text-[10px] font-bold uppercase tracking-wider">Tautan Publikasi</span>
                                 </a>
@@ -348,22 +353,19 @@ function EditOutputModal({ isOpen, onClose, output, type, isAdminView = false }:
     useEffect(() => {
         if (output && isOpen) {
             setData({
-                judul_realisasi: output.pengkinian_data?.judul_realisasi || output.judul_realisasi || '',
-                status: output.pengkinian_data?.status || output.status || 'Rencana',
-                peran_penulis: output.pengkinian_data?.peran_penulis || output.peran_penulis || '',
-                nama_jurnal: output.pengkinian_data?.nama_jurnal || output.nama_jurnal || '',
-                issn: output.pengkinian_data?.issn || output.issn || '',
-                // pengindek: output.pengindek || '', // Removed
-                // tahun_realisasi: output.tahun_realisasi || '', // Removed
-                volume: output.pengkinian_data?.volume || output.volume || '',
-                nomor: output.pengkinian_data?.nomor || output.nomor || '',
-                halaman_awal: output.pengkinian_data?.halaman_awal || output.halaman_awal || '',
-                halaman_akhir: output.pengkinian_data?.halaman_akhir || output.halaman_akhir || '',
+                judul_realisasi: output.pengkinian_data?.judul_realisasi || output.akhir_data?.judul_realisasi_akhir || output.kemajuan_data?.judul_realisasi || output.judul_realisasi || '',
+                status: output.pengkinian_data?.status || output.akhir_data?.status_akhir || output.kemajuan_data?.status || output.status || 'Rencana',
+                peran_penulis: output.pengkinian_data?.peran_penulis || output.akhir_data?.peran_penulis || output.kemajuan_data?.peran_penulis || output.peran_penulis || '',
+                nama_jurnal: output.pengkinian_data?.nama_jurnal || output.akhir_data?.nama_jurnal || output.kemajuan_data?.nama_jurnal || output.nama_jurnal || '',
+                issn: output.pengkinian_data?.issn || output.akhir_data?.issn || output.kemajuan_data?.issn || output.issn || '',
+                volume: output.pengkinian_data?.volume || output.akhir_data?.volume || output.kemajuan_data?.volume || output.volume || '',
+                nomor: output.pengkinian_data?.nomor || output.akhir_data?.nomor || output.kemajuan_data?.nomor || output.nomor || '',
+                halaman_awal: output.pengkinian_data?.halaman_awal || output.akhir_data?.halaman_awal || output.kemajuan_data?.halaman_awal || output.halaman_awal || '',
+                halaman_akhir: output.pengkinian_data?.halaman_akhir || output.akhir_data?.halaman_akhir || output.kemajuan_data?.halaman_akhir || output.halaman_akhir || '',
                 url_bukti: output.pengkinian_data?.url_bukti || output.url_bukti || '',
                 url_artikel: output.pengkinian_data?.url_artikel || output.url_artikel || '',
                 doi: output.pengkinian_data?.doi || output.doi || '',
-                keterangan: output.pengkinian_data?.keterangan || output.keterangan || '',
-                // file_bukti: null, // Removed
+                keterangan: output.pengkinian_data?.keterangan || output.akhir_data?.keterangan_akhir || output.kemajuan_data?.keterangan || output.keterangan || '',
             });
         }
     }, [output, isOpen]);

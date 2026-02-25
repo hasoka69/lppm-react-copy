@@ -17,6 +17,7 @@ import {
     Calendar,
     Users
 } from 'lucide-react';
+import ReviewFeedbackPanel from '../../../../components/ReviewFeedbackPanel';
 
 interface UsulanData {
     judul: string;
@@ -187,6 +188,9 @@ const PageIdentitas: React.FC<PageIdentitasProps> = ({
 
     return (
         <div className={styles.container}>
+            {/* Tampilkan panel feedback jika usulan memiliki data reviewers */}
+            <ReviewFeedbackPanel reviewers={usulan?.reviewers as any} danaAwal={usulan?.dana_usulan_awal} danaDisetujui={usulan?.dana_disetujui} />
+
             <form onSubmit={handleNext}>
                 {/* Section 1: Informasi Dasar */}
                 <div className={styles.pageSection}>

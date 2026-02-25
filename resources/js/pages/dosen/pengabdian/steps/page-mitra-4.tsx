@@ -19,6 +19,7 @@ import {
     X,
     ExternalLink
 } from 'lucide-react';
+import ReviewFeedbackPanel from '../../../../components/ReviewFeedbackPanel';
 
 interface Mitra {
     id: number;
@@ -140,6 +141,9 @@ const PageMitra: React.FC<PageMitraProps> = ({ onKembali, onSelanjutnya, usulanI
 
     return (
         <div className={styles.container}>
+            {/* Tampilkan panel feedback jika ada usulan */}
+            <ReviewFeedbackPanel reviewers={usulan?.reviewers as any} danaAwal={usulan?.dana_usulan_awal} danaDisetujui={usulan?.dana_disetujui} />
+
             <div className={styles.pageSection}>
                 <div className={styles.formSection}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>

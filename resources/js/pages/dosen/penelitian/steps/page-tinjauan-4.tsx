@@ -15,9 +15,9 @@ import {
     ArrowLeft,
     X,
     ExternalLink,
-    CheckCircle2,
     Clock
 } from 'lucide-react';
+import ReviewFeedbackPanel from '../../../../components/ReviewFeedbackPanel';
 
 interface PageTinjauanProps {
     onKembali?: () => void;
@@ -128,6 +128,9 @@ const PageTinjauan: React.FC<PageTinjauanProps> = ({
 
     return (
         <div className={styles.container}>
+            {/* Tampilkan panel feedback jika ada usulan */}
+            <ReviewFeedbackPanel reviewers={usulan?.reviewers as any} danaAwal={usulan?.dana_usulan_awal} danaDisetujui={usulan?.dana_disetujui} />
+
             {/* Header Document */}
             <div className={styles.pageSection}>
                 <div className={styles.formSection} style={{ borderBottom: '4px solid var(--primary)', borderRadius: '12px 12px 0 0' }}>

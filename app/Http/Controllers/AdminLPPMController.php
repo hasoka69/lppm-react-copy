@@ -123,25 +123,25 @@ class AdminLPPMController extends Controller
                     $data['total_logs'] = $logs ? $logs->count() : 0;
                     $data['last_percentage'] = $logs ? $logs->max('persentase') ?? 0 : 0;
                 } elseif ($activeTab === 'pengkinian-capaian') {
-                    // Calculate progress based on logic: Draft 20, Submitted 40, Review 60, Accepted 80, Published 100
+                    // Calculate progress based on user logic
                     $outputs = $item->luaranList;
                     if ($outputs && $outputs->count() > 0) {
                         $totalScore = $outputs->map(function ($out) {
-                            $status = $out->pengkinian_data['status'] ?? $out->status;
+                            $status = $out->pengkinian_data['status'] ?? $out->akhir_data['status_akhir'] ?? $out->kemajuan_data['status'] ?? $out->status ?? 'Rencana';
                             switch (strtolower($status)) {
                                 case 'published':
                                     return 100;
                                 case 'loa':
                                 case 'accepted':
-                                    return 80;
+                                    return 75;
                                 case 'in_review':
                                 case 'under review':
-                                    return 60;
+                                    return 50;
                                 case 'submit':
                                 case 'submitted':
-                                    return 40;
+                                    return 25;
                                 default:
-                                    return 20; // Draft
+                                    return 0; // Draft / Rencana
                             }
                         })->sum();
                         $data['progress'] = round($totalScore / $outputs->count());
@@ -279,24 +279,25 @@ class AdminLPPMController extends Controller
                     $data['total_logs'] = $logs ? $logs->count() : 0;
                     $data['last_percentage'] = $logs ? $logs->max('persentase') ?? 0 : 0;
                 } elseif ($activeTab === 'pengkinian-capaian') {
+                    // Calculate progress based on user logic
                     $outputs = $item->luaranList;
                     if ($outputs && $outputs->count() > 0) {
                         $totalScore = $outputs->map(function ($out) {
-                            $status = $out->pengkinian_data['status'] ?? $out->status;
+                            $status = $out->pengkinian_data['status'] ?? $out->akhir_data['status_akhir'] ?? $out->kemajuan_data['status'] ?? $out->status ?? 'Rencana';
                             switch (strtolower($status)) {
                                 case 'published':
                                     return 100;
                                 case 'loa':
                                 case 'accepted':
-                                    return 80;
+                                    return 75;
                                 case 'in_review':
                                 case 'under review':
-                                    return 60;
+                                    return 50;
                                 case 'submit':
                                 case 'submitted':
-                                    return 40;
+                                    return 25;
                                 default:
-                                    return 20; // Draft
+                                    return 0; // Draft / Rencana
                             }
                         })->sum();
                         $data['progress'] = round($totalScore / $outputs->count());

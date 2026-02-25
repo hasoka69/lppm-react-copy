@@ -55,8 +55,8 @@ const PageUsulan: React.FC<PageUsulanProps> = ({
     const { props } = usePage<PageProps>();
     const usulanList = propUsulanList || props.usulanList;
 
-    const items = usulanList?.data || [];
-    const links = usulanList?.links || [];
+    const items = Array.isArray(usulanList) ? usulanList : (usulanList?.data || []);
+    const links = Array.isArray(usulanList) ? [] : (usulanList?.links || []);
 
     const getStatusStyle = (status: string) => {
         const statusMap: Record<string, { label: string; bg: string; color: string; dot: string }> = {
@@ -199,7 +199,7 @@ const PageUsulan: React.FC<PageUsulanProps> = ({
                                             transition={{ duration: 0.3, delay: idx * 0.05 }}
                                         >
                                             <td style={{ fontWeight: 700, color: '#94a3b8', paddingLeft: '1.5rem' }}>
-                                                {(usulanList.current_page - 1) * usulanList.per_page + idx + 1}
+                                                {(usulanList?.current_page ? (usulanList.current_page - 1) * usulanList.per_page : 0) + idx + 1}
                                             </td>
                                             <td className={styles.judulCell} style={{ padding: '1.25rem 0.75rem' }}>
                                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
@@ -246,13 +246,22 @@ const PageUsulan: React.FC<PageUsulanProps> = ({
                                                                 <DropdownMenuItem onClick={() => onViewUsulan && onViewUsulan(u)} className="rounded-md cursor-pointer">
                                                                     <Eye className="mr-3 h-4 w-4 text-slate-500" /> Lihat Detail Preview
                                                                 </DropdownMenuItem>
-                                                                <DropdownMenuItem
-                                                                    onClick={() => onEditUsulan && onEditUsulan(u)}
-                                                                    disabled={!['draft', 'revision_dosen', 'needs_revision'].includes(u.status)}
-                                                                    className="rounded-md cursor-pointer"
-                                                                >
-                                                                    <Edit className="mr-3 h-4 w-4 text-slate-500" /> Lanjutkan Pengisian
-                                                                </DropdownMenuItem>
+                                                                {(!isPerbaikanView && u.status === 'draft') && (
+                                                                    <DropdownMenuItem
+                                                                        onClick={() => onEditUsulan && onEditUsulan(u)}
+                                                                        className="rounded-md cursor-pointer"
+                                                                    >
+                                                                        <Edit className="mr-3 h-4 w-4 text-slate-500" /> Lanjutkan Pengisian
+                                                                    </DropdownMenuItem>
+                                                                )}
+                                                                {(isPerbaikanView && (u.status === 'needs_revision' || u.status === 'revision_dosen' || u.status === 'under_revision_admin')) && (
+                                                                    <DropdownMenuItem
+                                                                        onClick={() => onEditUsulan && onEditUsulan(u)}
+                                                                        className="rounded-md cursor-pointer"
+                                                                    >
+                                                                        <Edit className="mr-3 h-4 w-4 text-slate-500" /> Revisi Usulan
+                                                                    </DropdownMenuItem>
+                                                                )}
                                                                 {u.status === 'didanai' && u.nomor_kontrak && (
                                                                     <DropdownMenuItem asChild>
                                                                         <a

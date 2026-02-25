@@ -15,6 +15,7 @@ import {
     Truck,
     Hammer
 } from 'lucide-react';
+import ReviewFeedbackPanel from '../../../../components/ReviewFeedbackPanel';
 
 interface RABItem {
     id: number;
@@ -263,6 +264,9 @@ const PageRAB: React.FC<PageRABProps> = ({ onKembali, onSelanjutnya, usulanId: p
 
     return (
         <div className={styles.container}>
+            {/* Tampilkan panel feedback jika ada usulan */}
+            <ReviewFeedbackPanel reviewers={usulan?.reviewers as any} danaAwal={usulan?.dana_usulan_awal} danaDisetujui={usulan?.dana_disetujui} />
+
             {/* Header RAB Summary Card */}
             <div className={styles.pageSection}>
                 <div className={styles.formSection} style={{ background: 'linear-gradient(135deg, #065f46 0%, #064e3b 100%)', color: 'white' }}>
