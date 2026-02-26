@@ -36,7 +36,8 @@ class HandleInertiaRequests extends Middleware
             'quote' => ['message' => trim($message), 'author' => trim($author)],
             'auth' => [
                 'user' => $request->user() ? array_merge($request->user()->toArray(), [
-                    'role' => $request->user()->getRoleNames()->first()
+                    'role' => $request->user()->getRoleNames()->first(),
+                    'roles' => $request->user()->getRoleNames()->toArray(),
                 ]) : null,
             ],
             'flash' => [

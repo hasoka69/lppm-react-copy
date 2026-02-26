@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Head, usePage, router } from '@inertiajs/react'; // Updated import source if needed, usually @inertiajs/react
 import AppLayout from '@/layouts/app-layout'; // Updated import
+import Pagination from '@/components/Pagination';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -25,7 +26,7 @@ import { Switch } from '@/components/ui/switch';
 import { Pencil, Trash2, Plus, Megaphone } from 'lucide-react';
 import { toast } from 'sonner'; // Updated import
 
-export default function PengumumanIndex({ pengumuman }: { pengumuman: any[] }) {
+export default function PengumumanIndex({ pengumuman }: { pengumuman: any }) {
     // const { toast } = useToast(); // Removed legacy hook
     const [isOpen, setIsOpen] = useState(false);
     const [editingItem, setEditingItem] = useState<any>(null);
@@ -78,7 +79,7 @@ export default function PengumumanIndex({ pengumuman }: { pengumuman: any[] }) {
     ];
 
     return (
-        <AppLayout breadcrumbs={breadcrumbs} title="Manajemen Pengumuman">
+        <AppLayout breadcrumbs={breadcrumbs} title="Manajemen Pengumuman" hideSidebar={true}>
             <Head title="Manajemen Pengumuman" />
 
             <div className="container mx-auto py-6 space-y-6">
@@ -146,8 +147,8 @@ export default function PengumumanIndex({ pengumuman }: { pengumuman: any[] }) {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {pengumuman.length > 0 ? (
-                                    pengumuman.map((item, index) => (
+                                {pengumuman.data.length > 0 ? (
+                                    pengumuman.data.map((item: any, index: number) => (
                                         <TableRow key={item.id}>
                                             <TableCell>{index + 1}</TableCell>
                                             <TableCell className="max-w-md truncate" title={item.content}>
@@ -182,6 +183,11 @@ export default function PengumumanIndex({ pengumuman }: { pengumuman: any[] }) {
                         </Table>
                     </CardContent>
                 </Card>
+                {pengumuman.links && pengumuman.links.length > 3 && (
+                    <div className="mt-6 flex justify-center">
+                        <Pagination links={pengumuman.links} />
+                    </div>
+                )}
             </div>
         </AppLayout>
     );

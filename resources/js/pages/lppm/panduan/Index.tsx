@@ -1,6 +1,7 @@
 import React from "react";
-import { Head, Link, router } from "@inertiajs/react";
+import { Head, Link, router, usePage } from "@inertiajs/react";
 import Header from "@/components/Header";
+import Pagination from "@/components/Pagination";
 import {
     Table,
     TableBody,
@@ -38,16 +39,23 @@ interface Panduan {
 }
 
 interface Props {
-    panduans: Panduan[];
+    panduans: {
+        data: Panduan[];
+        links: any[];
+    };
+    filters?: {
+        search?: string;
+    };
 }
 
-export default function PanduanIndex({ panduans }: Props) {
-    const [search, setSearch] = React.useState("");
+export default function PanduanIndex({ panduans, filters }: Props) {
+    const [search, setSearch] = React.useState(filters?.search || "");
     const [deleteId, setDeleteId] = React.useState<number | null>(null);
 
-    const filteredPanduans = panduans.filter(item =>
-        item.judul.toLowerCase().includes(search.toLowerCase())
-    );
+    const handleSearch = (e: React.FormEvent) => {
+        e.preventDefault();
+        router.get(route('lppm.panduan.index'), { search }, { preserveState: true });
+    };
 
     const handleDelete = () => {
         if (deleteId) {
@@ -90,7 +98,7 @@ export default function PanduanIndex({ panduans }: Props) {
                 </div>
 
                 <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex justify-between items-center flex-wrap gap-4">
-                    <div className="relative w-full md:w-96">
+                    <form onSubmit={handleSearch} className="relative w-full md:w-96">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
                         <Input
                             placeholder="Cari panduan..."
@@ -98,7 +106,7 @@ export default function PanduanIndex({ panduans }: Props) {
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                         />
-                    </div>
+                    </form>
                 </div>
 
                 <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
@@ -114,8 +122,8 @@ export default function PanduanIndex({ panduans }: Props) {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {filteredPanduans.length > 0 ? (
-                                filteredPanduans.map((item) => (
+                            {panduans.data.length > 0 ? (
+                                panduans.data.map((item) => (
                                     <TableRow key={item.id}>
                                         <TableCell>
                                             <div className="w-20 h-12 bg-gray-50 rounded border border-gray-100 flex items-center justify-center overflow-hidden">
@@ -196,6 +204,11 @@ export default function PanduanIndex({ panduans }: Props) {
                         </TableBody>
                     </Table>
                 </div>
+                {panduans.links && panduans.links.length > 3 && (
+                    <div className="mt-6 flex justify-center">
+                        <Pagination links={panduans.links} />
+                    </div>
+                )}
             </main>
 
             <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>

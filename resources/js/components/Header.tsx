@@ -7,6 +7,7 @@ import { Link, usePage } from "@inertiajs/react";
 interface AuthUser {
     name: string;
     role: string;
+    roles?: string[];
     avatar?: string;
 }
 
@@ -95,7 +96,6 @@ const ROLE_MENU: Record<string, NavItem[]> = {
         { href: "/reviewer/dashboard", label: "Dashboard" },
         { href: "/reviewer/usulan", label: "Usulan Untuk Direview" },
         { href: "/reviewer/penilaian", label: "Penilaian Saya" },
-        { href: "/reviewer/arsip", label: "Arsip" },
     ],
 
     kaprodi: [
@@ -127,6 +127,21 @@ const getDisplayRole = (roleKey: string): string => {
             return 'Admin LPPM';
         default:
             return capitalize(roleKey); // 'dosen' -> 'Dosen', 'reviewer' -> 'Reviewer'
+    }
+};
+
+/**
+ * Mendapatkan URL dashboard khusus untuk role tertentu
+ */
+const getDashboardUrlForRole = (roleKey: string): string => {
+    switch (roleKey) {
+        case 'admin lppm': return '/lppm/dashboard';
+        case 'admin':
+        case 'super-admin': return '/admin/dashboard';
+        case 'dosen': return '/dosen/dashboard';
+        case 'reviewer': return '/reviewer/dashboard';
+        case 'kaprodi': return '/kaprodi/dashboard';
+        default: return '/';
     }
 };
 
@@ -222,6 +237,9 @@ export default function Header() {
 
     const currentUrl = page.url;
 
+    // URL dinamis untuk logo berdasarkan role aktif
+    const dashboardUrl = navItems.length > 0 && navItems[0].href ? navItems[0].href : '/';
+
     // Cek apakah salah satu sub-item dropdown sedang aktif
     const isDropdownActive = (items: { href: string }[]) =>
         items.some(subItem => currentUrl.startsWith(subItem.href));
@@ -230,7 +248,7 @@ export default function Header() {
         <header className="w-full bg-white shadow-sm border-b px-6 py-3 flex items-center justify-between sticky top-0 z-50">
 
             {/* LEFT - LOGO */}
-            <Link href="/" className="flex items-center gap-5 group">
+            <Link href={dashboardUrl} className="flex items-center gap-5 group">
                 <img
                     src="/image/logo-asaindo.png"
                     alt="Logo Kampus"
@@ -415,13 +433,40 @@ export default function Header() {
 
                     {userDropdown && (
                         <div className="absolute right-0 w-48 bg-white shadow-lg rounded-lg py-2 mt-3 z-50 border border-gray-100">
-                            <Link href="/profile" className="block px-4 py-2 hover:bg-gray-100 text-sm">
-                                Profile
+                            <Link href="/profile" className="block px-4 py-2 hover:bg-blue-50 hover:text-blue-700 text-sm font-medium transition-colors">
+                                Profile Profil
                             </Link>
+
+                            {authUser?.roles && authUser.roles.length > 1 && (
+                                <>
+                                    <div className="border-t border-gray-100 my-1"></div>
+                                    <div className="px-4 py-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-widest bg-gray-50/50">
+                                        Ganti Role
+                                    </div>
+                                    {authUser.roles.map(r => {
+                                        const rLower = r.toLowerCase();
+                                        if (rLower === role) return null; // Skip active role
+                                        return (
+                                            <Link
+                                                key={r}
+                                                href={getDashboardUrlForRole(rLower)}
+                                                className="flex items-center gap-2 px-4 py-2 hover:bg-gray-50 text-sm text-gray-700 font-medium transition-colors cursor-pointer group/role"
+                                            >
+                                                <svg className="w-3.5 h-3.5 text-gray-400 group-hover/role:text-blue-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                                                </svg>
+                                                {getDisplayRole(rLower)}
+                                            </Link>
+                                        );
+                                    })}
+                                </>
+                            )}
+
+                            <div className="border-t border-gray-100 my-1"></div>
                             <Link
                                 href="/logout"
                                 method="post"
-                                className="block px-4 py-2 hover:bg-gray-100 text-sm text-red-600"
+                                className="block px-4 py-2 hover:bg-red-50 hover:text-red-700 text-sm text-red-600 transition-colors font-medium cursor-pointer"
                             >
                                 Logout
                             </Link>

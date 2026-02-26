@@ -10,8 +10,8 @@ interface Reviewer {
 
 interface ReviewFeedbackPanelProps {
     reviewers?: Reviewer[];
-    danaAwal?: number;
-    danaDisetujui?: number;
+    danaAwal?: number | string;
+    danaDisetujui?: number | string;
     status?: string;
 }
 
@@ -107,7 +107,7 @@ const ReviewFeedbackPanel: React.FC<ReviewFeedbackPanelProps> = ({ reviewers, da
                                                 <span className="font-semibold text-slate-700">Rp {Number(danaAwal).toLocaleString('id-ID')}</span>
                                             </div>
                                         )}
-                                        {danaDisetujui != null && danaDisetujui > 0 && (
+                                        {danaDisetujui != null && Number(danaDisetujui) > 0 && (
                                             <div className="flex justify-between border-t border-emerald-200/50 pt-1.5 mt-0.5">
                                                 <span className="text-emerald-800 font-bold">Dana Disetujui:</span>
                                                 <span className="font-bold text-emerald-700">Rp {Number(danaDisetujui).toLocaleString('id-ID')}</span>

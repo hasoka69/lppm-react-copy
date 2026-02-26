@@ -4,6 +4,7 @@ import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { type BreadcrumbItem } from '@/types';
+import Pagination from '@/components/Pagination';
 import {
   AlertDialog,
   AlertDialogTrigger,
@@ -196,6 +197,11 @@ export default function UserIndex({ users }: Props) {
             ))
           )}
         </div>
+        {users.links && users.links.length > 3 && (
+          <div className="mt-6 flex justify-center">
+            <Pagination links={users.links} />
+          </div>
+        )}
       </div>
     </AppLayout>
   );

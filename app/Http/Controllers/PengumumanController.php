@@ -13,7 +13,7 @@ class PengumumanController extends Controller
      */
     public function index()
     {
-        $pengumuman = Pengumuman::latest()->get();
+        $pengumuman = Pengumuman::latest()->paginate(10)->withQueryString();
         return Inertia::render('lppm/pengumuman/Index', [
             'pengumuman' => $pengumuman
         ]);

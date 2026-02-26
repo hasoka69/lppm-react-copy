@@ -1,6 +1,7 @@
 import React from "react";
 import { Head, Link, router, usePage } from "@inertiajs/react";
 import Header from "@/components/Header";
+import Pagination from "@/components/Pagination";
 import {
     Table,
     TableBody,
@@ -174,6 +175,11 @@ export default function BeritaIndex({ berita, filters }: Props) {
                         </TableBody>
                     </Table>
                 </div>
+                {berita.links && berita.links.length > 3 && (
+                    <div className="mt-6 flex justify-center">
+                        <Pagination links={berita.links} />
+                    </div>
+                )}
             </main>
 
             <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>

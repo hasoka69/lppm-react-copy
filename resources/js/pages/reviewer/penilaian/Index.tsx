@@ -1,6 +1,7 @@
 import React from 'react';
 import { Head, usePage, Link } from '@inertiajs/react';
 import Header from '../../../components/Header';
+import Pagination from '../../../components/Pagination';
 
 interface ReviewHistory {
     id: number;
@@ -16,13 +17,17 @@ interface ReviewHistory {
 }
 
 interface PageProps {
-    reviewHistories: ReviewHistory[];
+    reviewHistories: {
+        data: ReviewHistory[];
+        links: any[];
+    };
     [key: string]: unknown;
 }
 
 const ReviewerPenilaianIndex: React.FC = () => {
     const { props } = usePage<PageProps>();
-    const reviewHistories = props.reviewHistories;
+    const reviewHistories = props.reviewHistories.data;
+    const links = props.reviewHistories.links;
 
     const getActionBadge = (action: string) => {
         switch (action) {
@@ -126,6 +131,11 @@ const ReviewerPenilaianIndex: React.FC = () => {
                         </div>
                     )}
                 </div>
+                {links && links.length > 3 && (
+                    <div className="mt-6 flex justify-center">
+                        <Pagination links={links} />
+                    </div>
+                )}
             </main>
         </div>
     );

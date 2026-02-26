@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, Head } from '@inertiajs/react';
+import { Link, Head, usePage } from '@inertiajs/react';
 import Header from '@/components/Header';
 import Footer from '@/components/footer';
 import {
@@ -53,6 +53,7 @@ interface DashboardProps {
 }
 
 export default function DashboardKaprodi({ program, summary, proposals, activities, error }: DashboardProps) {
+    const { auth } = usePage<any>().props;
 
     if (error) {
         return (
@@ -286,39 +287,22 @@ export default function DashboardKaprodi({ program, summary, proposals, activiti
                                 <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-full -mr-10 -mt-10 blur-3xl group-hover:bg-blue-100 transition-colors"></div>
 
                                 <div className="relative z-10">
-                                    <div className="flex items-center gap-4 mb-8">
-                                        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-blue-500/30">
-                                            <Building2 className="w-8 h-8" />
+                                    <div className="flex items-center gap-4 mb-2">
+                                        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-blue-500/30 overflow-hidden">
+                                            {auth?.user?.avatar ? (
+                                                <img src={auth.user.avatar} alt="Profile" className="w-full h-full object-cover" />
+                                            ) : (
+                                                <img src={`https://ui-avatars.com/api/?name=${encodeURIComponent(auth?.user?.name || 'K')}&background=2563eb&color=fff`} alt="Avatar" className="w-full h-full object-cover" />
+                                            )}
                                         </div>
                                         <div>
-                                            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Program Studi</p>
-                                            <h3 className="text-lg font-extrabold text-gray-900 leading-tight">{program.name}</h3>
-                                            <p className="text-sm font-medium text-blue-600">{program.faculty}</p>
+                                            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Profil Kaprodi</p>
+                                            <h3 className="text-lg font-extrabold text-gray-900 leading-tight">{auth?.user?.name || "Kaprodi"}</h3>
+                                            <p className="text-sm font-medium text-blue-600">{program.name} - {program.faculty}</p>
                                         </div>
                                     </div>
 
-                                    <div className="space-y-4">
-                                        <div className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100/50">
-                                            <div className="flex items-center gap-3">
-                                                <div className="p-2 bg-white rounded-xl text-blue-600 shadow-sm">
-                                                    <Users className="w-5 h-5" />
-                                                </div>
-                                                <span className="text-sm font-bold text-gray-600">Dosen Aktif</span>
-                                            </div>
-                                            <span className="text-lg font-extrabold text-gray-900">{program.lecturers_count}</span>
-                                        </div>
-                                        <div className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100/50">
-                                            <div className="flex items-center gap-3">
-                                                <div className="p-2 bg-white rounded-xl text-emerald-600 shadow-sm">
-                                                    <TrendingUp className="w-5 h-5" />
-                                                </div>
-                                                <span className="text-sm font-bold text-gray-600">Proposal {program.year}</span>
-                                            </div>
-                                            <span className="text-lg font-extrabold text-gray-900">{program.proposals_current_year}</span>
-                                        </div>
-                                    </div>
-
-                                    <button className="w-full mt-8 py-3 bg-gray-900 text-white rounded-xl text-sm font-bold hover:bg-gray-800 transition-colors shadow-lg shadow-gray-900/10">
+                                    <button className="w-full mt-6 py-3 bg-gray-900 text-white rounded-xl text-sm font-bold hover:bg-gray-800 transition-colors shadow-lg shadow-gray-900/10">
                                         Lihat Kinerja Dosen
                                     </button>
                                 </div>

@@ -33,7 +33,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 export default function AuditLogIndex({ logs }: Props) {
   return (
-    <AppLayout breadcrumbs={breadcrumbs}>
+    <AppLayout breadcrumbs={breadcrumbs} hideSidebar={true}>
       <Head title="Audit Log" />
       <div className="flex-1 p-4 md:p-6">
         <Card>

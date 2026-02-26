@@ -23,7 +23,7 @@ class BeritaController extends Controller
                 ->orWhere('categories', 'like', "%{$search}%");
         }
 
-        $berita = $query->latest()->paginate(10);
+        $berita = $query->latest()->paginate(10)->withQueryString();
 
         return Inertia::render('lppm/berita/Index', [
             'berita' => $berita,
@@ -45,12 +45,14 @@ class BeritaController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'judul' => 'required|string|max:255',
+            'judul' => 'required|string|max:255|unique:beritas,judul',
             'ringkasan' => 'nullable|string',
             'konten' => 'required|string',
             'status' => 'required|in:draft,published',
             'gambar' => 'nullable|image|max:2048', // 2MB Max
             'published_at' => 'nullable|date',
+        ], [
+            'judul.unique' => 'Judul berita sudah ada, coba tambahkan kata lain atau ubah judul.',
         ]);
 
         if ($request->hasFile('gambar')) {
@@ -96,12 +98,14 @@ class BeritaController extends Controller
         $berita = Berita::findOrFail($id);
 
         $validated = $request->validate([
-            'judul' => 'required|string|max:255',
+            'judul' => 'required|string|max:255|unique:beritas,judul,' . $id,
             'ringkasan' => 'nullable|string',
             'konten' => 'required|string',
             'status' => 'required|in:draft,published',
             'gambar' => 'nullable', // could be string (existing path) or file
             'published_at' => 'nullable|date',
+        ], [
+            'judul.unique' => 'Judul berita sudah ada, coba tambahkan kata lain atau ubah judul.',
         ]);
 
         if ($request->hasFile('gambar')) {

@@ -186,17 +186,15 @@ class ReviewerController extends Controller
             ->where('reviewer_id', '=', $user->id, 'and')
             ->where('reviewer_type', '=', 'reviewer', 'and')
             ->latest('reviewed_at')
-            ->get()
-            ->map(function ($review) {
+            ->paginate(10)
+            ->withQueryString()
+            ->through(function ($review) {
                 // Handle deletion or null
                 if (!$review->usulan)
                     return null;
 
                 // Distinguish attributes
-                // UsulanPengabdian uses 'ketua' relation typically, but we added 'user' alias.
-                // UsulanPenelitian uses 'user'.
-                // We need to fetch the User Model to get Dosen.
-                $userOwner = $review->usulan->user ?? $review->usulan->ketua;
+                $userOwner = $review->usulan->user ?? $review->usulan->ketua ?? null;
                 $dosen = $userOwner ? $userOwner->dosen : null;
 
                 return [
@@ -211,8 +209,12 @@ class ReviewerController extends Controller
                     'status_usulan' => $review->usulan->status,
                     'type' => str_contains($review->usulan_type, 'Pengabdian') ? 'pengabdian' : 'penelitian'
                 ];
-            })
-            ->filter(); // Remove nulls
+            });
+
+        // Remove nulls realistically gracefully without breaking pagination structure:
+        $reviewHistories->setCollection(
+            $reviewHistories->getCollection()->filter()->values()
+        );
 
         return Inertia::render('reviewer/penilaian/Index', [
             'reviewHistories' => $reviewHistories

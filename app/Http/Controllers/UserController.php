@@ -14,7 +14,7 @@ class UserController extends Controller
 {
     public function index()
     {
-        $users = User::with(['roles', 'dosen'])->latest()->paginate(10);
+        $users = User::with(['roles', 'dosen'])->latest()->paginate(10)->withQueryString();
 
         return Inertia::render('users/Index', [
             'users' => $users,
@@ -24,6 +24,11 @@ class UserController extends Controller
     public function create()
     {
         $roles = Role::all();
+        if (!auth()->user()->hasRole('Admin')) {
+            $roles = $roles->filter(function ($role) {
+                return strtolower($role->name) !== 'admin';
+            })->values();
+        }
 
         return Inertia::render('users/Form', [
             'roles' => $roles,
@@ -42,6 +47,10 @@ class UserController extends Controller
             'nidn' => [Rule::requiredIf(fn() => array_intersect($request->roles, ['Dosen', 'Kaprodi'])), 'nullable', 'string'],
             'prodi' => [Rule::requiredIf(fn() => array_intersect($request->roles, ['Dosen', 'Kaprodi'])), 'nullable', 'string'],
         ]);
+
+        if (in_array('Admin', $validated['roles']) && !auth()->user()->hasRole('Admin')) {
+            abort(403, 'Unauthorized to assign Admin role.');
+        }
 
         $user = User::create([
             'name' => $validated['name'],
@@ -69,7 +78,17 @@ class UserController extends Controller
 
     public function edit(User $user)
     {
+        if ($user->hasRole('Admin') && !auth()->user()->hasRole('Admin')) {
+            abort(403, 'Unauthorized to view or modify an Admin user.');
+        }
+
         $roles = Role::all();
+        if (!auth()->user()->hasRole('Admin')) {
+            $roles = $roles->filter(function ($role) {
+                return strtolower($role->name) !== 'admin';
+            })->values();
+        }
+
         $user->load('dosen'); // Eager load dosen data
 
         return Inertia::render('users/Form', [
@@ -92,6 +111,14 @@ class UserController extends Controller
             'nidn' => [Rule::requiredIf(fn() => array_intersect($request->roles, ['Dosen', 'Kaprodi'])), 'nullable', 'string'],
             'prodi' => [Rule::requiredIf(fn() => array_intersect($request->roles, ['Dosen', 'Kaprodi'])), 'nullable', 'string'],
         ]);
+
+        if ($user->hasRole('Admin') && !auth()->user()->hasRole('Admin')) {
+            abort(403, 'Unauthorized to modify an Admin user.');
+        }
+
+        if (in_array('Admin', $validated['roles']) && !auth()->user()->hasRole('Admin')) {
+            abort(403, 'Unauthorized to assign Admin role.');
+        }
 
         $user->update([
             'name' => $validated['name'],
@@ -121,6 +148,10 @@ class UserController extends Controller
 
     public function destroy(User $user)
     {
+        if ($user->hasRole('Admin') && !auth()->user()->hasRole('Admin')) {
+            abort(403, 'Unauthorized to delete an Admin user.');
+        }
+
         $user->delete();
 
         return redirect()->route('lppm.users.index')->with('success', 'User berhasil dihapus.');

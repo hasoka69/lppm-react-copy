@@ -11,11 +11,20 @@ class PanduanController extends Controller
 {
     // ADMIN METHODS
 
-    public function index()
+    public function index(Request $request)
     {
-        $panduans = Panduan::latest()->get();
+        $query = Panduan::query();
+
+        if ($request->has('search')) {
+            $search = $request->search;
+            $query->where('judul', 'like', "%{$search}%");
+        }
+
+        $panduans = $query->latest()->paginate(10)->withQueryString();
+
         return Inertia::render('lppm/panduan/Index', [
-            'panduans' => $panduans
+            'panduans' => $panduans,
+            'filters' => $request->only('search')
         ]);
     }
 

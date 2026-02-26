@@ -422,7 +422,7 @@ export default function DashboardAdmin(props: DashboardProps) {
                     >
                         <div className="p-8 border-b border-slate-50 flex justify-between items-center bg-slate-50/30">
                             <div>
-                                <h3 className="font-extrabold text-lg text-slate-800 tracking-tight">Aktivitas Terbaru</h3>
+                                <h3 className="font-bold text-lg text-slate-800 tracking-tight">Aktivitas Terbaru</h3>
                                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Real-time update sistem</p>
                             </div>
                             <button className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-400">
