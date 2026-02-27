@@ -53,23 +53,23 @@ export default function UserForm({ user, roles, currentRoles, dosenProfile }: Pr
   };
 
   const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'User Management', href: '/lppm/users' },
-    { title: isEdit ? 'Edit User' : 'Create User', href: '#' },
+    { title: 'Manajemen Pengguna', href: '/lppm/users' },
+    { title: isEdit ? 'Ubah Pengguna' : 'Tambah Pengguna', href: '#' },
   ];
 
   const showDosenFields = data.roles.some(r => r.toLowerCase() === 'dosen') || data.roles.some(r => r.toLowerCase() === 'kaprodi');
 
   return (
     <AppLayout breadcrumbs={breadcrumbs} hideSidebar={true}>
-      <Head title={isEdit ? 'Edit User' : 'Create User'} />
-      <div className="flex-1 p-4 md:p-6">
-        <Card className="max-w-3xl mx-auto">
+      <Head title={isEdit ? 'Ubah Pengguna' : 'Tambah Pengguna'} />
+      <div className="flex-1 p-4 md:p-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <Card className="max-w-3xl mx-auto shadow-sm hover:shadow-md transition-shadow">
           <CardHeader className="pb-3">
             <CardTitle className="text-2xl font-bold tracking-tight">
-              {isEdit ? 'Edit User' : 'Create New User'}
+              {isEdit ? 'Ubah Pengguna' : 'Tambah Pengguna Baru'}
             </CardTitle>
             <p className="text-sm text-muted-foreground">
-              {isEdit ? 'Update user data and roles' : 'Enter user data and set roles'}
+              {isEdit ? 'Perbarui data pengguna dan hak akses' : 'Masukkan data pengguna dan atur hak akses'}
             </p>
           </CardHeader>
 
@@ -79,11 +79,11 @@ export default function UserForm({ user, roles, currentRoles, dosenProfile }: Pr
             <form onSubmit={handleSubmit} className="space-y-8">
               <div className="space-y-4">
                 {/* Name */}
-                <div>
-                  <Label htmlFor="name" className="mb-2 block">Name</Label>
+                <div className="animate-in fade-in slide-in-from-bottom-2" style={{ animationDelay: '100ms', animationFillMode: 'both' }}>
+                  <Label htmlFor="name" className="mb-2 block">Nama Lengkap</Label>
                   <Input
                     id="name"
-                    placeholder="Full name"
+                    placeholder="Nama lengkap pengguna"
                     value={data.name}
                     onChange={(e) => setData('name', e.target.value)}
                     className={errors.name ? 'border-red-500' : ''}
@@ -92,11 +92,11 @@ export default function UserForm({ user, roles, currentRoles, dosenProfile }: Pr
                 </div>
 
                 {/* Email */}
-                <div>
-                  <Label htmlFor="email" className="mb-2 block">Email</Label>
+                <div className="animate-in fade-in slide-in-from-bottom-2" style={{ animationDelay: '150ms', animationFillMode: 'both' }}>
+                  <Label htmlFor="email" className="mb-2 block">Alamat Email</Label>
                   <Input
                     id="email"
-                    placeholder="Email address"
+                    placeholder="Alamat email aktif"
                     value={data.email}
                     onChange={(e) => setData('email', e.target.value)}
                     className={errors.email ? 'border-red-500' : ''}
@@ -105,8 +105,8 @@ export default function UserForm({ user, roles, currentRoles, dosenProfile }: Pr
                 </div>
 
                 {/* Password */}
-                <div>
-                  <Label htmlFor="password" className="mb-2 block">Password {isEdit ? '(Optional)' : ''}</Label>
+                <div className="animate-in fade-in slide-in-from-bottom-2" style={{ animationDelay: '200ms', animationFillMode: 'both' }}>
+                  <Label htmlFor="password" className="mb-2 block">Kata Sandi {isEdit ? '(Opsional)' : ''}</Label>
                   <Input
                     id="password"
                     type="password"
@@ -119,9 +119,9 @@ export default function UserForm({ user, roles, currentRoles, dosenProfile }: Pr
                 </div>
 
                 {/* Roles */}
-                <div>
-                  <Label className="mb-3 block">Roles</Label>
-                  <div className="space-y-3 border rounded-lg p-4">
+                <div className="animate-in fade-in slide-in-from-bottom-2" style={{ animationDelay: '250ms', animationFillMode: 'both' }}>
+                  <Label className="mb-3 block">Peran / Hak Akses</Label>
+                  <div className="space-y-3 border rounded-lg p-4 bg-muted/20">
                     {roles.map((role) => (
                       <div key={role.id} className="flex items-center space-x-2">
                         <Checkbox
@@ -183,16 +183,16 @@ export default function UserForm({ user, roles, currentRoles, dosenProfile }: Pr
 
               <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-2">
                 <Link href="/lppm/users" className="w-full sm:w-auto">
-                  <Button type="button" variant="secondary" className="w-full">
-                    Back
+                  <Button type="button" variant="secondary" className="w-full hover:shadow-sm transition-shadow">
+                    Kembali
                   </Button>
                 </Link>
-                <Button type="submit" disabled={processing} className="w-full sm:w-auto">
+                <Button type="submit" disabled={processing} className="w-full sm:w-auto shadow-sm hover:shadow-md transition-shadow">
                   {processing
-                    ? <span className="animate-pulse">Saving...</span>
+                    ? <span className="animate-pulse">Menyimpan...</span>
                     : isEdit
-                      ? 'Save Changes'
-                      : 'Create User'
+                      ? 'Simpan Perubahan'
+                      : 'Buat Pengguna'
                   }
                 </Button>
               </div>

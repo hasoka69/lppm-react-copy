@@ -118,7 +118,7 @@ const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 const getDisplayRole = (roleKey: string): string => {
     switch (roleKey) {
         case 'kaprodi':
-            return 'Kaprodi Informatika';
+            return 'Kaprodi';
         case 'admin':
             return 'Administrator LPPM';
         case 'super-admin':
@@ -434,7 +434,7 @@ export default function Header() {
                     {userDropdown && (
                         <div className="absolute right-0 w-48 bg-white shadow-lg rounded-lg py-2 mt-3 z-50 border border-gray-100">
                             <Link href="/profile" className="block px-4 py-2 hover:bg-blue-50 hover:text-blue-700 text-sm font-medium transition-colors">
-                                Profile Profil
+                                Edit Profil
                             </Link>
 
                             {authUser?.roles && authUser.roles.length > 1 && (

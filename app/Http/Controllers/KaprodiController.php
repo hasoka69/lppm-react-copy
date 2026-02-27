@@ -143,6 +143,12 @@ class KaprodiController extends Controller
                 'proposals_current_year' => $proposalsCount, // Unified count
                 'year' => $year,
             ],
+            'dosen_ids' => [
+                'nidn' => $dosenProfile->nidn ?: '-',
+                'scopus_id' => $dosenProfile->scopus_id ?: '-',
+                'sinta_id' => $dosenProfile->sinta_id ?: '-',
+                'google_scholar_id' => $dosenProfile->google_scholar_id ?: '-',
+            ],
             'summary' => $stats,
             'proposals' => $recentProposals,
             'activities' => []

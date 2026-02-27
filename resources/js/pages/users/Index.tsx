@@ -25,7 +25,7 @@ dayjs.locale('id');
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
-    title: 'User Management',
+    title: 'Manajemen Pengguna',
     href: '/lppm/users',
   },
 ];
@@ -83,26 +83,27 @@ export default function UserIndex({ users }: Props) {
 
   return (
     <AppLayout breadcrumbs={breadcrumbs} hideSidebar={true}>
-      <Head title="User Management" />
-      <div className="p-4 md:p-6 space-y-6">
+      <Head title="Manajemen Pengguna" />
+      <div className="p-4 md:p-6 space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">User Management</h1>
-            <p className="text-muted-foreground">Manage user data and their roles within the system.</p>
+            <h1 className="text-2xl font-bold tracking-tight">Manajemen Pengguna</h1>
+            <p className="text-muted-foreground">Kelola data pengguna dan hak akses mereka di dalam sistem.</p>
           </div>
           <Link href="/lppm/users/create">
-            <Button className="w-full md:w-auto" size="sm">+ Add User</Button>
+            <Button className="w-full md:w-auto shadow-sm hover:shadow-md transition-shadow" size="sm">+ Tambah Pengguna</Button>
           </Link>
         </div>
 
-        <div className="space-y-2 divide-y rounded-md border bg-background">
+        <div className="space-y-2 divide-y rounded-md border bg-background shadow-sm">
           {users.data.length === 0 ? (
-            <div className="py-8 text-center text-muted-foreground">No user data available.</div>
+            <div className="py-8 text-center text-muted-foreground">Tidak ada data pengguna tersedia.</div>
           ) : (
-            users.data.map((user) => (
+            users.data.map((user, index) => (
               <div
                 key={user.id}
-                className="flex flex-col md:flex-row md:items-center justify-between gap-4 px-4 py-5 hover:bg-muted/50 transition"
+                className="flex flex-col md:flex-row md:items-center justify-between gap-4 px-4 py-5 hover:bg-muted/50 transition-all duration-300 animate-in fade-in slide-in-from-bottom-2"
+                style={{ animationDelay: `${index * 50}ms`, animationFillMode: 'both' }}
               >
                 {/* Avatar dan Informasi */}
                 <div className="flex items-start gap-4 flex-1">
@@ -125,7 +126,7 @@ export default function UserIndex({ users }: Props) {
                       )}
                     </div>
                     <div className="text-xs text-muted-foreground italic">
-                      Registered {dayjs(user.created_at).fromNow()}
+                      Terdaftar {dayjs(user.created_at).fromNow()}
                     </div>
                     {user.roles.length > 0 && (
                       <div className="mt-2 flex flex-wrap gap-1">
@@ -142,29 +143,29 @@ export default function UserIndex({ users }: Props) {
                 {/* Aksi */}
                 <div className="flex flex-wrap gap-2 md:justify-end">
                   <Link href={`/lppm/users/${user.id}/edit`}>
-                    <Button size="sm" variant="outline">Edit</Button>
+                    <Button size="sm" variant="outline" className="hover:bg-primary hover:text-primary-foreground transition-colors">Ubah</Button>
                   </Link>
 
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
-                      <Button size="sm" variant="secondary">Reset</Button>
+                      <Button size="sm" variant="secondary" className="hover:shadow-sm transition-shadow">Atur Ulang</Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                       <AlertDialogHeader>
-                        <AlertDialogTitle>Reset Password?</AlertDialogTitle>
+                        <AlertDialogTitle>Atur Ulang Kata Sandi?</AlertDialogTitle>
                         <AlertDialogDescription>
-                          Password for <strong>{user.name}</strong> will be reset to:
+                          Kata sandi untuk <strong>{user.name}</strong> akan diatur ulang menjadi:
                           <br />
-                          <code className="bg-muted rounded px-2 py-1 text-sm">ResetPasswordNya</code>
+                          <code className="bg-muted rounded px-2 py-1 text-sm mt-2 block w-fit">ResetPasswordNya</code>
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogCancel>Batal</AlertDialogCancel>
                         <AlertDialogAction
                           onClick={() => handleResetPassword(user.id)}
                           disabled={processing}
                         >
-                          Yes, Reset
+                          Ya, Atur Ulang
                         </AlertDialogAction>
                       </AlertDialogFooter>
                     </AlertDialogContent>
@@ -172,22 +173,23 @@ export default function UserIndex({ users }: Props) {
 
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
-                      <Button size="sm" variant="destructive">Delete</Button>
+                      <Button size="sm" variant="destructive" className="hover:shadow-sm transition-shadow">Hapus</Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                       <AlertDialogHeader>
-                        <AlertDialogTitle>Delete User?</AlertDialogTitle>
+                        <AlertDialogTitle>Hapus Pengguna?</AlertDialogTitle>
                         <AlertDialogDescription>
-                          User <strong>{user.name}</strong> will be permanently deleted.
+                          Pengguna <strong>{user.name}</strong> akan dihapus secara permanen.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogCancel>Batal</AlertDialogCancel>
                         <AlertDialogAction
                           onClick={() => handleDelete(user.id)}
                           disabled={processing}
+                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                         >
-                          Yes, Delete
+                          Ya, Hapus
                         </AlertDialogAction>
                       </AlertDialogFooter>
                     </AlertDialogContent>

@@ -42,6 +42,12 @@ interface ProposalData {
 
 interface DashboardProps {
     program: ProgramData;
+    dosen_ids: {
+        nidn: string;
+        scopus_id: string;
+        sinta_id: string;
+        google_scholar_id: string;
+    };
     summary: {
         waiting_review: number; // Controller sends 'waiting_review'
         rejected: number;       // Controller sends 'rejected'
@@ -52,7 +58,7 @@ interface DashboardProps {
     error?: string;
 }
 
-export default function DashboardKaprodi({ program, summary, proposals, activities, error }: DashboardProps) {
+export default function DashboardKaprodi({ program, dosen_ids, summary, proposals, activities, error }: DashboardProps) {
     const { auth } = usePage<any>().props;
 
     if (error) {
@@ -298,13 +304,32 @@ export default function DashboardKaprodi({ program, summary, proposals, activiti
                                         <div>
                                             <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Profil Kaprodi</p>
                                             <h3 className="text-lg font-extrabold text-gray-900 leading-tight">{auth?.user?.name || "Kaprodi"}</h3>
-                                            <p className="text-sm font-medium text-blue-600">{program.name} - {program.faculty}</p>
+                                            <p className="text-sm font-medium text-blue-600">Kaprodi {program.name}</p>
                                         </div>
                                     </div>
 
-                                    <button className="w-full mt-6 py-3 bg-gray-900 text-white rounded-xl text-sm font-bold hover:bg-gray-800 transition-colors shadow-lg shadow-gray-900/10">
-                                        Lihat Kinerja Dosen
-                                    </button>
+                                    <div className="space-y-2 mt-4 text-sm bg-blue-50/50 p-4 rounded-xl border border-blue-100/50">
+                                        <div className="flex justify-between items-center border-b border-blue-100/50 pb-2">
+                                            <span className="text-gray-500 font-medium">NIDN</span>
+                                            <span className="font-semibold text-gray-800">{dosen_ids.nidn}</span>
+                                        </div>
+                                        <div className="flex justify-between items-center border-b border-blue-100/50 pb-2">
+                                            <span className="text-gray-500 font-medium">Scopus ID</span>
+                                            <span className="font-semibold text-gray-800">{dosen_ids.scopus_id}</span>
+                                        </div>
+                                        <div className="flex justify-between items-center border-b border-blue-100/50 pb-2">
+                                            <span className="text-gray-500 font-medium">SINTA ID</span>
+                                            <span className="font-semibold text-gray-800">{dosen_ids.sinta_id}</span>
+                                        </div>
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-gray-500 font-medium">Scholar ID</span>
+                                            <span className="font-semibold text-gray-800">{dosen_ids.google_scholar_id}</span>
+                                        </div>
+                                    </div>
+
+                                    <Link href="/profile" className="block text-center w-full mt-6 py-3 bg-gray-900 text-white rounded-xl text-sm font-bold hover:bg-gray-800 transition-colors shadow-lg shadow-gray-900/10">
+                                        Edit Profil
+                                    </Link>
                                 </div>
                             </div>
 
