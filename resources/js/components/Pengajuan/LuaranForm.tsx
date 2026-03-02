@@ -386,9 +386,6 @@ export const LuaranForm: React.FC<LuaranFormProps> = ({
                             >
                                 <option value="">Pilih Kategori Luaran</option>
                                 {isPengabdian ? [
-                                    'Peningkatan Pemberdayaan Mitra',
-                                    'Publikasi Media Massa',
-                                    'Video Pelaksanaan Program',
                                     'Jurnal Internasional Bereputasi Scopus',
                                     'Jurnal Internasional',
                                     'Jurnal Terakreditasi SINTA 1',

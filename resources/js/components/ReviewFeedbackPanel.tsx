@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { MessageSquare, X, Maximize2, Minimize2, ChevronRight, PenTool } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { usePage } from '@inertiajs/react';
 
 interface Reviewer {
     id: number;
@@ -16,14 +17,21 @@ interface ReviewFeedbackPanelProps {
 }
 
 const ReviewFeedbackPanel: React.FC<ReviewFeedbackPanelProps> = ({ reviewers, danaAwal, danaDisetujui, status }) => {
+    const { props } = usePage<any>();
     const [isOpen, setIsOpen] = useState(false);
     const [isExpanded, setIsExpanded] = useState(false);
+
+    // Get status from props or Inertia page props
+    const currentStatus = status || props?.usulan?.status;
+
+    // Check if the current status is a revision status
+    const isRevision = currentStatus && ['needs_revision', 'revision_dosen', 'under_revision_admin'].includes(currentStatus);
 
     // If no reviewers or no notes, we don't necessarily show it, but usually, if status is revision, there's a note.
     const hasNotes = reviewers && reviewers.some(r => r.catatan && r.catatan.trim() !== '');
     const hasFunding = danaAwal !== undefined || danaDisetujui !== undefined;
 
-    if (status && status !== 'revision_dosen') return null;
+    if (!isRevision) return null;
     if (!hasNotes && !hasFunding) return null;
 
     return (
