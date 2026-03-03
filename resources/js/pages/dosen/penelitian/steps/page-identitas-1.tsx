@@ -25,7 +25,6 @@ interface UsulanData {
     target_akhir_tkt: number | string;
     kelompok_skema: string;
     ruang_lingkup: string;
-    kategori_sbk: string;
     bidang_fokus: string;
     tema_penelitian: string;
     topik_penelitian: string;
@@ -85,7 +84,6 @@ const PageIdentitas: React.FC<PageIdentitasProps> = ({
         target_akhir_tkt: usulan?.target_akhir_tkt ?? '',
         kelompok_skema: usulan?.kelompok_skema ?? '',
         ruang_lingkup: usulan?.ruang_lingkup ?? '',
-        kategori_sbk: usulan?.kategori_sbk ?? '',
         bidang_fokus: usulan?.bidang_fokus ?? '',
         tema_penelitian: usulan?.tema_penelitian ?? '',
         topik_penelitian: usulan?.topik_penelitian ?? '',
@@ -129,7 +127,6 @@ const PageIdentitas: React.FC<PageIdentitasProps> = ({
             'target_akhir_tkt',
             'kelompok_skema',
             'ruang_lingkup',
-            'kategori_sbk',
             'bidang_fokus',
             'tema_penelitian',
             'topik_penelitian',
@@ -291,21 +288,7 @@ const PageIdentitas: React.FC<PageIdentitasProps> = ({
                         </h2>
                         <div className={styles.formGrid}>
                             <div className={styles.formGroup}>
-                                <label className={styles.label}>6. Kategori SBK *</label>
-                                <select
-                                    className={styles.select}
-                                    value={data.kategori_sbk}
-                                    onChange={(e) => setData("kategori_sbk", e.target.value)}
-                                >
-                                    <option value="">Pilih Kategori SBK</option>
-                                    <option value="SBK Riset Dasar">SBK Riset Dasar</option>
-                                    <option value="SBK Riset Terapan">SBK Riset Terapan</option>
-                                    <option value="SBK Riset Pengembangan">SBK Riset Pengembangan</option>
-                                </select>
-                            </div>
-
-                            <div className={styles.formGroup}>
-                                <label className={styles.label}>7. Bidang Fokus *</label>
+                                <label className={styles.label}>6. Bidang Fokus *</label>
                                 <select className={styles.select} value={data.bidang_fokus} onChange={(e) => setData("bidang_fokus", e.target.value)}>
                                     <option value="">Pilih Bidang Fokus</option>
                                     <option value="Kesehatan">Kesehatan</option>
@@ -316,7 +299,7 @@ const PageIdentitas: React.FC<PageIdentitasProps> = ({
                             </div>
 
                             <div className={styles.formGroup}>
-                                <label className={styles.label}>8. Tema Penelitian</label>
+                                <label className={styles.label}>7. Tema Penelitian</label>
                                 <select className={styles.select} value={data.tema_penelitian} onChange={(e) => setData("tema_penelitian", e.target.value)}>
                                     <option value="">Pilih Tema</option>
                                     <option value="Tema 1">Tema 1</option>
@@ -326,7 +309,7 @@ const PageIdentitas: React.FC<PageIdentitasProps> = ({
                             </div>
 
                             <div className={styles.formGroup}>
-                                <label className={styles.label}>9. Topik Penelitian</label>
+                                <label className={styles.label}>8. Topik Penelitian</label>
                                 <select className={styles.select} value={data.topik_penelitian} onChange={(e) => setData("topik_penelitian", e.target.value)}>
                                     <option value="">Pilih Topik</option>
                                     <option value="Topik 1">Topik 1</option>

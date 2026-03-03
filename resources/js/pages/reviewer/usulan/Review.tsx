@@ -181,9 +181,6 @@ const ReviewerReview: React.FC<ReviewerReviewProps> = ({ proposal, dosen, isRead
                                         <Badge variant="outline" className="text-gray-600">
                                             {usulan.ruang_lingkup}
                                         </Badge>
-                                        <Badge variant="outline" className="text-gray-600">
-                                            {usulan.kategori_sbk}
-                                        </Badge>
                                     </div>
                                 </div>
 
@@ -294,6 +291,7 @@ const ReviewerReview: React.FC<ReviewerReviewProps> = ({ proposal, dosen, isRead
                                                 <Badge variant="secondary" className="text-[10px]">Ketua Pengusul</Badge>
                                                 <span className="text-xs text-gray-500">{usulan?.ketua?.dosen?.prodi || usulan?.user?.dosen?.prodi}</span>
                                             </div>
+                                            {usulan?.tugas_ketua && <p className="text-xs text-gray-500 mt-1"><span className="font-semibold">Tugas:</span> {usulan.tugas_ketua}</p>}
                                         </div>
                                     </div>
 

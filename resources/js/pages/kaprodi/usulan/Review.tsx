@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { formatAcademicYear } from '@/utils/academicYear';
 
 interface ReviewProps {
     usulan: any; // Type properly if possible
@@ -80,7 +81,7 @@ export default function KaprodiUsulanReview({ usulan, pengusul, anggota, anggota
                                     </div>
                                     <div>
                                         <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1 block">Tahun Pelaksanaan</label>
-                                        <p className="font-medium text-gray-800">{usulan.tahun_pertama} <span className="text-gray-500 text-sm font-normal">(Lama: {usulan.lama_kegiatan} tahun)</span></p>
+                                        <p className="font-medium text-gray-800">{formatAcademicYear(usulan.tahun_pertama)}</p>
                                     </div>
                                     <div>
                                         <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1 block">Total Anggaran</label>
@@ -117,6 +118,7 @@ export default function KaprodiUsulanReview({ usulan, pengusul, anggota, anggota
                                         </div>
                                         <div className="mt-2 text-xs text-gray-500 pl-11">
                                             {pengusul.prodi} &bull; {pengusul.email}
+                                            {usulan.tugas_ketua && <div className="mt-1"><span className="font-semibold text-gray-600">Tugas:</span> {usulan.tugas_ketua}</div>}
                                         </div>
                                     </div>
                                 </div>
@@ -208,8 +210,8 @@ export default function KaprodiUsulanReview({ usulan, pengusul, anggota, anggota
                                 <CardContent>
                                     {usulan.status !== 'submitted' ? (
                                         <div className={`p-6 rounded-lg text-center ${['approved_prodi', 'reviewer_review', 'reviewed', 'didanai', 'completed'].includes(usulan.status) ? 'bg-green-50 text-green-700' :
-                                                ['rejected_prodi', 'ditolak_akhir', 'rejected', 'ditolak'].includes(usulan.status) ? 'bg-red-50 text-red-700' :
-                                                    'bg-blue-50 text-blue-700'
+                                            ['rejected_prodi', 'ditolak_akhir', 'rejected', 'ditolak'].includes(usulan.status) ? 'bg-red-50 text-red-700' :
+                                                'bg-blue-50 text-blue-700'
                                             }`}>
                                             {['approved_prodi', 'reviewer_review', 'reviewed', 'didanai', 'completed'].includes(usulan.status) ? (
                                                 <>

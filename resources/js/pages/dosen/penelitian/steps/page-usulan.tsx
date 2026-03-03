@@ -268,11 +268,14 @@ const PageUsulan: React.FC<PageUsulanProps> = ({
                                                             </DropdownMenuItem>
                                                         )}
                                                         {(usulan.status === 'approved_prodi' || usulan.status === 'didanai' || usulan.nomor_kontrak) && (
-                                                            <DropdownMenuItem onClick={() => {
-                                                                window.open(`/dosen/penelitian/${usulan.id}/contract/download`, '_blank');
-                                                            }}>
-                                                                <Download className="mr-2 h-4 w-4" />
-                                                                Unduh Kontrak
+                                                            <DropdownMenuItem asChild>
+                                                                <a
+                                                                    href={route('lppm.kontrak.generate', { id: usulan.id, type: 'penelitian' })}
+                                                                    target="_blank"
+                                                                    className="rounded-md cursor-pointer flex items-center w-full"
+                                                                >
+                                                                    <Download className="mr-3 h-4 w-4 text-emerald-600" /> Unduh Kontrak
+                                                                </a>
                                                             </DropdownMenuItem>
                                                         )}
                                                     </DropdownMenuContent>

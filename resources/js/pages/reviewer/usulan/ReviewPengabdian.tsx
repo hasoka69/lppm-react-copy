@@ -362,9 +362,8 @@ export default function ReviewPengabdian({
                                             </div>
 
                                             {proposal.tugas_ketua && (
-                                                <div className="mt-3 bg-blue-50/50 p-2.5 rounded-lg border border-blue-100 text-xs">
-                                                    <span className="font-bold text-blue-700 block mb-0.5">Tugas Ketua:</span>
-                                                    <span className="text-gray-700 leading-relaxed">{proposal.tugas_ketua}</span>
+                                                <div className="mt-1 text-xs text-gray-500">
+                                                    <span className="font-semibold text-gray-600">Tugas:</span> <span className="text-gray-700 leading-relaxed">{proposal.tugas_ketua}</span>
                                                 </div>
                                             )}
                                         </div>

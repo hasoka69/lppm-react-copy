@@ -233,6 +233,7 @@ export default function AdminPengabdianDetail({ usulan, reviewers, initialScores
                                 <div>
                                     <p className="text-sm font-bold text-gray-900">{usulan.ketua?.name} <span className="text-xs font-semibold text-indigo-600 ml-1 border border-indigo-200 px-1.5 py-0.5 rounded bg-white">Ketua</span></p>
                                     <p className="text-xs text-indigo-600 font-medium">{usulan.ketua?.dosen?.prodi || '-'}</p>
+                                    {usulan.tugas_ketua && <p className="text-xs text-gray-500 mt-1"><span className="font-semibold text-gray-600">Tugas:</span> {usulan.tugas_ketua}</p>}
                                 </div>
                             </div>
 

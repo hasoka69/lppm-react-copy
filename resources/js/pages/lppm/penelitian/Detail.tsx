@@ -211,10 +211,6 @@ export default function AdminPenelitianDetail({ usulan, reviewers, initialScores
                                     </div>
                                     <div className="space-y-4">
                                         <div>
-                                            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block mb-1">Kategori SBK</span>
-                                            <p className="font-medium text-gray-800">{usulan.kategori_sbk || '-'}</p>
-                                        </div>
-                                        <div>
                                             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block mb-1">Tema Penelitian</span>
                                             <p className="font-medium text-gray-800">{usulan.tema_penelitian || '-'}</p>
                                         </div>
@@ -284,6 +280,7 @@ export default function AdminPenelitianDetail({ usulan, reviewers, initialScores
                                                 </td>
                                                 <td className="px-4 py-3 align-top pt-3.5">
                                                     <div className="text-sm text-gray-900 font-medium">{usulan.ketua?.dosen?.prodi || '-'}</div>
+                                                    {usulan.tugas_ketua && <div className="text-xs text-gray-500 mt-1 leading-relaxed"><span className="font-semibold text-gray-600">Tugas:</span> {usulan.tugas_ketua}</div>}
                                                 </td>
                                             </tr>
 

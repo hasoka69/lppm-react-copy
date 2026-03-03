@@ -3,6 +3,7 @@ import { Link, Head, useForm } from '@inertiajs/react';
 import Header from '@/components/Header';
 import Footer from '@/components/footer';
 import { Home, ChevronRight, FileText, CheckCircle, XCircle, AlertTriangle, Users, MapPin, Target } from 'lucide-react';
+import { formatAcademicYear } from '@/utils/academicYear';
 
 interface ReviewProps {
     usulan: any;
@@ -78,7 +79,7 @@ export default function KaprodiUsulanReviewPengabdian({ usulan, pengusul, anggot
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
                                         <label className="block text-xs text-gray-500 uppercase font-semibold">Tahun Pelaksanaan</label>
-                                        <p className="text-gray-900">{usulan.tahun_pertama}</p>
+                                        <p className="text-gray-900">{formatAcademicYear(usulan.tahun_pertama)}</p>
                                     </div>
                                     <div>
                                         <label className="block text-xs text-gray-500 uppercase font-semibold">Status</label>
@@ -107,6 +108,7 @@ export default function KaprodiUsulanReviewPengabdian({ usulan, pengusul, anggot
                                         <p className="font-medium text-gray-900">{pengusul.nama}</p>
                                         <p className="text-sm text-gray-500">Ketua - {pengusul.nidn}</p>
                                         <p className="text-xs text-gray-400 mt-1">{pengusul.prodi} - {pengusul.email}</p>
+                                        {usulan.tugas_ketua && <p className="text-xs text-gray-500 mt-1"><span className="font-semibold">Tugas:</span> {usulan.tugas_ketua}</p>}
                                     </div>
                                 </div>
                                 <div>
