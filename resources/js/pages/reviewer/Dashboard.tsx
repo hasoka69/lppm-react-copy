@@ -29,6 +29,11 @@ interface DashboardProps {
         name: string;
         role: string;
         expertise: string;
+        nidn?: string;
+        prodi?: string;
+        email?: string;
+        sinta?: string;
+        scopus?: string;
         avatar?: string;
     };
 }
@@ -139,13 +144,40 @@ export default function DashboardReviewer({ stats, recentActivities, profile }: 
 
                                     <h3 className="text-xl font-bold text-slate-800 tracking-tight">{profile.name}</h3>
 
-                                    <div className="flex flex-wrap gap-2 justify-center mt-3 mb-6">
+                                    <div className="flex flex-wrap gap-2 justify-center mt-3 mb-4">
                                         <span className="inline-flex items-center px-3 py-1 bg-blue-50 text-blue-700 text-xs font-semibold rounded-full border border-blue-100">
                                             {profile.role}
                                         </span>
-                                        <span className="inline-flex items-center px-3 py-1 bg-slate-50 text-slate-600 text-xs font-medium rounded-full border border-slate-100">
-                                            {profile.expertise}
-                                        </span>
+                                    </div>
+
+                                    <div className="w-full text-left bg-slate-50 rounded-xl p-4 mb-2 space-y-3">
+                                        <div className="flex justify-between items-center text-sm">
+                                            <span className="text-slate-500 font-medium">NIDN</span>
+                                            <span className="text-slate-800 font-semibold">{profile.nidn || '-'}</span>
+                                        </div>
+                                        <div className="flex justify-between items-center text-sm">
+                                            <span className="text-slate-500 font-medium whitespace-nowrap mr-2">Prodi</span>
+                                            <span className="text-slate-800 font-semibold text-right truncate" title={profile.prodi}>{profile.prodi || '-'}</span>
+                                        </div>
+                                        <div className="flex justify-between items-center text-sm">
+                                            <span className="text-slate-500 font-medium">Email</span>
+                                            <span className="text-slate-800 font-semibold text-right truncate max-w-[150px]" title={profile.email}>{profile.email || '-'}</span>
+                                        </div>
+                                        {profile.expertise && profile.expertise !== '-' && (
+                                            <div className="flex flex-col gap-1 text-sm border-t border-slate-200/60 pt-2 mt-2">
+                                                <span className="text-slate-500 font-medium">Kepakaran</span>
+                                                <span className="text-slate-800 font-semibold text-sm leading-snug">{profile.expertise}</span>
+                                            </div>
+                                        )}
+                                        {(profile.sinta && profile.sinta !== '-' || profile.scopus && profile.scopus !== '-') && (
+                                            <div className="pt-3 border-t border-slate-200/60 flex justify-between items-center text-sm">
+                                                <span className="text-slate-500 font-medium">ID Akademik</span>
+                                                <div className="flex gap-2">
+                                                    {profile.sinta && profile.sinta !== '-' && <span className="bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded text-[10px] font-bold" title="SINTA ID">SINTA: {profile.sinta}</span>}
+                                                    {profile.scopus && profile.scopus !== '-' && <span className="bg-orange-50 text-orange-600 px-2 py-0.5 rounded text-[10px] font-bold" title="Scopus ID">Scopus: {profile.scopus}</span>}
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
 

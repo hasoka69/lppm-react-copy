@@ -179,7 +179,7 @@ const PageSubstansi: React.FC<PageSubstansiProps> = ({
                                     style={{ display: 'none' }}
                                     onChange={(e) => setData('file_substansi', e.target.files?.[0] ?? null)}
                                     disabled={!usulanId}
-                                    accept=".pdf"
+                                    accept=".pdf,.doc,.docx,.jpeg,.jpg,.png"
                                 />
 
                                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem' }}>
@@ -188,7 +188,7 @@ const PageSubstansi: React.FC<PageSubstansiProps> = ({
                                         <p style={{ fontWeight: 700, color: 'var(--secondary)' }}>
                                             {data.file_substansi?.name || substansi?.file_substansi || 'Klik atau seret file PDF ke sini'}
                                         </p>
-                                        <p style={{ fontSize: '0.875rem', color: '#64748b' }}>Format PDF, Max 5MB</p>
+                                        <p style={{ fontSize: '0.875rem', color: '#64748b' }}>Format PDF/Word/Image, Max 5MB</p>
                                     </div>
                                 </div>
 

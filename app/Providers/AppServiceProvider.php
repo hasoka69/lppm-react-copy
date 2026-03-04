@@ -25,6 +25,15 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        \Illuminate\Validation\Rules\Password::defaults(function () {
+            return \Illuminate\Validation\Rules\Password::min(8)
+                ->mixedCase()
+                ->letters()
+                ->numbers()
+                ->symbols()
+                ->uncompromised();
+        });
+
         User::observe(GlobalActivityLogger::class);
         Role::observe(GlobalActivityLogger::class);
         Permission::observe(GlobalActivityLogger::class);

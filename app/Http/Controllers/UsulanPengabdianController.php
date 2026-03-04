@@ -424,7 +424,7 @@ class UsulanPengabdianController extends Controller
     public function uploadSubstansi(Request $request, UsulanPengabdian $usulan)
     {
         $request->validate([
-            'file_substansi' => 'required|file|mimes:pdf,doc,docx|max:10240',
+            'file_substansi' => 'required|file|mimes:pdf,doc,docx,jpeg,jpg,png|max:5120',
         ]);
 
         try {

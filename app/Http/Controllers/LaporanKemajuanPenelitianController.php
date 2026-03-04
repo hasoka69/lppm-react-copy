@@ -69,7 +69,7 @@ class LaporanKemajuanPenelitianController extends Controller
         $request->validate([
             'ringkasan' => 'required|string',
             'keyword' => 'required|string|max:255',
-            'file_laporan' => 'nullable|file|mimes:pdf|max:10240',
+            'file_laporan' => 'nullable|file|mimes:pdf,doc,docx,jpeg,jpg,png|max:5120',
         ]);
 
         $report = LaporanKemajuanPenelitian::where('user_id', '=', Auth::id(), 'and')->findOrFail($id);

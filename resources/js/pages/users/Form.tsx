@@ -163,14 +163,23 @@ export default function UserForm({ user, roles, currentRoles, dosenProfile }: Pr
 
                     <div>
                       <Label htmlFor="prodi" className="mb-2 block">Program Studi</Label>
-                      {/* Bisa diganti Select jika ada data master Prodi */}
-                      <Input
-                        id="prodi"
-                        placeholder="Contoh: Teknik Informatika"
+                      <Select
                         value={data.prodi}
-                        onChange={(e) => setData('prodi', e.target.value)}
-                        className={`bg-white ${errors.prodi ? 'border-red-500' : ''}`}
-                      />
+                        onValueChange={(value) => setData('prodi', value)}
+                      >
+                        <SelectTrigger className={`bg-white ${errors.prodi ? 'border-red-500' : ''}`}>
+                          <SelectValue placeholder="Pilih Program Studi" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {[
+                            'S2 Manajemen', 'S1 Manajemen', 'S1 Akuntansi', 'S1 Sistem Informasi', 
+                            'S1 Teknologi Informasi', 'S1 Teknologi Pangan', 'D3 Perhotelan', 
+                            'D3 Usaha Perjalanan Wisata', 'D1 Perhotelan'
+                          ].map(prodi => (
+                            <SelectItem key={prodi} value={prodi}>{prodi}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                       {errors.prodi && <p className="text-sm text-red-500 mt-2">{errors.prodi}</p>}
                     </div>
                   </div>

@@ -82,6 +82,11 @@ class ReviewerController extends Controller
             'name' => $user->name,
             'role' => 'Reviewer Internal',
             'expertise' => $user->dosen->kepakaran ?? '-', // Assuming relation exists
+            'nidn' => $user->dosen->nidn ?? '-',
+            'prodi' => $user->dosen->prodi ?? '-',
+            'email' => $user->email ?? '-',
+            'sinta' => $user->dosen->sinta_id ?? '-',
+            'scopus' => $user->dosen->scopus_id ?? '-',
             'avatar' => $user->avatar,
         ];
 

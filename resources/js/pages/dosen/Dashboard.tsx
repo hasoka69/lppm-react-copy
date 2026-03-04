@@ -364,26 +364,6 @@ export default function DashboardDosen({ stats, activities, user }: DashboardPro
                                 </button>
                             </div>
                         </div>
-
-                        {/* Important Info */}
-                        <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl shadow-sm border border-amber-100 p-6">
-                            <h3 className="text-sm font-bold text-amber-900 mb-4 flex items-center gap-2">
-                                <AlertCircle className="w-4 h-4 text-amber-600" />
-                                Informasi Penting
-                            </h3>
-                            <ul className="space-y-3">
-                                {[
-                                    { text: "Batas akhir proposal 2026: 30 Mar", important: true },
-                                    { text: "Laporan kemajuan: Juni 2025", important: false },
-                                    { text: "Update data profil SINTA anda", important: false }
-                                ].map((item, i) => (
-                                    <li key={i} className="flex gap-3 items-start text-xs font-medium text-amber-900/80 leading-relaxed">
-                                        <span className={`mt - 1.5 w - 1.5 h - 1.5 rounded - full shrink - 0 ${item.important ? 'bg-amber-600 ring-2 ring-amber-200/50' : 'bg-amber-400'} `}></span>
-                                        <span className={item.important ? 'font-bold' : ''}>{item.text}</span>
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
                     </motion.div>
                 </div>
 

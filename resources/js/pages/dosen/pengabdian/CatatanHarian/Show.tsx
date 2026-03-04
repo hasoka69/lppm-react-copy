@@ -410,9 +410,19 @@ function CatatanModal({ isOpen, onClose, usulanId, log }: { isOpen: boolean, onC
                                         multiple
                                         className="hidden"
                                         id="catatan-files"
+                                        accept=".pdf,.doc,.docx,.jpeg,.jpg,.png"
                                         onChange={e => {
                                             const newFiles = Array.from(e.target.files || []);
-                                            setData('files', [...data.files, ...newFiles]);
+                                            // Handle file size validation before adding to state
+                                            const validFiles = newFiles.filter(file => file.size <= 5 * 1024 * 1024);
+
+                                            if (validFiles.length < newFiles.length) {
+                                                toast.error('Beberapa file ditolak karena ukurannya melebihi batasan 5MB.');
+                                            }
+
+                                            if (validFiles.length > 0) {
+                                                setData('files', [...data.files, ...validFiles]);
+                                            }
                                         }}
                                     />
                                     <button

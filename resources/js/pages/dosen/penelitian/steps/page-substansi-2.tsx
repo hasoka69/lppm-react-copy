@@ -202,7 +202,7 @@ const PageSubstansi: React.FC<PageSubstansiProps> = ({
                                     style={{ display: 'none' }}
                                     onChange={(e) => setData('file_substansi', e.target.files?.[0] ?? null)}
                                     disabled={!usulanId}
-                                    accept=".pdf"
+                                    accept=".pdf,.doc,.docx,.jpeg,.jpg,.png"
                                 />
 
                                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
@@ -221,7 +221,7 @@ const PageSubstansi: React.FC<PageSubstansiProps> = ({
                                             {data.file_substansi?.name || (substansi?.file_substansi ? 'File: ' + substansi.file_substansi.split('/').pop() : 'Klik untuk mengunggah proposal')}
                                         </p>
                                         <p style={{ fontSize: '0.875rem', color: '#64748b' }}>
-                                            {data.file_substansi || substansi?.file_substansi ? 'Klik untuk mengganti file yang sudah ada' : 'Hanya menerima format PDF dengan ukuran maksimal 5MB'}
+                                            {data.file_substansi || substansi?.file_substansi ? 'Klik untuk mengganti file yang sudah ada' : 'Menerima dokumen & gambar (Maksimal 5MB)'}
                                         </p>
                                     </div>
                                 </div>

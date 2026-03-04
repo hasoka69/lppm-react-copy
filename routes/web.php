@@ -255,9 +255,15 @@ Route::get('/', function () {
     $pengumuman = \App\Models\Pengumuman::where('is_active', true)->latest()->take(3)->get();
     $berita = Berita::where('status', 'published')->latest()->take(5)->get();
 
+    // Hitung jumlah data
+    $countPenelitian = \App\Models\UsulanPenelitian::count();
+    $countPengabdian = \App\Models\UsulanPengabdian::count();
+
     return Inertia::render('welcome', [
         'pengumuman' => $pengumuman,
-        'berita' => $berita
+        'berita' => $berita,
+        'countPenelitian' => $countPenelitian,
+        'countPengabdian' => $countPengabdian,
     ]);
 })->name('home');
 

@@ -455,10 +455,10 @@ export default function DashboardAdmin(props: DashboardProps) {
                             <div className="relative z-10">
                                 <h3 className="font-extrabold text-2xl mb-3 tracking-tight">Panduan Admin</h3>
                                 <p className="text-slate-400 text-sm mb-6 leading-relaxed">Unduh panduan lengkap penggunaan dashboard admin untuk memaksimalkan fitur.</p>
-                                <button className="w-full bg-white text-slate-900 text-xs font-extrabold px-6 py-3 rounded-xl hover:bg-slate-100 transition-all flex items-center justify-center gap-2 group/btn shadow-lg shadow-black/20">
+                                <a href="/panduan_admin_lppm.pdf" download className="w-full bg-white text-slate-900 text-xs font-extrabold px-6 py-3 rounded-xl hover:bg-slate-100 transition-all flex items-center justify-center gap-2 group/btn shadow-lg shadow-black/20">
                                     Download PDF
                                     <ArrowUpRight size={16} className="group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform" />
-                                </button>
+                                </a>
                             </div>
                         </motion.div>
 
@@ -477,7 +477,7 @@ export default function DashboardAdmin(props: DashboardProps) {
                                     </div>
                                     <span className="text-sm font-bold tracking-tight">Data Pengabdian</span>
                                 </Link>
-                                <Link href="#" className="flex items-center p-3.5 rounded-2xl hover:bg-slate-50 text-slate-700 transition-all group border border-transparent hover:border-slate-100">
+                                <Link href="/lppm/users" className="flex items-center p-3.5 rounded-2xl hover:bg-slate-50 text-slate-700 transition-all group border border-transparent hover:border-slate-100">
                                     <div className="w-10 h-10 rounded-xl bg-violet-50 text-violet-600 flex items-center justify-center mr-4 group-hover:bg-violet-600 group-hover:text-white transition-all shadow-sm">
                                         <Users size={18} />
                                     </div>

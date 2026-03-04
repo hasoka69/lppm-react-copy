@@ -193,7 +193,7 @@ class UsulanPenelitianController extends Controller
             'rab_bahan' => 'nullable|array',
             'rab_pengumpulan_data' => 'nullable|array',
             'total_anggaran' => 'nullable|numeric',
-            'file_substansi' => 'nullable|file|mimes:pdf,doc,docx|max:10240',
+            'file_substansi' => 'nullable|file|mimes:pdf,doc,docx,jpeg,jpg,png|max:5120',
         ]);
 
         try {
@@ -265,7 +265,7 @@ class UsulanPenelitianController extends Controller
     public function uploadSubstansi(Request $request, UsulanPenelitian $usulan)
     {
         $request->validate([
-            'file_substansi' => 'required|file|mimes:pdf,doc,docx|max:10240',
+            'file_substansi' => 'required|file|mimes:pdf,doc,docx,jpeg,jpg,png|max:5120',
         ]);
 
         try {

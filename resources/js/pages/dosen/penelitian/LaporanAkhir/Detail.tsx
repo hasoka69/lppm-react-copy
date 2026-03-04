@@ -191,7 +191,7 @@ export default function Detail({ usulan, laporan_akhir, outputs, isAdminView = f
                                         <div className="space-y-3">
                                             <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">Unggah Laporan Akhir (PDF)</label>
                                             <div className="flex gap-2">
-                                                <input type="file" ref={fileLaporanRef} className="hidden" onChange={e => setData('file_laporan', e.target.files?.[0] || null)} accept=".pdf" />
+                                                <input type="file" ref={fileLaporanRef} className="hidden" onChange={e => setData('file_laporan', e.target.files?.[0] || null)} accept=".pdf,.doc,.docx,.jpeg,.jpg,.png" />
                                                 <button type="button" onClick={() => !isAdminView && fileLaporanRef.current?.click()} className={`flex-1 bg-gray-50 border border-gray-100 rounded-xl px-5 py-3.5 text-sm font-bold text-gray-600 transition-all text-left flex items-center justify-between ${isAdminView ? 'cursor-not-allowed' : 'hover:bg-white hover:border-blue-500 hover:text-blue-600'}`}>
                                                     <span className="truncate">{data.file_laporan ? data.file_laporan.name : 'Pilih Laporan Akhir (PDF)'}</span>
                                                     <Upload className="w-4 h-4 opacity-40" />

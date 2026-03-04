@@ -23,7 +23,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-const Welcome = ({ auth, pengumuman = [], berita = [] }: { auth: any, pengumuman: any[], berita: any[] }) => {
+const Welcome = ({ auth, pengumuman = [], berita = [], countPenelitian = 0, countPengabdian = 0 }: { auth: any, pengumuman: any[], berita: any[], countPenelitian?: number, countPengabdian?: number }) => {
   const { setting } = usePage<SharedData>().props;
   const [scrolled, setScrolled] = useState(false);
   // ... existing code ...
@@ -121,11 +121,10 @@ const Welcome = ({ auth, pengumuman = [], berita = [] }: { auth: any, pengumuman
       {/* STATS SECTION */}
       <section className="py-24 bg-white pt-32">
         <div className="container mx-auto px-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
             {[
-              { count: "150+", label: "Judul Penelitian", icon: BookOpen },
-              { count: "85", label: "Pengabdian", icon: Users },
-              { count: "12", label: "HAKI Terdaftar", icon: Award },
+              { count: countPenelitian.toString(), label: "Judul Penelitian", icon: BookOpen },
+              { count: countPengabdian.toString(), label: "Pengabdian", icon: Users },
               { count: "98%", label: "Tingkat Penyelesaian", icon: Activity },
             ].map((stat, idx) => (
               <div key={idx} className="text-center group p-6 rounded-2xl hover:bg-slate-50 transition-colors">
