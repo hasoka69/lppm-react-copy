@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 import { Link, router, usePage } from '@inertiajs/react'; // Import router using named import
 import { formatAcademicYear, getAcademicYearOptions } from '@/utils/academicYear';
 import Select from 'react-select';
-import Pagination from '@/Components/Pagination'; // Pagination Component
+import Pagination from '@/components/Pagination'; // Pagination Component
 import { PaginatedResponse } from '@/types';
 
 export interface Proposal {
