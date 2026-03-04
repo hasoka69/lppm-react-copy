@@ -162,34 +162,49 @@ class ContractController extends Controller
             // Path direktori output
             $outDir = dirname($tempPath);
 
-            // Perintah konversi ke PDF menggunakan LibreOffice (Linux/VPS)
-            $command = 'export HOME=/tmp && libreoffice --headless --convert-to pdf ' . escapeshellarg($tempPath) . ' --outdir ' . escapeshellarg($outDir);
+            // Command konversi PDF yang lebih aman untuk server Ubuntu web-user (menghindari error javaldx & permission)
+            $command = 'export HOME=/tmp && export USERPROFILE=/tmp && libreoffice --headless --nologo --nofirststartwizard --norestore --convert-to pdf ' . escapeshellarg($tempPath) . ' --outdir ' . escapeshellarg($outDir) . ' -env:UserInstallation=file:///tmp/LibreOffice_Conversion_${USER}';
 
             // Untuk percobaan di Windows lokal jika LibreOffice dipasang di C:\Program Files\LibreOffice
             if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-                $command = '"C:\Program Files\LibreOffice\program\soffice.exe" --headless --convert-to pdf ' . escapeshellarg($tempPath) . ' --outdir ' . escapeshellarg($outDir);
+                $command = '"C:\Program Files\LibreOffice\program\soffice.exe" --headless --nologo --nofirststartwizard --convert-to pdf ' . escapeshellarg($tempPath) . ' --outdir ' . escapeshellarg($outDir);
             }
 
-            shell_exec($command);
+            $shellOutput = null;
+            if (function_exists('shell_exec')) {
+                // Add 2>&1 to capture stderr (error messages) as well as stdout
+                $shellOutput = shell_exec($command . ' 2>&1');
+            }
 
             $pdfFileName = str_replace('.docx', '.pdf', $fileName);
             $pdfPath = $outDir . '/' . $pdfFileName;
 
-            // Jika PDF sukses dibuat karena LibreOffice terdeteksi di server/lokal
-            if (file_exists($pdfPath)) {
+            // Jika PDF sukses dibuat karena LibreOffice terdeteksi di server/lokal dan berhasil jalan
+            if (file_exists($pdfPath) && filesize($pdfPath) > 0) {
                 @unlink($tempPath); // Bersihkan temp docx
+                if (ob_get_length())
+                    ob_end_clean();
                 return response()->download($pdfPath, $pdfFileName, [
                     'Content-Type' => 'application/pdf',
                 ])->deleteFileAfterSend(true);
             }
 
-            // FALLBACK: Jika LibreOffice tidak didukung/belum diinstall, kembalikan format Word aslinya (docx)
+            // FALLBACK DENGAN SILENT MODE: 
+            // Jika berhasil sampai sini, LibreOffice gagal membuat PDF tapi tidak ada syntax crash.
+            // Biarkan user mendownload versi DOCX (Word) agar kontrak tetap bisa didapatkan.
+            if (ob_get_length())
+                ob_end_clean();
             return response()->download($tempPath, $fileName, [
                 'Content-Type' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
             ])->deleteFileAfterSend(true);
 
         } catch (\Throwable $e) {
-            return redirect()->back()->with('error', 'Gagal generate dokumen: ' . $e->getMessage());
+            return response()->json([
+                'error' => 'Gagal generate dokumen',
+                'pesan' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'baris' => $e->getLine()
+            ], 500);
         }
     }
 
