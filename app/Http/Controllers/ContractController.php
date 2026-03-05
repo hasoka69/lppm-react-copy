@@ -6,7 +6,7 @@ use App\Models\TemplateDokumen;
 use App\Models\UsulanPenelitian;
 use App\Models\UsulanPengabdian;
 use Illuminate\Http\Request;
-use PhpOffice\PhpWord\TemplateProcessor;
+use Barryvdh\Snappy\Facades\SnappyPdf as PDF;
 
 class ContractController extends Controller
 {
@@ -42,27 +42,10 @@ class ContractController extends Controller
             ? UsulanPenelitian::with(['ketua.dosen', 'anggotaDosen.dosen', 'anggotaNonDosen'])->findOrFail($id)
             : UsulanPengabdian::with(['ketua.dosen', 'anggotaDosen.dosen', 'anggotaNonDosen'])->findOrFail($id);
 
-        // Find active template for this type
-        $template = TemplateDokumen::where('jenis', ucfirst($type))
-            ->where('is_active', true)
-            ->first();
-
-        if (!$template) {
-            return redirect()->back()->with('error', 'Template kontrak belum tersedia.');
-        }
-
-        $templatePath = storage_path('app/public/' . $template->file_path);
-
-        if (!file_exists($templatePath)) {
-            return redirect()->back()->with('error', 'File template tidak ditemukan di server.');
-        }
-
         try {
             // Set Locale to Indonesian for date translation
             \Carbon\Carbon::setLocale('id');
             setlocale(LC_TIME, 'id_ID', 'id', 'id_ID.utf8', 'Indonesian');
-
-            $templateProcessor = new TemplateProcessor($templatePath);
 
             // Year and Semester Parsing
             $tahunStr = (string) $usulan->tahun_pertama;
@@ -76,19 +59,6 @@ class ContractController extends Controller
                 $academicYear = $tahunStr; // Fallback
                 $semesterLabel = '-';
             }
-
-            // Basic Info
-            $judulSanitized = strtoupper(trim(str_replace(["\r", "\n"], " ", strip_tags($usulan->judul))));
-            $templateProcessor->setValue('JUDUL', $judulSanitized);
-            $templateProcessor->setValue('NOMOR_KONTRAK', trim($usulan->nomor_kontrak) ?? '-');
-            $templateProcessor->setValue('TANGGAL_KONTRAK', $usulan->tanggal_kontrak ? \Carbon\Carbon::parse($usulan->tanggal_kontrak)->translatedFormat('d F Y') : '-');
-            $templateProcessor->setValue('TAHUN', $year);
-            $templateProcessor->setValue('SEMESTER', $semesterLabel);
-            $templateProcessor->setValue('SEMESTER_TAHUN_ANGGARAN', 'Semester ' . $semesterLabel . ' Tahun Anggaran ' . $academicYear);
-            $templateProcessor->setValue('SEMESTER_TAHUN', 'Semester ' . $semesterLabel . ' Tahun ' . $academicYear);
-            $templateProcessor->setValue('SEMESTER_TAHUN_AKADEMIK_UPPER', strtoupper('Semester ' . $semesterLabel . ' Tahun Akademik ' . $academicYear));
-            $templateProcessor->setValue('DANA', number_format($usulan->dana_disetujui, 0, ',', '.'));
-            $templateProcessor->setValue('TERBILANG_DANA', $this->terbilang($usulan->dana_disetujui) . ' rupiah');
 
             // Hitung 30% dan 70%
             // Tanggal & Hari
@@ -152,8 +122,18 @@ class ContractController extends Controller
                 ob_end_clean();
             }
 
-            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('lppm.kontrak.template', $data);
-            return $pdf->download($pdfFileName);
+            $viewTemplate = $type === 'penelitian' ? 'lppm.kontrak.template' : 'lppm.kontrak.template_pkm';
+            $headerView = $type === 'penelitian' ? 'lppm.kontrak.header' : 'lppm.kontrak.header_pkm';
+
+            $pdf = PDF::loadView($viewTemplate, $data)
+                ->setOption('page-size', 'A4')
+                ->setOption('margin-top', '35mm')
+                ->setOption('margin-bottom', '25mm')
+                ->setOption('encoding', 'UTF-8')
+                ->setOption('header-html', view($headerView)->render())
+                ->setOption('header-spacing', 5);
+
+            return $pdf->inline($pdfFileName);
 
         } catch (\Throwable $e) {
             return response()->json([

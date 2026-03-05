@@ -37,7 +37,7 @@
 
 
     <div class="center">
-        <strong>KONTRAK PROGRAM PENELITIAN</strong><br>
+        <strong>KONTRAK PROGRAM PENGABDIAN KEPADA MASYARAKAT</strong><br>
         {{ $semester_tahun_akademik_upper }}<br>
         Nomor : {{ $nomor_kontrak }}
     </div>
@@ -60,40 +60,40 @@
             <td valign="top">{{ $nama_ketua }}</td>
             <td valign="top">:</td>
             <td valign="top" style="text-align: justify;">Dosen Universitas Asa Indonesia dalam hal ini bertindak
-                sebagai pengusul dan Ketua Peneliti {{ $semester_tahun_anggaran }}, untuk selanjutnya disebut
+                sebagai pengusul dan Ketua Pelaksana {{ $semester_tahun_anggaran }}, untuk selanjutnya disebut
                 &nbsp;<strong>PIHAK KEDUA</strong>. </td>
         </tr>
     </table>
 
-    <p style="text-align: justify;">Surat Perjanjian Pelaksanaan Penelitian bagi dosen Universitas Asa Indonesia,&nbsp;
-        ({{ $nama_ketua }}) dengan Penugasan Program Penelitian {{ $semester_tahun_anggaran }} {{ $nomor_kontrak }},
+    <p style="text-align: justify;">Surat Perjanjian Pelaksanaan PkM bagi dosen Universitas Asa Indonesia,&nbsp;
+        ({{ $nama_ketua }}) dengan Penugasan Program PkM {{ $semester_tahun_anggaran }} {{ $nomor_kontrak }},
         {{ $tanggal_lengkap }}
     </p>
 
     <p style="text-align: justify;"> <strong>PIHAK PERTAMA</strong>&nbsp; dan &nbsp;<strong>PIHAK KEDUA</strong>&nbsp;
         secara bersama-sama bersepakat mengikatkan diri dalam
-        suatu Perjanjian Pelaksanaan Penelitian {{ $semester_tahun }} dengan ketentuan dan syarat-syarat diatur dalam
+        suatu Perjanjian Pelaksanaan PkM {{ $semester_tahun }} dengan ketentuan dan syarat-syarat diatur dalam
         Pasal-Pasal berikut :</p>
 
     <div class="pasal">Pasal 1<br>Ruang Lingkup Perjanjian</div>
 
     <p style="text-align: justify;"> <strong>PIHAK PERTAMA</strong>&nbsp; memberi tugas
         kepada &nbsp;<strong>PIHAK KEDUA</strong>, dan &nbsp;<strong>PIHAK KEDUA</strong>&nbsp; menerima tugas tersebut
-        untuk melaksanakan kegiatan Penelitian
+        untuk melaksanakan kegiatan PkM
         {{ $semester_tahun }} dengan judul: <strong>{{ $judul }}</strong>
     </p>
 
-    <div class="pasal">Pasal 2<br>Dana Penelitian</div>
+    <div class="pasal">Pasal 2<br>Dana PkM</div>
 
     <table style="width: 100%;">
         <tr>
             <td valign="top" width="5%">(1)</td>
-            <td valign="top" style="text-align: justify;">Pelaksanaan Penelitian sebagaimana dimaksud pada pasal 1 ayat
+            <td valign="top" style="text-align: justify;">Pelaksanaan PkM sebagaimana dimaksud pada pasal 1 ayat
                 (1) menggunakan anggaran sebesar Rp. {{ $dana }}.,- ({{ $terbilang_dana }}) sudah termasuk pajak.</td>
         </tr>
         <tr>
             <td valign="top">(2)</td>
-            <td valign="top" style="text-align: justify;">Dana Penelitian sebagaimana yang dimaksud pada ayat (1)
+            <td valign="top" style="text-align: justify;">Dana PkM sebagaimana yang dimaksud pada ayat (1)
                 dibebankan pada anggaran akademi sebagaimana yang tertuang dalam program Kerja dan Anggaran
                 LPPM&nbsp;Tahun&nbsp;
                 {{ $tahun_akademik }} , yang disyahkan melalui SK Ketua YLBPP.
@@ -101,7 +101,7 @@
         </tr>
     </table>
 
-    <div class="pasal">Pasal 3<br>Tata Cara Pembayaran Dana Penelitian</div>
+    <div class="pasal">Pasal 3<br>Tata Cara Pembayaran Dana PkM</div>
 
     <p style="text-align: justify;">Dana pelaksanaan hibah sebagaimana dimaksud pada ayat (1) dibayarkan oleh
         &nbsp;<strong>PIHAK PERTAMA</strong>&nbsp; kepada &nbsp;<strong>PIHAK KEDUA</strong>&nbsp; secara bertahap
@@ -119,29 +119,29 @@
             <td valign="top">b)</td>
             <td valign="top" style="text-align: justify;"> <strong>PIHAK KEDUA</strong>&nbsp; wajib menyerahkan dokumen
                 revisi proposal
-                Penelitian (jika diperlukan)
+                PkM (jika diperlukan)
                 kepada &nbsp;<strong>PIHAK PERTAMA</strong>. </td>
         </tr>
         <tr>
             <td valign="top">c)</td>
             <td valign="top" style="text-align: justify;">Penyampaian dokumen laporan sebagaimana point b). di atas
-                dilaksanakan sebelum pelaksanaan pencairan dana Penelitian tahap pertama.</td>
+                dilaksanakan sebelum pelaksanaan pencairan dana PkM tahap pertama.</td>
         </tr>
         <tr>
             <td valign="top">d)</td>
             <td valign="top" style="text-align: justify;">Pembayaran tahap kedua/ terakhir sebesar 70% dari total dana
-                Penelitian yaitu 70% x Rp. {{ $dana }},- = Rp. {{ $dana_70_persen }},- ({{ $terbilang_dana_70_persen }})
+                PkM yaitu 70% x Rp. {{ $dana }},- = Rp. {{ $dana_70_persen }},- ({{ $terbilang_dana_70_persen }})
                 ‎ dari total bantuan dana kegiatan, yang dibayarkan setelah &nbsp;<strong>PIHAK KEDUA</strong>&nbsp;
                 menyerahkan dokumen di bawah ini:
-                <div style="margin-left: 15px; margin-top: 5px;">1. Laporan akhir pelaksanaan Penelitian<br> 2. Laporan
-                    perkembangan luaran hasil Penelitian (submit/review/published) *pilih salah satu</div>
+                <div style="margin-left: 15px; margin-top: 5px;">1. Laporan akhir pelaksanaan PkM<br> 2. Laporan
+                    perkembangan luaran hasil PkM (submit/review/published) *pilih salah satu</div>
             </td>
         </tr>
     </table>
 
     <div class="pasal">Pasal 4<br>Jangka Waktu</div>
 
-    <p style="text-align: justify;">Jangka waktu pelaksanaan Penelitian sebagaimana dimaksud pada pasal 1 adalah
+    <p style="text-align: justify;">Jangka waktu pelaksanaan PkM sebagaimana dimaksud pada pasal 1 adalah
         &nbsp;terhitung sejak tanggal {{ $tanggal_mulai }} dan berakhir pada tanggal {{ $tanggal_selesai }}</p>
 
     <div class="pasal">Pasal 5<br>Target Luaran</div>
@@ -151,7 +151,7 @@
             <td valign="top" width="5%">(1)</td>
             <td valign="top" style="text-align: justify;"> <strong>PIHAK KEDUA</strong>&nbsp; berkewajiban untuk
                 mencapai target luaran wajib
-                Penelitian berupa &nbsp;<strong>{{ $target_luaran }}</strong>&nbsp; sesuai dengan target publikasi yang
+                PkM berupa &nbsp;<strong>{{ $target_luaran }}</strong>&nbsp; sesuai dengan target publikasi yang
                 dijanjikan.
             </td>
         </tr>
@@ -171,10 +171,10 @@
             <td valign="top" width="5%">(1)</td>
             <td valign="top" style="text-align: justify;">Hak dan kewajiban &nbsp;<strong>PIHAK PERTAMA</strong> <br>
                 <div style="margin-left: 15px; margin-top: 5px;">a. <strong>PIHAK PERTAMA</strong>&nbsp; berhak untuk
-                    mendapatkan dari &nbsp;<strong>PIHAK KEDUA</strong>&nbsp; luaran Penelitian sebagaimana dimaksud
+                    mendapatkan dari &nbsp;<strong>PIHAK KEDUA</strong>&nbsp; luaran PkM sebagaimana dimaksud
                     dalam Pasal 7.<br> b. <strong>PIHAK PERTAMA</strong>&nbsp; berkewajiban untuk
                     memberikan dana
-                    Penelitian kepada &nbsp;<strong>PIHAK KEDUA</strong>&nbsp; dengan jumlah
+                    PkM kepada &nbsp;<strong>PIHAK KEDUA</strong>&nbsp; dengan jumlah
                     sebagaimana yang dimaksud dalam Pasal 2 ayat (1) dan dengan tata cara pembayaran sebagaimana
                     dimaksud dalam Pasal (2)</div>
             </td>
@@ -183,27 +183,27 @@
             <td valign="top">(2)</td>
             <td valign="top" style="text-align: justify;">Hak dan kewajiban &nbsp;<strong>PIHAK KEDUA</strong> <br>
                 <div style="margin-left: 15px; margin-top: 5px;">a. <strong>PIHAK KEDUA</strong>&nbsp; berhak menerima
-                    dana Penelitian dari &nbsp;<strong>PIHAK PERTAMA</strong>&nbsp; dengan jumlah sebagaimana dimaksud
+                    dana PkM dari &nbsp;<strong>PIHAK PERTAMA</strong>&nbsp; dengan jumlah sebagaimana dimaksud
                     dalam
                     Pasal 2 ayat (1);<br> b. <strong>PIHAK KEDUA</strong>&nbsp; berkewajiban
                     menyerahkan kepada &nbsp;<strong>PIHAK PERTAMA</strong>&nbsp; publikasi luaran
-                    Penelitian.<br> c. <strong>PIHAK KEDUA</strong>&nbsp; berkewajiban untuk
-                    bertanggung jawab dalam penggunaan dana Penelitian yang diterimanya sesuai dengan proposal kegiatan
-                    Penelitian yang telah disetujui.<br> d. <strong>PIHAK KEDUA</strong>&nbsp; berkewajiban untuk
+                    PkM.<br> c. <strong>PIHAK KEDUA</strong>&nbsp; berkewajiban untuk
+                    bertanggung jawab dalam penggunaan dana PkM yang diterimanya sesuai dengan proposal kegiatan
+                    PkM yang telah disetujui.<br> d. <strong>PIHAK KEDUA</strong>&nbsp; berkewajiban untuk
                     menyampaikan kepada &nbsp;<strong>PIHAK PERTAMA</strong>&nbsp; laporan penggunaan dana sebagaimanan
                     dimaksud dalam Pasal 7.</div>
             </td>
         </tr>
     </table>
 
-    <div class="pasal">Pasal 7<br>Laporan Pelaksanaan Penelitian</div>
+    <div class="pasal">Pasal 7<br>Laporan Pelaksanaan PkM</div>
 
     <table style="width: 100%;">
         <tr>
             <td valign="top" width="5%">(1)</td>
             <td valign="top" style="text-align: justify;"> <strong>PIHAK KEDUA</strong>&nbsp; berkewajiban untuk
                 menyampaikan kepada &nbsp;<strong>PIHAK PERTAMA</strong>&nbsp; berupa laporan kemajuan dan laporan akhir
-                mengenai luaran Penelitian dan
+                mengenai luaran PkM dan
                 rekapitulasi penggunaan anggaran sesuai dengan jumlah dana yang diberikan oleh
                 &nbsp;<strong>PIHAK PERTAMA</strong>&nbsp; yang
                 tersusun sistematis sesuai pedoman yang
@@ -213,7 +213,7 @@
             <td valign="top">(2)</td>
             <td valign="top" style="text-align: justify;"> <strong>PIHAK KEDUA</strong>&nbsp; berkewajiban mengunggah
                 Laporan Kemajuan dan
-                Catatan harian Penelitian yang telah
+                Catatan harian PkM yang telah
                 dilaksanakan ke laman simlitasa.asaindo.ac.id sesuai dengan jadwal yang ditetapkan &nbsp;<strong>PIHAK
                     PERTAMA</strong>. </td>
         </tr>
@@ -221,7 +221,7 @@
             <td valign="top">(3)</td>
             <td valign="top" style="text-align: justify;"> <strong>PIHAK KEDUA</strong>&nbsp; berkewajiban mengunggah
                 Laporan Akhir, capaian
-                luaran Penelitian, pada laman
+                luaran PkM, pada laman
                 simlitasa.asaindo.ac.id sesuai dengan jadwal yang ditetapkan &nbsp;<strong>PIHAK PERTAMA</strong>. </td>
         </tr>
         <tr>
@@ -229,14 +229,14 @@
             <td valign="top" style="text-align: justify;"> <strong>PIHAK KEDUA</strong>&nbsp; berkewajiban surat
                 keterangan bebas plagiasi yang
                 diterbitkan oleh LPPM bersamaan
-                dengan unggah laporan akhir Penelitian.</td>
+                dengan unggah laporan akhir PkM.</td>
         </tr>
     </table>
 
     <div class="pasal">Pasal 8<br>Monitoring dan Evaluasi</div>
 
     <p style="text-align: justify;"> <strong>PIHAK PERTAMA</strong>&nbsp; dalam rangka
-        pengawasan akan melakukan Monitoring dan Evaluasi internal terhadap kemajuan pelaksanaan Penelitian
+        pengawasan akan melakukan Monitoring dan Evaluasi internal terhadap kemajuan pelaksanaan PkM
         {{ $semester_tahun_anggaran }}. Jadwal pelaksanaan akan ditentukan oleh &nbsp;<strong>PIHAK
             PERTAMA</strong>&nbsp; dan akan diinformasikan
         kepada &nbsp;<strong>PIHAK KEDUA</strong>.
@@ -244,12 +244,12 @@
 
     <div class="pasal">Pasal 9<br>Penilaian Luaran</div>
 
-    <p style="text-align: justify;">Luaran hasil Penelitian dilakukan oleh Reviewer Luar sesuai dengan ketentuan yang
+    <p style="text-align: justify;">Luaran hasil PkM dilakukan oleh Reviewer Luar sesuai dengan ketentuan yang
         &nbsp;berlaku dari target jurnal yang dituju.</p>
 
     <div class="pasal">Pasal 10<br>Perubahan Susunan Tim Pelaksana Dan Substansi Pelaksanaan</div>
 
-    <p style="text-align: justify;">Perubahan terhadap susunan tim pelaksanaan dan substansi pelaksanaan Penelitian ini
+    <p style="text-align: justify;">Perubahan terhadap susunan tim pelaksanaan dan substansi pelaksanaan PkM ini
         dapat dibenarkan apabila telah mendapat persetujuan tertulis dari &nbsp;<strong>PIHAK PERTAMA</strong>. </p>
 
     <div class="pasal">Pasal 11<br>Penggantian Ketua Pelaksana</div>
@@ -259,7 +259,7 @@
             <td valign="top" width="5%">(1)</td>
             <td valign="top" style="text-align: justify;">Apabila &nbsp;<strong>PIHAK KEDUA</strong>&nbsp; selaku ketua
                 pelaksanaan tidak dapat
-                melaksanakan Penelitian, maka &nbsp;<strong>PIHAK KEDUA</strong>&nbsp; wajib mengusulkan pengganti ketua
+                melaksanakan PkM, maka &nbsp;<strong>PIHAK KEDUA</strong>&nbsp; wajib mengusulkan pengganti ketua
                 pelaksana yang
                 merupakan salah satu anggota tim kepada &nbsp;<strong>PIHAK PERTAMA</strong>. </td>
         </tr>
@@ -269,7 +269,7 @@
                 melaksanakan tugas dan tidak
                 ada pengganti ketua sebagaimana dimaksud
                 pada ayat (1), maka &nbsp;<strong>PIHAK KEDUA</strong>&nbsp; harus mengembalikan
-                dana Penelitian kepada &nbsp;<strong>PIHAK PERTAMA</strong>&nbsp; yang selanjutnya
+                dana PkM kepada &nbsp;<strong>PIHAK PERTAMA</strong>&nbsp; yang selanjutnya
                 disetor ke kas akademik.</td>
         </tr>
         <tr>
@@ -282,12 +282,12 @@
     <div class="pasal">Pasal 12<br>Sanksi</div>
 
     <p style="text-align: justify;">Apabila sampai dengan batas waktu yang telah ditetapkan untuk melaksanakan
-        Penelitian ini telah berakhir, namun &nbsp;<strong>PIHAK KEDUA</strong>&nbsp; belum menyelesaikan tugasnya,
+        PkM ini telah berakhir, namun &nbsp;<strong>PIHAK KEDUA</strong>&nbsp; belum menyelesaikan tugasnya,
         terlambat mengirim laporan
         Kemajuan, dan/atau terlambat mengirim laporan akhir serta
         belum menghasilkan luaran yang terpublikasikan, maka &nbsp;<strong>PIHAK KEDUA</strong>&nbsp; dikenakan sanksi
         administratif berupa
-        penghentian pembayaran dan tidak dapat mengajukan proposal Penelitian pada periode berikutnya sebelum
+        penghentian pembayaran dan tidak dapat mengajukan proposal PkM pada periode berikutnya sebelum
         menyelesaikan seluruh kewajibannya.</p>
 
     <div class="pasal">Pasal 13<br>Pembatalan Perjanjian</div>
@@ -295,12 +295,12 @@
     <table style="width: 100%;">
         <tr>
             <td valign="top" width="5%">(1)</td>
-            <td valign="top" style="text-align: justify;">Apabila dikemudian hari terhadap judul Penelitian sebagaimana
-                dimaksud dalam Pasal 1 ditemukan adanya duplikasi dengan Penelitian lain dan/atau ditemukan adanya
+            <td valign="top" style="text-align: justify;">Apabila dikemudian hari terhadap judul PkM sebagaimana
+                dimaksud dalam Pasal 1 ditemukan adanya duplikasi dengan PkM lain dan/atau ditemukan adanya
                 ketidakjujuran, itikad tidak baik dan/atau perbuatan yang tidak sesuai dengan kaidah ilmiah dari atas
-                dilakukan oleh &nbsp;<strong>PIHAK KEDUA</strong>, maka perjanjian Penelitian
+                dilakukan oleh &nbsp;<strong>PIHAK KEDUA</strong>, maka perjanjian PkM
                 ini dinyatakan batal dan &nbsp;<strong>PIHAK KEDUA</strong>&nbsp; wajib
-                mengembalikan dana Penelitian yang telah diterima kepada &nbsp;<strong>PIHAK PERTAMA</strong>&nbsp; yang
+                mengembalikan dana PkM yang telah diterima kepada &nbsp;<strong>PIHAK PERTAMA</strong>&nbsp; yang
                 selanjutnya akan disetor ke
                 kas akademik.</td>
         </tr>
@@ -323,10 +323,10 @@
     <table style="width: 100%;">
         <tr>
             <td valign="top" width="5%">(1)</td>
-            <td valign="top" style="text-align: justify;"> <strong>PIHAK KEDUA</strong>&nbsp; menjamin bahwa Penelitian
+            <td valign="top" style="text-align: justify;"> <strong>PIHAK KEDUA</strong>&nbsp; menjamin bahwa PkM
                 dengan judul tersebut
                 diatas belum pernah dibiayai
-                dan/atau diikutsertakan pada Pendanaan Penelitian lainnya, baik yang diselenggarakan oleh instansi,
+                dan/atau diikutsertakan pada Pendanaan PkM lainnya, baik yang diselenggarakan oleh instansi,
                 lembaga perusahaan atau yayasan baik di dalam maupun di luar negeri.</td>
         </tr>
         <tr>

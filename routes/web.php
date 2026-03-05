@@ -390,7 +390,12 @@ Route::middleware('auth')->group(function () {
     Route::get('lppm/kontrak/{type}/{id}/generate', [ContractController::class, 'generate'])->name('lppm.kontrak.generate');
 });
 
+use Barryvdh\Snappy\Facades\SnappyPdf as PDF;
 
+Route::get('/test-pdf', function () {
+    $pdf = PDF::loadHTML('<h1>WKHTMLTOPDF BERHASIL 🔥</h1>');
+    return $pdf->stream('test.pdf');
+});
 
 
 // Global API Routes (inside Auth but outside Menu Permission)
