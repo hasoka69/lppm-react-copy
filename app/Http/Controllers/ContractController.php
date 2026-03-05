@@ -91,112 +91,69 @@ class ContractController extends Controller
             $templateProcessor->setValue('TERBILANG_DANA', $this->terbilang($usulan->dana_disetujui) . ' rupiah');
 
             // Hitung 30% dan 70%
-            $dana30 = $usulan->dana_disetujui * 0.30;
-            $dana70 = $usulan->dana_disetujui * 0.70;
-
-            $templateProcessor->setValue('DANA_30_PERSEN', number_format($dana30, 0, ',', '.'));
-            $templateProcessor->setValue('TERBILANG_DANA_30_PERSEN', $this->terbilang($dana30) . ' rupiah');
-
-            $templateProcessor->setValue('DANA_70_PERSEN', number_format($dana70, 0, ',', '.'));
-            $templateProcessor->setValue('TERBILANG_DANA_70_PERSEN', $this->terbilang($dana70) . ' rupiah');
-
-            $templateProcessor->setValue('SKEMA', $usulan->kelompok_skema);
-
             // Tanggal & Hari
             $tanggal = $usulan->tanggal_kontrak ? \Carbon\Carbon::parse($usulan->tanggal_kontrak) : null;
             $mulai = $usulan->tanggal_mulai_kontrak ? \Carbon\Carbon::parse($usulan->tanggal_mulai_kontrak) : null;
             $selesai = $usulan->tanggal_selesai_kontrak ? \Carbon\Carbon::parse($usulan->tanggal_selesai_kontrak) : null;
 
-            $templateProcessor->setValue('HARI_KONTRAK', $tanggal ? $tanggal->translatedFormat('l') : '-');
-            $templateProcessor->setValue('TANGGAL_LENGKAP', $tanggal ? $tanggal->translatedFormat('d F Y') : '-');
-            $templateProcessor->setValue('TAHUN_AKADEMIK', $academicYear);
-
-            $templateProcessor->setValue('TANGGAL_MULAI', $mulai ? $mulai->translatedFormat('d F Y') : '-');
-            $templateProcessor->setValue('TANGGAL_SELESAI', $selesai ? $selesai->translatedFormat('d F Y') : '-');
-
-            $durasi = ($mulai && $selesai) ? $mulai->diffInMonths($selesai) + 1 : 0; // +1 to include start month if needed, or just diffInMonths
-            // If user wants exact months regardless of days:
-            // $durasi = $mulai->diffInMonths($selesai); 
-            // Checking logic: 1 Jan to 1 Feb is 1 month. 
-            // Often contracts count inclusive months? Let's check diffInMonths first.
-            // If 24 Oct to 28 Feb: Oct, Nov, Dec, Jan, Feb = ~4-5 months.
-            // diffInMonths(24 Oct, 28 Feb) = 4. 
-            // Let's us just use diffInMonths for now.
-            $templateProcessor->setValue('DURASI_BULAN', $durasi);
-
-
-            // Target Luaran (Ambil dari Luaran Wajib Pertama)
-            $luaranWajib = $usulan->luaranList()->where('is_wajib', true)->first();
-            $templateProcessor->setValue('TARGET_LUARAN', $luaranWajib ? $luaranWajib->kategori : 'Belum ditentukan');
-
             // Ketua Info
             $ketua = $usulan->ketua;
             $dosen = $ketua->dosen;
-
-            $templateProcessor->setValue('NAMA_KETUA', $dosen ? $dosen->nama : $ketua->name);
-            $templateProcessor->setValue('NIDN_KETUA', $dosen ? $dosen->nidn : '-');
-            $templateProcessor->setValue('PRODI_KETUA', $dosen ? ($dosen->prodi ?? '-') : '-');
-            $templateProcessor->setValue('FAKULTAS_KETUA', '-'); // Fakultas belum ada di tabel dosen
 
             // Pihak Pertama (Admin LPPM / Ketua LPPM)
             $adminLppm = \App\Models\User::whereHas('roles', function ($query) {
                 $query->where('name', 'Admin LPPM');
             })->first();
-            $dosenAdmin = $adminLppm ? $adminLppm->dosen : null;
+            // $dosenAdmin = $adminLppm ? $adminLppm->dosen : null; // This variable is not used in the new data array, but the logic is inline.
 
-            $templateProcessor->setValue('NAMA_PIHAK_PERTAMA', $dosenAdmin ? $dosenAdmin->nama : ($adminLppm ? $adminLppm->name : '-'));
-            $templateProcessor->setValue('NIDN_PIHAK_PERTAMA', $dosenAdmin ? $dosenAdmin->nidn : '-');
-            $templateProcessor->setValue('JABATAN_PIHAK_PERTAMA', 'Ketua LPPM'); // Default/Hardcoded for now
+            $dana_disetujui = $usulan->dana_disetujui;
 
-            // Save Temporary File
-            $fileName = 'KONTRAK_' . preg_replace('/[^A-Za-z0-9]/', '_', $usulan->judul) . '.docx';
-            $tempPath = storage_path('app/public/temp/' . $fileName);
+            $data = [
+                'usulan' => $usulan,
+                'judul' => strtoupper(trim(str_replace(["\r", "\n"], " ", strip_tags($usulan->judul)))),
+                'nomor_kontrak' => trim($usulan->nomor_kontrak) ?? '-',
+                'tanggal_kontrak' => $usulan->tanggal_kontrak ? \Carbon\Carbon::parse($usulan->tanggal_kontrak)->translatedFormat('d F Y') : '-',
+                'tahun' => $year,
+                'semester' => $semesterLabel,
+                'semester_tahun_anggaran' => 'Semester ' . $semesterLabel . ' Tahun Anggaran ' . $academicYear,
+                'semester_tahun' => 'Semester ' . $semesterLabel . ' Tahun ' . $academicYear,
+                'semester_tahun_akademik_upper' => strtoupper('Semester ' . $semesterLabel . ' Tahun Akademik ' . $academicYear),
+                'dana' => number_format($dana_disetujui, 0, ',', '.'),
+                'terbilang_dana' => ucwords(trim($this->terbilang($dana_disetujui))) . ' Rupiah',
+                'dana_70_persen' => number_format($dana_disetujui * 0.70, 0, ',', '.'),
+                'terbilang_dana_70_persen' => ucwords(trim($this->terbilang($dana_disetujui * 0.70))) . ' Rupiah',
+                'dana_30_persen' => number_format($dana_disetujui * 0.30, 0, ',', '.'),
+                'terbilang_dana_30_persen' => ucwords(trim($this->terbilang($dana_disetujui * 0.30))) . ' Rupiah',
+                'skema' => $usulan->kelompok_skema,
 
-            // Ensure temp dir exists
-            if (!file_exists(dirname($tempPath))) {
-                mkdir(dirname($tempPath), 0755, true);
-            }
+                'hari_kontrak' => $tanggal ? $tanggal->translatedFormat('l') : '-',
+                'tanggal_lengkap' => $tanggal ? $tanggal->translatedFormat('d F Y') : '-',
+                'tahun_akademik' => $academicYear,
+                'tanggal_mulai' => $mulai ? $mulai->translatedFormat('d F Y') : '-',
+                'tanggal_selesai' => $selesai ? $selesai->translatedFormat('d F Y') : '-',
+                'durasi_bulan' => ($mulai && $selesai) ? $mulai->diffInMonths($selesai) + 1 : 0,
 
-            $templateProcessor->saveAs($tempPath);
+                'target_luaran' => $usulan->luaranList()->where('is_wajib', true)->first()?->kategori ?? 'Belum ditentukan',
 
-            // Path direktori output
-            $outDir = dirname($tempPath);
+                'nama_ketua' => $dosen ? $dosen->nama : $ketua->name,
+                'nidn_ketua' => $dosen ? $dosen->nidn : '-',
+                'prodi_ketua' => $dosen ? ($dosen->prodi ?? '-') : '-',
+                'fakultas_ketua' => '-', // Fakultas belum ada di tabel dosen
 
-            // Command konversi PDF yang lebih aman untuk server Ubuntu web-user (menghindari error javaldx & permission)
-            $command = 'export HOME=/tmp && export USERPROFILE=/tmp && libreoffice --headless --nologo --nofirststartwizard --norestore --convert-to pdf ' . escapeshellarg($tempPath) . ' --outdir ' . escapeshellarg($outDir) . ' -env:UserInstallation=file:///tmp/LibreOffice_Conversion_${USER}';
+                'nama_pihak_pertama' => $adminLppm ? ($adminLppm->dosen ? $adminLppm->dosen->nama : $adminLppm->name) : '-',
+                'nidn_pihak_pertama' => $adminLppm && $adminLppm->dosen ? $adminLppm->dosen->nidn : '-',
+                'jabatan_pihak_pertama' => 'Ketua LPPM',
+            ];
 
-            // Untuk percobaan di Windows lokal jika LibreOffice dipasang di C:\Program Files\LibreOffice
-            if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-                $command = '"C:\Program Files\LibreOffice\program\soffice.exe" --headless --nologo --nofirststartwizard --convert-to pdf ' . escapeshellarg($tempPath) . ' --outdir ' . escapeshellarg($outDir);
-            }
+            $pdfFileName = 'KONTRAK_' . preg_replace('/[^A-Za-z0-9]/', '_', $usulan->judul) . '.pdf';
 
-            $shellOutput = null;
-            if (function_exists('shell_exec')) {
-                // Add 2>&1 to capture stderr (error messages) as well as stdout
-                $shellOutput = shell_exec($command . ' 2>&1');
-            }
-
-            $pdfFileName = str_replace('.docx', '.pdf', $fileName);
-            $pdfPath = $outDir . '/' . $pdfFileName;
-
-            // Jika PDF sukses dibuat karena LibreOffice terdeteksi di server/lokal dan berhasil jalan
-            if (file_exists($pdfPath) && filesize($pdfPath) > 0) {
-                @unlink($tempPath); // Bersihkan temp docx
-                if (ob_get_length())
-                    ob_end_clean();
-                return response()->download($pdfPath, $pdfFileName, [
-                    'Content-Type' => 'application/pdf',
-                ])->deleteFileAfterSend(true);
-            }
-
-            // FALLBACK DENGAN SILENT MODE: 
-            // Jika berhasil sampai sini, LibreOffice gagal membuat PDF tapi tidak ada syntax crash.
-            // Biarkan user mendownload versi DOCX (Word) agar kontrak tetap bisa didapatkan.
-            if (ob_get_length())
+            // Bersihkan output buffer jika ada sebelum mengembalikan file stream
+            if (ob_get_length()) {
                 ob_end_clean();
-            return response()->download($tempPath, $fileName, [
-                'Content-Type' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-            ])->deleteFileAfterSend(true);
+            }
+
+            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('lppm.kontrak.template', $data);
+            return $pdf->download($pdfFileName);
 
         } catch (\Throwable $e) {
             return response()->json([
