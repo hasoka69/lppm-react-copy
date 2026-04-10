@@ -134,7 +134,7 @@ export default function KaprodiUsulanReview({ usulan, pengusul, anggota, anggota
                                                 <div key={ang.id} className="flex items-start justify-between bg-white p-3 rounded-md border border-gray-200 shadow-sm">
                                                     <div>
                                                         <p className="text-sm font-medium text-gray-900">{ang.nama}</p>
-                                                        <p className="text-xs text-gray-500">NIDN: {ang.nidn ? ang.nidn : '-'} &bull; {ang.prodi}</p>
+                                                        <p className="text-xs text-gray-500">NIDN: {ang.nidn ? ang.nidn : '-'} &bull; {ang.dosen?.prodi || ang.prodi || '-'}</p>
                                                         {ang.tugas && <p className="text-xs text-gray-500 mt-1"><span className="font-semibold">Tugas:</span> {ang.tugas}</p>}
                                                     </div>
                                                     <Badge variant="outline" className="text-xs font-normal text-gray-500 border-gray-200">{ang.peran}</Badge>

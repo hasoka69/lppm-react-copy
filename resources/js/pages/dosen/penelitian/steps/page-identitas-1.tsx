@@ -43,6 +43,16 @@ interface PageIdentitasProps {
     usulanId?: number;
     usulan?: Partial<UsulanData>;
     onDraftCreated?: (usulanId: number) => void;
+    // Master Data Props
+    kelompokSkemaList?: any[];
+    ruangLingkupList?: any[];
+    bidangFokusList?: any[];
+    temaPenelitianList?: any[];
+    topikPenelitianList?: any[];
+    rumpunIlmuLevel1List?: any[];
+    rumpunIlmuLevel2List?: any[];
+    rumpunIlmuLevel3List?: any[];
+    prioritasRisetList?: any[];
 }
 
 const PageIdentitas: React.FC<PageIdentitasProps> = ({
@@ -51,6 +61,15 @@ const PageIdentitas: React.FC<PageIdentitasProps> = ({
     usulanId,
     usulan,
     onDraftCreated,
+    kelompokSkemaList = [],
+    ruangLingkupList = [],
+    bidangFokusList = [],
+    temaPenelitianList = [],
+    topikPenelitianList = [],
+    rumpunIlmuLevel1List = [],
+    rumpunIlmuLevel2List = [],
+    rumpunIlmuLevel3List = [],
+    prioritasRisetList = [],
 }) => {
     const [currentUsulanId, setCurrentUsulanId] = useState<number | null>(usulanId ?? null);
 
@@ -248,7 +267,7 @@ const PageIdentitas: React.FC<PageIdentitasProps> = ({
                                 {errors.target_akhir_tkt && <span className={styles.error}>{errors.target_akhir_tkt}</span>}
                             </div>
 
-                            <div className={styles.formGroup}>
+                             <div className={styles.formGroup}>
                                 <label className={styles.label}>4. Kelompok Skema *</label>
                                 <select
                                     className={styles.select}
@@ -256,9 +275,9 @@ const PageIdentitas: React.FC<PageIdentitasProps> = ({
                                     onChange={(e) => setData("kelompok_skema", e.target.value)}
                                 >
                                     <option value="">Pilih Kategori</option>
-                                    <option value="Penelitian Dasar">Penelitian Dasar</option>
-                                    <option value="Penelitian Terapan">Penelitian Terapan</option>
-                                    <option value="Penelitian Pengembangan">Penelitian Pengembangan</option>
+                                    {kelompokSkemaList.map((item) => (
+                                        <option key={item.id} value={item.nama}>{item.nama}</option>
+                                    ))}
                                 </select>
                             </div>
 
@@ -270,9 +289,9 @@ const PageIdentitas: React.FC<PageIdentitasProps> = ({
                                     onChange={(e) => setData("ruang_lingkup", e.target.value)}
                                 >
                                     <option value="">Pilih Ruang Lingkup</option>
-                                    <option value="Nasional">Nasional</option>
-                                    <option value="Internasional">Internasional</option>
-                                    <option value="Regional">Regional</option>
+                                    {ruangLingkupList.map((item) => (
+                                        <option key={item.id} value={item.nama}>{item.nama}</option>
+                                    ))}
                                 </select>
                             </div>
                         </div>
@@ -291,10 +310,9 @@ const PageIdentitas: React.FC<PageIdentitasProps> = ({
                                 <label className={styles.label}>6. Bidang Fokus *</label>
                                 <select className={styles.select} value={data.bidang_fokus} onChange={(e) => setData("bidang_fokus", e.target.value)}>
                                     <option value="">Pilih Bidang Fokus</option>
-                                    <option value="Kesehatan">Kesehatan</option>
-                                    <option value="Pertanian">Pertanian</option>
-                                    <option value="Teknologi">Teknologi</option>
-                                    <option value="Sosial Humaniora">Sosial Humaniora</option>
+                                    {bidangFokusList.map((item) => (
+                                        <option key={item.id} value={item.nama}>{item.nama}</option>
+                                    ))}
                                 </select>
                             </div>
 
@@ -302,9 +320,9 @@ const PageIdentitas: React.FC<PageIdentitasProps> = ({
                                 <label className={styles.label}>7. Tema Penelitian</label>
                                 <select className={styles.select} value={data.tema_penelitian} onChange={(e) => setData("tema_penelitian", e.target.value)}>
                                     <option value="">Pilih Tema</option>
-                                    <option value="Tema 1">Tema 1</option>
-                                    <option value="Tema 2">Tema 2</option>
-                                    <option value="Tema 3">Tema 3</option>
+                                    {temaPenelitianList.map((item) => (
+                                        <option key={item.id} value={item.nama}>{item.nama}</option>
+                                    ))}
                                 </select>
                             </div>
 
@@ -312,9 +330,9 @@ const PageIdentitas: React.FC<PageIdentitasProps> = ({
                                 <label className={styles.label}>8. Topik Penelitian</label>
                                 <select className={styles.select} value={data.topik_penelitian} onChange={(e) => setData("topik_penelitian", e.target.value)}>
                                     <option value="">Pilih Topik</option>
-                                    <option value="Topik 1">Topik 1</option>
-                                    <option value="Topik 2">Topik 2</option>
-                                    <option value="Topik 3">Topik 3</option>
+                                    {topikPenelitianList.map((item) => (
+                                        <option key={item.id} value={item.nama}>{item.nama}</option>
+                                    ))}
                                 </select>
                             </div>
                         </div>
@@ -331,31 +349,64 @@ const PageIdentitas: React.FC<PageIdentitasProps> = ({
                         <div className={styles.formGrid}>
                             <div className={styles.formGroup}>
                                 <label className={styles.label}>Level 1 *</label>
-                                <select className={styles.select} value={data.rumpun_ilmu_1} onChange={(e) => setData("rumpun_ilmu_1", e.target.value)}>
+                                <select
+                                    className={styles.select}
+                                    value={data.rumpun_ilmu_1}
+                                    onChange={(e) => {
+                                        setData({
+                                            ...data,
+                                            rumpun_ilmu_1: e.target.value,
+                                            rumpun_ilmu_2: '',
+                                            rumpun_ilmu_3: ''
+                                        });
+                                    }}
+                                >
                                     <option value="">Pilih Level 1</option>
-                                    <option value="Ilmu Alam">Ilmu Alam</option>
-                                    <option value="Ilmu Sosial">Ilmu Sosial</option>
-                                    <option value="Ilmu Humaniora">Ilmu Humaniora</option>
+                                    {rumpunIlmuLevel1List.map((item) => (
+                                        <option key={item.id} value={item.nama}>{item.nama}</option>
+                                    ))}
                                 </select>
                             </div>
 
                             <div className={styles.formGroup}>
                                 <label className={styles.label}>Level 2 *</label>
-                                <select className={styles.select} value={data.rumpun_ilmu_2} onChange={(e) => setData("rumpun_ilmu_2", e.target.value)}>
+                                <select
+                                    className={styles.select}
+                                    value={data.rumpun_ilmu_2}
+                                    onChange={(e) => {
+                                        setData({
+                                            ...data,
+                                            rumpun_ilmu_2: e.target.value,
+                                            rumpun_ilmu_3: ''
+                                        });
+                                    }}
+                                    disabled={!data.rumpun_ilmu_1}
+                                >
                                     <option value="">Pilih Level 2</option>
-                                    <option value="Matematika">Matematika</option>
-                                    <option value="Fisika">Fisika</option>
-                                    <option value="Kimia">Kimia</option>
+                                    {rumpunIlmuLevel2List.filter(item => {
+                                        const parent = rumpunIlmuLevel1List.find(p => p.nama === data.rumpun_ilmu_1);
+                                        return parent && item.level1_id === parent.id;
+                                    }).map((item) => (
+                                        <option key={item.id} value={item.nama}>{item.nama}</option>
+                                    ))}
                                 </select>
                             </div>
 
                             <div className={styles.formGroup}>
                                 <label className={styles.label}>Level 3 *</label>
-                                <select className={styles.select} value={data.rumpun_ilmu_3} onChange={(e) => setData("rumpun_ilmu_3", e.target.value)}>
+                                <select
+                                    className={styles.select}
+                                    value={data.rumpun_ilmu_3}
+                                    onChange={(e) => setData("rumpun_ilmu_3", e.target.value)}
+                                    disabled={!data.rumpun_ilmu_2}
+                                >
                                     <option value="">Pilih Level 3</option>
-                                    <option value="Aljabar">Aljabar</option>
-                                    <option value="Geometri">Geometri</option>
-                                    <option value="Statistika">Statistika</option>
+                                    {rumpunIlmuLevel3List.filter(item => {
+                                        const parent = rumpunIlmuLevel2List.find(p => p.nama === data.rumpun_ilmu_2);
+                                        return parent && item.level2_id === parent.id;
+                                    }).map((item) => (
+                                        <option key={item.id} value={item.nama}>{item.nama}</option>
+                                    ))}
                                 </select>
                             </div>
 
@@ -363,9 +414,9 @@ const PageIdentitas: React.FC<PageIdentitasProps> = ({
                                 <label className={styles.label}>13. Prioritas Riset</label>
                                 <select className={styles.select} value={data.prioritas_riset} onChange={(e) => setData("prioritas_riset", e.target.value)}>
                                     <option value="">Pilih Prioritas</option>
-                                    <option value="Prioritas 1">Prioritas 1</option>
-                                    <option value="Prioritas 2">Prioritas 2</option>
-                                    <option value="Prioritas 3">Prioritas 3</option>
+                                    {prioritasRisetList.map((item) => (
+                                        <option key={item.id} value={item.nama}>{item.nama}</option>
+                                    ))}
                                 </select>
                             </div>
 

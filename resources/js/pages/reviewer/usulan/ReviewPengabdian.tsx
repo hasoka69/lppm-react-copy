@@ -382,6 +382,8 @@ export default function ReviewPengabdian({
                                                         <div className="flex items-center gap-2 mt-1">
                                                             <span className="text-xs text-gray-500">Anggota Dosen</span>
                                                             <span className="text-xs text-gray-400">•</span>
+                                                            <span className="text-xs text-gray-500">{anggota.dosen?.prodi || anggota.prodi || '-'}</span>
+                                                            <span className="text-xs text-gray-400">•</span>
                                                             <span className="text-xs text-gray-500">{anggota.peran}</span>
                                                         </div>
                                                     </div>

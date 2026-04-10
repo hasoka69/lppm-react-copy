@@ -236,7 +236,7 @@ class ReviewerController extends Controller
         // Ensure reviewer is assigned to this proposal
         $usulan = UsulanPenelitian::with([
             'user.dosen',
-            'anggotaDosen',
+            'anggotaDosen.dosen',
             'anggotaNonDosen',
             'luaranList',
             'rabItems',

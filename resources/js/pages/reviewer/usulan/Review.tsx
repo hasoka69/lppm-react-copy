@@ -303,11 +303,13 @@ const ReviewerReview: React.FC<ReviewerReviewProps> = ({ proposal, dosen, isRead
                                             </div>
                                             <div>
                                                 <p className="text-sm font-semibold text-gray-900">{anggota.nama}</p>
-                                                <div className="flex items-center gap-2 mt-1">
-                                                    <span className="text-xs text-gray-500">Anggota Dosen</span>
-                                                    <span className="text-xs text-gray-400">•</span>
-                                                    <span className="text-xs text-gray-500">{anggota.nidn}</span>
-                                                </div>
+                                                        <div className="flex items-center gap-2 mt-1">
+                                                            <span className="text-xs text-gray-500">Anggota Dosen</span>
+                                                            <span className="text-xs text-gray-400">•</span>
+                                                            <span className="text-xs text-gray-500">{anggota.dosen?.prodi || anggota.prodi || '-'}</span>
+                                                            <span className="text-xs text-gray-400">•</span>
+                                                            <span className="text-xs text-gray-500">{anggota.nidn}</span>
+                                                        </div>
                                             </div>
                                         </div>
                                     ))}

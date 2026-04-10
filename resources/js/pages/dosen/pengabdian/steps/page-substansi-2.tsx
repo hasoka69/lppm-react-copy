@@ -27,12 +27,14 @@ interface PageSubstansiProps {
     onKembali?: () => void;
     onSelanjutnya?: () => void;
     usulanId?: number;
+    kategoriLuaranList?: any[];
 }
 
 const PageSubstansi: React.FC<PageSubstansiProps> = ({
     onKembali,
     onSelanjutnya,
-    usulanId: propUsulanId
+    usulanId: propUsulanId,
+    kategoriLuaranList = []
 }) => {
     const { props } = usePage<{
         substansi?: SubstansiData;
@@ -115,6 +117,7 @@ const PageSubstansi: React.FC<PageSubstansiProps> = ({
                             onSubmitSuccess={handleLuaranSubmitSuccess}
                             onCancel={() => setShowLuaranForm(null)}
                             isPengabdian={true}
+                            kategoriLuaranList={kategoriLuaranList}
                         />
                     </div>
                 )}
@@ -179,7 +182,7 @@ const PageSubstansi: React.FC<PageSubstansiProps> = ({
                                     style={{ display: 'none' }}
                                     onChange={(e) => setData('file_substansi', e.target.files?.[0] ?? null)}
                                     disabled={!usulanId}
-                                    accept=".pdf,.doc,.docx,.jpeg,.jpg,.png"
+                                    accept=".pdf,.doc,.docx,."
                                 />
 
                                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem' }}>

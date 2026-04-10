@@ -121,7 +121,9 @@ class AdminLPPMController extends Controller
                 } elseif ($activeTab === 'catatan-harian') {
                     $logs = $item->catatanHarian;
                     $data['total_logs'] = $logs ? $logs->count() : 0;
-                    $data['last_percentage'] = $logs ? $logs->max('persentase') ?? 0 : 0;
+                    // Sum all log entries' persentase (each entry = incremental progress)
+                    $totalPersentase = $logs ? $logs->sum('persentase') : 0;
+                    $data['last_percentage'] = min(100, $totalPersentase);
                 } elseif ($activeTab === 'pengkinian-capaian') {
                     // Calculate progress based on user logic
                     $outputs = $item->luaranList;
@@ -277,7 +279,9 @@ class AdminLPPMController extends Controller
                 } elseif ($activeTab === 'catatan-harian') {
                     $logs = $item->catatanHarian;
                     $data['total_logs'] = $logs ? $logs->count() : 0;
-                    $data['last_percentage'] = $logs ? $logs->max('persentase') ?? 0 : 0;
+                    // Sum all log entries' persentase (each entry = incremental progress)
+                    $totalPersentase = $logs ? $logs->sum('persentase') : 0;
+                    $data['last_percentage'] = min(100, $totalPersentase);
                 } elseif ($activeTab === 'pengkinian-capaian') {
                     // Calculate progress based on user logic
                     $outputs = $item->luaranList;

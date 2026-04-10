@@ -63,7 +63,7 @@ class UserController extends Controller
         // Create/Update Dosen Record if Role matches
         if (array_intersect($validated['roles'], ['Dosen', 'Kaprodi'])) {
             Dosen::updateOrCreate(
-                ['email' => $user->email],
+                ['user_id' => $user->id],
                 [
                     'nidn' => $request->nidn,
                     'nama' => $user->name,
@@ -133,12 +133,12 @@ class UserController extends Controller
         // Sync Dosen Data
         if (array_intersect($validated['roles'], ['Dosen', 'Kaprodi'])) {
             Dosen::updateOrCreate(
-                ['email' => $user->email], // Match by email
+                ['user_id' => $user->id], // Match by user_id
                 [
                     'nidn' => $request->nidn,
                     'nama' => $user->name,
                     'prodi' => $request->prodi,
-                    // 'email' is key, so implicitly set
+                    'email' => $user->email, // Keep email in sync
                 ]
             );
         }

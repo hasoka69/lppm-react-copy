@@ -154,17 +154,17 @@ class UsulanPengabdianController extends Controller
         try {
             $data = $request->all();
 
-            // Handle Rumpun Ilmu Labels (Snapshotting)
+            // Handle Rumpun Ilmu Labels (Snapshotting from correct level tables)
             if (!empty($data['rumpun_ilmu_level1_id'])) {
-                $r1 = RumpunIlmu::find($data['rumpun_ilmu_level1_id']);
+                $r1 = DB::table('rumpun_ilmu_level1')->find($data['rumpun_ilmu_level1_id']);
                 $data['rumpun_ilmu_level1_label'] = $r1 ? $r1->nama : null;
             }
             if (!empty($data['rumpun_ilmu_level2_id'])) {
-                $r2 = RumpunIlmu::find($data['rumpun_ilmu_level2_id']);
+                $r2 = DB::table('rumpun_ilmu_level2')->find($data['rumpun_ilmu_level2_id']);
                 $data['rumpun_ilmu_level2_label'] = $r2 ? $r2->nama : null;
             }
             if (!empty($data['rumpun_ilmu_level3_id'])) {
-                $r3 = RumpunIlmu::find($data['rumpun_ilmu_level3_id']);
+                $r3 = DB::table('rumpun_ilmu_level3')->find($data['rumpun_ilmu_level3_id']);
                 $data['rumpun_ilmu_level3_label'] = $r3 ? $r3->nama : null;
             }
 
@@ -382,24 +382,18 @@ class UsulanPengabdianController extends Controller
 
     private function getMasterData()
     {
-        // Minimal master data required for pages to render dropdowns initially
-        // Ririns/Tematiks can be hardcoded or fetched if in DB
         return [
-            // Example hardcoded if DB tables missing, or fetch if exist
-            'kelompokSkemaList' => [
-                ['id' => 'PKM', 'nama' => 'PKM'],
-                ['id' => 'PKM-K', 'nama' => 'PKM-K'],
-                ['id' => 'PKM-M', 'nama' => 'PKM-M'],
-                ['id' => 'PKM-T', 'nama' => 'PKM-T'],
-            ],
-            'ruangLingkupList' => [
-                ['id' => 'Pendidikan', 'nama' => 'Pendidikan'],
-                ['id' => 'Kesehatan', 'nama' => 'Kesehatan'],
-                ['id' => 'Ekonomi', 'nama' => 'Ekonomi'],
-                ['id' => 'Sosial Budaya', 'nama' => 'Sosial Budaya'],
-                ['id' => 'Teknologi', 'nama' => 'Teknologi'],
-            ],
-            'rumpunIlmuLevel1List' => RumpunIlmu::where('level', 1)->get(),
+            'kelompokSkemaList'    => DB::table('kelompok_skema')->where('aktif', true)->get(),
+            'ruangLingkupList'     => DB::table('ruang_lingkup')->where('aktif', true)->get(),
+            'bidangFokusList'      => DB::table('bidang_fokus')->where('aktif', true)->get(),
+            'temaPenelitianList'   => DB::table('tema_penelitian')->where('aktif', true)->get(),
+            'topikPenelitianList'  => DB::table('topik_penelitian')->where('aktif', true)->get(),
+            'prioritasRisetList'   => DB::table('prioritas_riset')->where('aktif', true)->get(),
+            // Rumpun Ilmu — three separate level tables same as Penelitian
+            'rumpunIlmuLevel1List' => DB::table('rumpun_ilmu_level1')->where('aktif', true)->get(),
+            'rumpunIlmuLevel2List' => DB::table('rumpun_ilmu_level2')->where('aktif', true)->get(),
+            'rumpunIlmuLevel3List' => DB::table('rumpun_ilmu_level3')->where('aktif', true)->get(),
+            'kategoriLuaranList'   => DB::table('kategori_luaran')->where('aktif', true)->get(),
         ];
     }
 

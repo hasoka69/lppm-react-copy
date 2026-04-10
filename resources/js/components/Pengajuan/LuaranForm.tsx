@@ -22,9 +22,9 @@ interface LuaranFormProps {
     onSubmitSuccess: () => void;
     onCancel: () => void;
     isPengabdian?: boolean;
-    initialKategori?: string;
     fixedKategori?: string;
     showStatus?: boolean;
+    kategoriLuaranList?: any[];
 }
 
 interface FormData {
@@ -48,7 +48,8 @@ export const LuaranForm: React.FC<LuaranFormProps> = ({
     isPengabdian = false,
     initialKategori = '',
     fixedKategori = '',
-    showStatus = false
+    showStatus = false,
+    kategoriLuaranList = []
 }) => {
     const apiPrefix = isPengabdian ? '/dosen/pengabdian' : '/dosen/penelitian';
     const isEditMode = !!luaran;
@@ -385,23 +386,19 @@ export const LuaranForm: React.FC<LuaranFormProps> = ({
                                 className={`w-full px-4 py-3 border rounded-xl text-sm font-semibold focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all ${errors.kategori ? 'border-red-500' : 'border-gray-200'}`}
                             >
                                 <option value="">Pilih Kategori Luaran</option>
-                                {isPengabdian ? [
-                                    'Jurnal Internasional Bereputasi Scopus',
-                                    'Jurnal Internasional',
-                                    'Jurnal Terakreditasi SINTA 1',
-                                    'Jurnal Terakreditasi SINTA 2',
-                                    'Jurnal Terakreditasi SINTA 3',
-                                ].map((opt) => (
-                                    <option key={opt} value={opt}>{opt}</option>
-                                )) : [
-                                    'Jurnal Internasional Bereputasi Scopus',
-                                    'Jurnal Internasional',
-                                    'Jurnal Terakreditasi SINTA 1',
-                                    'Jurnal Terakreditasi SINTA 2',
-                                    'Jurnal Terakreditasi SINTA 3',
-                                ].map((opt) => (
-                                    <option key={opt} value={opt}>{opt}</option>
-                                ))}
+                                {kategoriLuaranList && kategoriLuaranList.length > 0 ? (
+                                    kategoriLuaranList.map((item) => (
+                                        <option key={item.id} value={item.nama}>{item.nama}</option>
+                                    ))
+                                ) : (
+                                    <>
+                                        <option value="Jurnal Internasional Bereputasi Scopus">Jurnal Internasional Bereputasi Scopus</option>
+                                        <option value="Jurnal Internasional">Jurnal Internasional</option>
+                                        <option value="Jurnal Terakreditasi SINTA 1">Jurnal Terakreditasi SINTA 1</option>
+                                        <option value="Jurnal Terakreditasi SINTA 2">Jurnal Terakreditasi SINTA 2</option>
+                                        <option value="Jurnal Terakreditasi SINTA 3">Jurnal Terakreditasi SINTA 3</option>
+                                    </>
+                                )}
                             </select>
                         )}
                         {errors.kategori && <p className="text-red-500 text-xs mt-1 font-medium">{errors.kategori[0]}</p>}

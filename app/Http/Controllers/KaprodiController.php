@@ -281,7 +281,7 @@ class KaprodiController extends Controller
      */
     public function show($id)
     {
-        $usulan = UsulanPenelitian::with(['ketua.dosen', 'anggotaDosen', 'anggotaNonDosen', 'luaranList', 'rabItems'])
+        $usulan = UsulanPenelitian::with(['ketua.dosen', 'anggotaDosen.dosen', 'anggotaNonDosen', 'luaranList', 'rabItems'])
             ->findOrFail($id);
 
         // Security check: ensure same prodi
@@ -386,7 +386,7 @@ class KaprodiController extends Controller
 
     public function showPengabdian($id)
     {
-        $usulan = \App\Models\UsulanPengabdian::with(['ketua.dosen', 'anggotaDosen', 'anggotaNonDosen', 'luaranItems', 'rabItems', 'mitra'])
+        $usulan = \App\Models\UsulanPengabdian::with(['ketua.dosen', 'anggotaDosen.dosen', 'anggotaNonDosen', 'luaranItems', 'rabItems', 'mitra'])
             ->findOrFail($id);
 
         // Security check

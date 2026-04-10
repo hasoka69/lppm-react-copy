@@ -82,6 +82,6 @@ class User extends Authenticatable implements HasMedia
      */
     public function dosen()
     {
-        return $this->hasOne(Dosen::class, 'email', 'email');
+        return $this->hasOne(Dosen::class, 'user_id');
     }
 }

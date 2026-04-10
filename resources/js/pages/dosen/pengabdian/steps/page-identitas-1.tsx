@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useForm } from '@inertiajs/react';
 import styles from '../../../../../css/pengajuan.module.css';
 import IdentityAnggota from '../../../../components/Pengajuan/IdentityAnggota';
@@ -47,10 +47,12 @@ interface PageIdentitasProps {
     usulanId?: number;
     usulan?: Partial<UsulanData>;
     onDraftCreated?: (usulanId: number) => void;
-    isPengabdian?: boolean;
     kelompokSkemaList?: any[];
     ruangLingkupList?: any[];
     rumpunIlmuLevel1List?: any[];
+    rumpunIlmuLevel2List?: any[];
+    rumpunIlmuLevel3List?: any[];
+    bidangFokusList?: any[];
 }
 
 const PageIdentitas: React.FC<PageIdentitasProps> = ({
@@ -62,10 +64,11 @@ const PageIdentitas: React.FC<PageIdentitasProps> = ({
     kelompokSkemaList = [],
     ruangLingkupList = [],
     rumpunIlmuLevel1List = [],
+    rumpunIlmuLevel2List = [],
+    rumpunIlmuLevel3List = [],
+    bidangFokusList = [],
 }) => {
     const [currentUsulanId, setCurrentUsulanId] = useState<number | null>(usulanId ?? null);
-    const [rumpunLevel2, setRumpunLevel2] = useState<any[]>([]);
-    const [rumpunLevel3, setRumpunLevel3] = useState<any[]>([]);
 
     const currentDate = new Date();
     const currentMonth = currentDate.getMonth() + 1;
@@ -101,28 +104,6 @@ const PageIdentitas: React.FC<PageIdentitasProps> = ({
         rumpun_ilmu_level3_id: usulan?.rumpun_ilmu_level3_id ?? '',
         tugas_ketua: usulan?.tugas_ketua ?? '',
     });
-
-    const tematikOptions = ['Ketahanan Pangan', 'Kesehatan', 'Pendidikan', 'UMKM & Kewirausahaan', 'Lingkungan', 'Sosial Budaya'];
-    const ririnOptions = ['Teknologi Informasi', 'Energi', 'Kesehatan', 'Pertanian', 'Sosial Humaniora'];
-    const currentFocusList = data.jenis_bidang_fokus === 'tematik' ? tematikOptions : (data.jenis_bidang_fokus === 'ririn' ? ririnOptions : []);
-
-    useEffect(() => {
-        if (data.rumpun_ilmu_level1_id) {
-            axios.get(`/api/master/rumpun-ilmu?level=2&parent_id=${data.rumpun_ilmu_level1_id}`)
-                .then(res => setRumpunLevel2(res.data));
-        } else {
-            setRumpunLevel2([]);
-        }
-    }, [data.rumpun_ilmu_level1_id]);
-
-    useEffect(() => {
-        if (data.rumpun_ilmu_level2_id) {
-            axios.get(`/api/master/rumpun-ilmu?level=3&parent_id=${data.rumpun_ilmu_level2_id}`)
-                .then(res => setRumpunLevel3(res.data));
-        } else {
-            setRumpunLevel3([]);
-        }
-    }, [data.rumpun_ilmu_level2_id]);
 
     const handleSaveDraft = (e: React.FormEvent) => {
         e.preventDefault();
@@ -275,8 +256,10 @@ const PageIdentitas: React.FC<PageIdentitasProps> = ({
                                     <label className={styles.label}>Bidang Fokus {data.jenis_bidang_fokus.toUpperCase()} *</label>
                                     <select className={styles.select} value={data.bidang_fokus} onChange={(e) => setData('bidang_fokus', e.target.value)}>
                                         <option value="">Pilih Bidang Fokus</option>
-                                        {currentFocusList.map((opt) => (
-                                            <option key={opt} value={opt}>{opt}</option>
+                                        {bidangFokusList
+                                            .filter((item) => item.jenis === data.jenis_bidang_fokus)
+                                            .map((item) => (
+                                            <option key={item.id} value={item.nama}>{item.nama}</option>
                                         ))}
                                     </select>
                                 </div>
@@ -317,7 +300,16 @@ const PageIdentitas: React.FC<PageIdentitasProps> = ({
                         <div className={styles.formGrid}>
                             <div className={styles.formGroup}>
                                 <label className={styles.label}>Rumpun Ilmu Level 1 *</label>
-                                <select className={styles.select} value={data.rumpun_ilmu_level1_id} onChange={(e) => setData('rumpun_ilmu_level1_id', e.target.value)}>
+                                <select
+                                    className={styles.select}
+                                    value={data.rumpun_ilmu_level1_id}
+                                    onChange={(e) => setData({
+                                        ...data,
+                                        rumpun_ilmu_level1_id: e.target.value,
+                                        rumpun_ilmu_level2_id: '',
+                                        rumpun_ilmu_level3_id: ''
+                                    })}
+                                >
                                     <option value="">Pilih Level 1</option>
                                     {rumpunIlmuLevel1List.map((item) => (
                                         <option key={item.id} value={item.id}>{item.nama}</option>
@@ -326,20 +318,38 @@ const PageIdentitas: React.FC<PageIdentitasProps> = ({
                             </div>
                             <div className={styles.formGroup}>
                                 <label className={styles.label}>Rumpun Ilmu Level 2 *</label>
-                                <select className={styles.select} value={data.rumpun_ilmu_level2_id} onChange={(e) => setData('rumpun_ilmu_level2_id', e.target.value)} disabled={!data.rumpun_ilmu_level1_id}>
+                                <select
+                                    className={styles.select}
+                                    value={data.rumpun_ilmu_level2_id}
+                                    onChange={(e) => setData({
+                                        ...data,
+                                        rumpun_ilmu_level2_id: e.target.value,
+                                        rumpun_ilmu_level3_id: ''
+                                    })}
+                                    disabled={!data.rumpun_ilmu_level1_id}
+                                >
                                     <option value="">Pilih Level 2</option>
-                                    {rumpunLevel2.map((item) => (
-                                        <option key={item.id} value={item.id}>{item.nama}</option>
-                                    ))}
+                                    {rumpunIlmuLevel2List
+                                        .filter(item => String(item.level1_id) === String(data.rumpun_ilmu_level1_id))
+                                        .map((item) => (
+                                            <option key={item.id} value={item.id}>{item.nama}</option>
+                                        ))}
                                 </select>
                             </div>
                             <div className={styles.formGroup}>
                                 <label className={styles.label}>Rumpun Ilmu Level 3 *</label>
-                                <select className={styles.select} value={data.rumpun_ilmu_level3_id} onChange={(e) => setData('rumpun_ilmu_level3_id', e.target.value)} disabled={!data.rumpun_ilmu_level2_id}>
+                                <select
+                                    className={styles.select}
+                                    value={data.rumpun_ilmu_level3_id}
+                                    onChange={(e) => setData('rumpun_ilmu_level3_id', e.target.value)}
+                                    disabled={!data.rumpun_ilmu_level2_id}
+                                >
                                     <option value="">Pilih Level 3</option>
-                                    {rumpunLevel3.map((item) => (
-                                        <option key={item.id} value={item.id}>{item.nama}</option>
-                                    ))}
+                                    {rumpunIlmuLevel3List
+                                        .filter(item => String(item.level2_id) === String(data.rumpun_ilmu_level2_id))
+                                        .map((item) => (
+                                            <option key={item.id} value={item.id}>{item.nama}</option>
+                                        ))}
                                 </select>
                             </div>
                         </div>

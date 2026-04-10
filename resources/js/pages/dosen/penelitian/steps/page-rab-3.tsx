@@ -118,6 +118,14 @@ const PageRAB: React.FC<PageRABProps> = ({ onKembali, onSelanjutnya, usulanId: p
             return;
         }
 
+        const allItems = [...bahanItems, ...perjalananItems, ...publikasiItems, ...pengumpulanItems];
+        for (const item of allItems) {
+            if (!item.item?.trim() || !item.satuan?.trim() || item.volume <= 0 || item.harga_satuan <= 0) {
+                alert(`Gagal Menyimpan: Harap lengkapi semua isian (Nama Uraian, Satuan, Volume, Harga) untuk item pada kategori ${item.tipe.replace('_', ' ')} atau hapus item jika tidak diperlukan.`);
+                return;
+            }
+        }
+
         setIsSaving(true);
         try {
             await Promise.all(deletedIds.map(id => axios.delete(route('dosen.penelitian.rab.destroy', id))));

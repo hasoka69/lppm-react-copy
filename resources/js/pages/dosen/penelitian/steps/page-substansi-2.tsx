@@ -42,12 +42,14 @@ interface PageSubstansiProps {
     onKembali?: () => void;
     onSelanjutnya?: () => void;
     usulanId?: number;
+    kategoriLuaranList?: any[];
 }
 
 const PageSubstansi: React.FC<PageSubstansiProps> = ({
     onKembali,
     onSelanjutnya,
-    usulanId: propUsulanId
+    usulanId: propUsulanId,
+    kategoriLuaranList = []
 }) => {
     const { props } = usePage<{
         makroRisetList?: MakroRiset[];
@@ -298,6 +300,7 @@ const PageSubstansi: React.FC<PageSubstansiProps> = ({
                                 onSubmitSuccess={handleLuaranSubmitSuccess}
                                 onCancel={() => setShowLuaranForm(false)}
                                 isPengabdian={false}
+                                kategoriLuaranList={kategoriLuaranList}
                             />
                         </div>
                     )}

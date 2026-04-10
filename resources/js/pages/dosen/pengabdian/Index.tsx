@@ -56,6 +56,17 @@ const PengabdianIndex = () => {
         isPerbaikanView?: boolean;
         title?: string;
         provinsiList?: any[];
+        // Master Data Lists
+        kelompokSkemaList?: any[];
+        ruangLingkupList?: any[];
+        bidangFokusList?: any[];
+        temaPenelitianList?: any[];
+        topikPenelitianList?: any[];
+        rumpunIlmuLevel1List?: any[];
+        rumpunIlmuLevel2List?: any[];
+        rumpunIlmuLevel3List?: any[];
+        prioritasRisetList?: any[];
+        kategoriLuaranList?: any[];
     }>();
     const usulanList = props.usulanList;
     const latestDraft = props.latestDraft || null;
@@ -170,8 +181,12 @@ const PengabdianIndex = () => {
                         onSelanjutnya={handleSelanjutnya}
                         onTutupForm={handleKembaliKeDaftar}
                         onDraftCreated={handleDraftCreated}
-                        isPengabdian={true}
-                        {...props} // Pass master props (rumpun ilmu types, etc)
+                        kelompokSkemaList={props.kelompokSkemaList}
+                        ruangLingkupList={props.ruangLingkupList}
+                        rumpunIlmuLevel1List={props.rumpunIlmuLevel1List}
+                        rumpunIlmuLevel2List={props.rumpunIlmuLevel2List}
+                        rumpunIlmuLevel3List={props.rumpunIlmuLevel3List}
+                        bidangFokusList={props.bidangFokusList}
                     />
                 );
             case 2:
@@ -180,6 +195,7 @@ const PengabdianIndex = () => {
                         onKembali={handleKembali}
                         onSelanjutnya={handleSelanjutnya}
                         usulanId={currentUsulanId ?? undefined}
+                        kategoriLuaranList={props.kategoriLuaranList}
                     />
                 );
             case 3:

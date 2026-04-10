@@ -121,6 +121,7 @@ export default function KaprodiUsulanReviewPengabdian({ usulan, pengusul, anggot
                                                 <li key={ang.id} className="bg-gray-50 p-3 rounded border border-gray-200 text-sm">
                                                     <span className="font-medium block">{ang.nama_dosen}</span>
                                                     <span className="text-gray-500">Anggota - {ang.nidn || ang.nidn_dosen}</span>
+                                                    <p className="text-xs text-gray-400 mt-1">{ang.dosen?.prodi || ang.prodi || '-'} &bull; {ang.dosen?.fakultas || ang.fakultas || '-'}</p>
                                                 </li>
                                             ))}
                                         </ul>

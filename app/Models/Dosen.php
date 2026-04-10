@@ -12,6 +12,7 @@ class Dosen extends Model
     protected $table = 'dosen';
 
     protected $fillable = [
+        'user_id',
         'nidn',
         'nama',
         'prodi', // Added prodi
@@ -34,5 +35,13 @@ class Dosen extends Model
     public function anggotaPenelitian()
     {
         return $this->hasMany(AnggotaPenelitian::class, 'dosen_id');
+    }
+
+    /**
+     * Relasi ke data User
+     */
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
     }
 }

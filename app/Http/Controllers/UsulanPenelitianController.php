@@ -384,7 +384,8 @@ class UsulanPenelitianController extends Controller
             'rumpunIlmuLevel2List' => DB::table('rumpun_ilmu_level2')->where('aktif', true)->get(),
             'rumpunIlmuLevel3List' => DB::table('rumpun_ilmu_level3')->where('aktif', true)->get(),
             'prioritasRisetList' => DB::table('prioritas_riset')->where('aktif', true)->get(),
-            'makroRisetList' => DB::table('makro_riset')->where('aktif', true)->get(), // [NEW] Add Makro Riset here
+            'makroRisetList' => DB::table('makro_riset')->where('aktif', true)->get(), 
+            'kategoriLuaranList' => DB::table('kategori_luaran')->where('aktif', true)->get(), 
         ];
     }
 

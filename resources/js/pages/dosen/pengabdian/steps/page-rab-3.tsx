@@ -111,11 +111,19 @@ const PageRAB: React.FC<PageRABProps> = ({ onKembali, onSelanjutnya, usulanId: p
     const handleSimpan = async () => {
         if (!usulanId) return;
         setIsSaving(true);
-        // Validation: Cek Pagu Dana (Admin Revision Mode)
         if (usulan?.dana_disetujui > 0 && totalRAB > Number(usulan.dana_disetujui)) {
             alert(`Gagal Menyimpan: Total RAB (Rp ${formatCurrency(totalRAB)}) melebihi pagu dana yang disetujui (Rp ${formatCurrency(usulan.dana_disetujui)}). Silakan sesuaikan kembali.`);
             setIsSaving(false);
             return;
+        }
+
+        const allItems = [...pelatihanItems, ...konsumsiItems, ...transportItems, ...alatBahanItems];
+        for (const item of allItems) {
+            if (!item.item?.trim() || !item.satuan?.trim() || item.volume <= 0 || item.harga_satuan <= 0) {
+                alert(`Gagal Menyimpan: Harap lengkapi semua isian (Nama Uraian, Satuan, Volume, Harga) untuk item pada kategori ${item.tipe.replace('_', ' ')} atau hapus item jika tidak diperlukan.`);
+                setIsSaving(false);
+                return;
+            }
         }
 
         try {
