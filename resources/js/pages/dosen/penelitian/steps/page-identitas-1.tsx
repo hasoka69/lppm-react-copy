@@ -34,7 +34,10 @@ interface UsulanData {
     prioritas_riset: string;
     tahun_pertama: number | string;
     tugas_ketua?: string; // Added tugas_ketua
-    [key: string]: string | number | undefined;
+    reviewers?: any[];
+    dana_usulan_awal?: number | string;
+    dana_disetujui?: number | string;
+    [key: string]: any;
 }
 
 interface PageIdentitasProps {
@@ -205,7 +208,7 @@ const PageIdentitas: React.FC<PageIdentitasProps> = ({
     return (
         <div className={styles.container}>
             {/* Tampilkan panel feedback jika usulan memiliki data reviewers */}
-            <ReviewFeedbackPanel reviewers={usulan?.reviewers as any} danaAwal={usulan?.dana_usulan_awal} danaDisetujui={usulan?.dana_disetujui} />
+            <ReviewFeedbackPanel usulan={usulan} />
 
             <form onSubmit={handleNext}>
                 {/* Section 1: Informasi Dasar */}

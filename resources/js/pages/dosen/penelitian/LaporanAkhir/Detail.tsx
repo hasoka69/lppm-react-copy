@@ -65,8 +65,8 @@ export default function Detail({ usulan, laporan_akhir, outputs, isAdminView = f
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        post(route('dosen.penelitian.laporan-akhir.submit', usulan.id), {
-            onSuccess: () => toast.success('Draft laporan akhir berhasil disimpan.'),
+        post(route('dosen.penelitian.laporan-akhir.update', laporan_akhir.id), {
+            onSuccess: () => toast.success('Draft laporan akhir penelitian berhasil disimpan.'),
             forceFormData: true,
         });
     };
@@ -191,7 +191,7 @@ export default function Detail({ usulan, laporan_akhir, outputs, isAdminView = f
                                         <div className="space-y-3">
                                             <label className="text-[11px] font-bold text-gray-400 uppercase tracking-widest ml-1">Unggah Laporan Akhir (PDF)</label>
                                             <div className="flex gap-2">
-                                                <input type="file" ref={fileLaporanRef} className="hidden" onChange={e => setData('file_laporan', e.target.files?.[0] || null)} accept=".pdf,.doc,.docx,.jpeg,.jpg,.png" />
+                                                <input type="file" ref={fileLaporanRef} className="hidden" onChange={e => setData('file_laporan', e.target.files?.[0] || null)} accept=".pdf,.doc,.docx,." />
                                                 <button type="button" onClick={() => !isAdminView && fileLaporanRef.current?.click()} className={`flex-1 bg-gray-50 border border-gray-100 rounded-xl px-5 py-3.5 text-sm font-bold text-gray-600 transition-all text-left flex items-center justify-between ${isAdminView ? 'cursor-not-allowed' : 'hover:bg-white hover:border-blue-500 hover:text-blue-600'}`}>
                                                     <span className="truncate">{data.file_laporan ? data.file_laporan.name : 'Pilih Laporan Akhir (PDF)'}</span>
                                                     <Upload className="w-4 h-4 opacity-40" />
@@ -274,7 +274,7 @@ export default function Detail({ usulan, laporan_akhir, outputs, isAdminView = f
                                                 <p className="text-[13px] font-bold text-gray-700">Unggah Poster Penelitian (Opsional)</p>
                                                 <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-wider mt-1">Image format (JPG/PNG) • Max 5MB</p>
                                             </div>
-                                            <input type="file" ref={filePosterRef} className="hidden" onChange={e => setData('file_poster', e.target.files?.[0] || null)} accept="image/*" />
+                                            <input type="file" ref={filePosterRef} className="hidden" onChange={e => setData('file_poster', e.target.files?.[0] || null)} accept=".png,.jpg" />
                                             <button
                                                 type="button"
                                                 onClick={() => !isAdminView && filePosterRef.current?.click()}
@@ -334,17 +334,17 @@ export default function Detail({ usulan, laporan_akhir, outputs, isAdminView = f
                                         <button
                                             type="submit"
                                             disabled={processing}
-                                            className="px-10 py-4 bg-white border-2 border-blue-600 text-blue-600 rounded-xl text-sm font-bold hover:bg-blue-50 transition-all"
+                                            className="px-8 py-4 bg-white border-2 border-blue-600 text-blue-600 rounded-xl text-sm font-bold hover:bg-blue-50 transition-all shadow-sm"
                                         >
-                                            {processing ? '...' : 'Simpan Draft'}
+                                            {processing ? 'Menyimpan...' : 'Simpan Draft'}
                                         </button>
                                         <button
                                             type="button"
                                             onClick={handleFinalisasi}
-                                            className="px-14 py-4 bg-blue-600 text-white rounded-xl text-sm font-extrabold shadow-xl shadow-blue-100 hover:bg-blue-700 transition-all flex items-center gap-3"
+                                            className="px-12 py-4 bg-blue-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all flex items-center gap-3"
                                         >
                                             Finalisasi Laporan
-                                            <CheckCircle2 className="w-5 h-5" />
+                                            <CheckCircle2 className="w-4 h-4" />
                                         </button>
                                     </>
                                 )}

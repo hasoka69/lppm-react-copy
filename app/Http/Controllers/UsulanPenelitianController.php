@@ -472,10 +472,17 @@ class UsulanPenelitianController extends Controller
                 return in_array($history->action, ['reviewer_approved', 'reviewer_rejected', 'reviewer_revision_requested']) || ($history->reviewer_id && $history->action === null && $history->comments && !str_contains($history->comments, 'ditunjuk') && !str_contains($history->comments, 'disubmit'));
             })
             ->map(function ($history) {
+                // [NEW] Get selected luaran categories from reviewer scoring
+                $selectedLuaranRaw = $history->reviewScores()
+                    ->where('section', 'selected_luaran')
+                    ->first()?->comments;
+                $selectedLuaran = $selectedLuaranRaw ? explode(',', $selectedLuaranRaw) : [];
+
                 return [
                     'id' => $history->id,
                     'name' => $history->reviewer->name ?? 'Reviewer',
                     'catatan' => $history->comments,
+                    'selected_luaran' => $selectedLuaran, // [NEW] Pass to frontend
                 ];
             })->values();
         $usulan->setAttribute('reviewers', $reviewersData);

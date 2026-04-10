@@ -55,6 +55,7 @@ const PageSubstansi: React.FC<PageSubstansiProps> = ({
         makroRisetList?: MakroRiset[];
         substansi?: SubstansiData;
         usulanId?: number;
+        usulan?: any;
     }>();
 
     const usulanId = propUsulanId ?? props.usulanId;
@@ -110,7 +111,7 @@ const PageSubstansi: React.FC<PageSubstansiProps> = ({
     return (
         <div className={styles.container}>
             {/* Tampilkan panel feedback jika ada usulan */}
-            <ReviewFeedbackPanel reviewers={props.usulan?.reviewers as any} danaAwal={props.usulan?.dana_usulan_awal} danaDisetujui={props.usulan?.dana_disetujui} />
+            <ReviewFeedbackPanel usulan={props.usulan} />
 
             {/* 2.1 Substansi Section */}
             <div className={styles.pageSection}>
@@ -204,7 +205,7 @@ const PageSubstansi: React.FC<PageSubstansiProps> = ({
                                     style={{ display: 'none' }}
                                     onChange={(e) => setData('file_substansi', e.target.files?.[0] ?? null)}
                                     disabled={!usulanId}
-                                    accept=".pdf,.doc,.docx,.jpeg,.jpg,.png"
+                                    accept=".pdf,.doc,.docx,."
                                 />
 
                                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>

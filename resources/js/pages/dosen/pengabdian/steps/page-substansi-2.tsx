@@ -142,7 +142,7 @@ const PageSubstansi: React.FC<PageSubstansiProps> = ({
     return (
         <div className={styles.container}>
             {/* Tampilkan panel feedback jika ada usulan */}
-            <ReviewFeedbackPanel reviewers={props.usulan?.reviewers as any} danaAwal={props.usulan?.dana_usulan_awal} danaDisetujui={props.usulan?.dana_disetujui} />
+            <ReviewFeedbackPanel usulan={props.usulan} />
 
             {/* 2.1 Dokumen Substansi */}
             <div className={styles.pageSection}>

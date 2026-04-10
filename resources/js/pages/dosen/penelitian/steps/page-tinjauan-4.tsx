@@ -129,7 +129,7 @@ const PageTinjauan: React.FC<PageTinjauanProps> = ({
     return (
         <div className={styles.container}>
             {/* Tampilkan panel feedback jika ada usulan */}
-            <ReviewFeedbackPanel reviewers={usulan?.reviewers as any} danaAwal={usulan?.dana_usulan_awal} danaDisetujui={usulan?.dana_disetujui} />
+            <ReviewFeedbackPanel usulan={usulan} />
 
             {/* Header Document */}
             <div className={styles.pageSection}>

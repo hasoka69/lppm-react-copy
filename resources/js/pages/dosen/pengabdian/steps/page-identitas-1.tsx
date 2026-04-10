@@ -38,7 +38,10 @@ interface UsulanData {
     rumpun_ilmu_level2_id: string | number;
     rumpun_ilmu_level3_id: string | number;
     tugas_ketua?: string; // Added tugas_ketua
-    [key: string]: string | number | undefined;
+    reviewers?: any[];
+    dana_usulan_awal?: number | string;
+    dana_disetujui?: number | string;
+    [key: string]: any;
 }
 
 interface PageIdentitasProps {
@@ -183,7 +186,7 @@ const PageIdentitas: React.FC<PageIdentitasProps> = ({
     return (
         <div className={styles.container}>
             {/* Tampilkan panel feedback jika ada usulan */}
-            <ReviewFeedbackPanel reviewers={usulan?.reviewers as any} />
+            <ReviewFeedbackPanel usulan={usulan} />
 
             <form onSubmit={handleNext}>
                 {/* Section 1: Dasar Usulan */}

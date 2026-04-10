@@ -106,7 +106,7 @@ const PageKonfirmasi: React.FC<PageKonfirmasiProps> = ({
     return (
         <div className={styles.container}>
             {/* Tampilkan panel feedback jika ada usulan */}
-            <ReviewFeedbackPanel reviewers={usulan?.reviewers as any} danaAwal={usulan?.dana_usulan_awal} danaDisetujui={usulan?.dana_disetujui} />
+            <ReviewFeedbackPanel usulan={usulan} />
 
             {/* Header Konfirmasi */}
             <div className={styles.pageSection}>
