@@ -140,7 +140,11 @@ class UsulanPenelitianController extends Controller
             session()->flash('usulanId', $usulan->id);
             session()->flash('success', 'Draft penelitian berhasil disimpan');
 
-            // ✅ PENTING: RETURN JSON
+            // ✅ PENTING: Handle Inertia vs AJAX
+            if ($request->header('X-Inertia')) {
+                return back();
+            }
+
             return response()->json([
                 'success' => true,
                 'usulanId' => $usulan->id,
@@ -149,6 +153,10 @@ class UsulanPenelitianController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Failed to create draft', ['error' => $e->getMessage()]);
+
+            if ($request->header('X-Inertia')) {
+                return back()->with('error', 'Gagal menyimpan draft');
+            }
 
             return response()->json([
                 'success' => false,

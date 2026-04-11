@@ -237,6 +237,24 @@ export default function Header() {
 
     const currentUrl = page.url;
 
+    // --- NOTIFICATION BADGE LOGIC ---
+    const notificationCounts = page.props.notificationCounts as any;
+    const urlParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+    const activeYear = urlParams?.get('tahun_akademik');
+
+    const getBadgeCount = (label: string): number => {
+        if (!notificationCounts) return 0;
+        const type = label.toLowerCase() === 'penelitian' ? 'penelitian' : (label.toLowerCase() === 'pengabdian' ? 'pengabdian' : null);
+        if (!type) return 0;
+
+        // Jika ada filter tahun aktif, ambil sesuai tahun tersebut
+        if (activeYear && notificationCounts[type]) {
+            return notificationCounts[type][activeYear] || 0;
+        }
+        // Jika tidak ada filter, ambil total keseluruhan
+        return notificationCounts[`total_${type}`] || 0;
+    };
+
     // URL dinamis untuk logo berdasarkan role aktif
     const dashboardUrl = navItems.length > 0 && navItems[0].href ? navItems[0].href : '/';
 
@@ -279,11 +297,16 @@ export default function Header() {
                                 href={item.href}
                                 className={
                                     currentUrl.startsWith(item.href)
-                                        ? "text-blue-600 font-semibold border-b-2 border-blue-600 pb-1"
-                                        : "hover:text-blue-600"
+                                        ? "text-blue-600 font-semibold border-b-2 border-blue-600 pb-1 flex items-center gap-1.5"
+                                        : "hover:text-blue-600 flex items-center gap-1.5"
                                 }
                             >
                                 {item.label}
+                                {getBadgeCount(item.label) > 0 && (
+                                    <span className="inline-flex items-center justify-center bg-red-500 text-white text-[10px] font-bold rounded-full h-4 min-w-[16px] px-1 animate-pulse shadow-sm shadow-red-200">
+                                        {getBadgeCount(item.label)}
+                                    </span>
+                                )}
                             </Link>
                         );
                     }

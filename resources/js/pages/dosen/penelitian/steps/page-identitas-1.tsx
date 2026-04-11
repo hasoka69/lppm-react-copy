@@ -119,6 +119,13 @@ const PageIdentitas: React.FC<PageIdentitasProps> = ({
 
     const handleSaveDraft = (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Minimal validation for drafting: Judul must be filled
+        if (!data.judul) {
+            alert('Harap isi judul penelitian sebelum menyimpan draft.');
+            return;
+        }
+
         if (currentUsulanId) {
             put(`/dosen/penelitian/${currentUsulanId}`, {
                 preserveScroll: true,

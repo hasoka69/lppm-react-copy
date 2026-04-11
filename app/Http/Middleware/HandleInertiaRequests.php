@@ -3,6 +3,9 @@
 namespace App\Http\Middleware;
 
 use App\Models\SettingApp;
+use App\Models\UsulanPenelitian;
+use App\Models\UsulanPengabdian;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -47,6 +50,27 @@ class HandleInertiaRequests extends Middleware
                 'info' => session('info'),
             ],
             'setting' => fn() => SettingApp::first(),
+            'notificationCounts' => function () use ($request) {
+                if (!$request->user() || !$request->user()->hasRole('Admin LPPM')) return null;
+
+                $actionStatuses = ['resubmitted_revision', 'under_revision_admin'];
+
+                return [
+                    'penelitian' => UsulanPenelitian::whereIn('status', $actionStatuses)
+                        ->select('tahun_pertama', DB::raw('count(*) as count'))
+                        ->groupBy('tahun_pertama')
+                        ->pluck('count', 'tahun_pertama')
+                        ->toArray(),
+                    'pengabdian' => UsulanPengabdian::whereIn('status', $actionStatuses)
+                        ->select('tahun_pertama', DB::raw('count(*) as count'))
+                        ->groupBy('tahun_pertama')
+                        ->pluck('count', 'tahun_pertama')
+                        ->toArray(),
+                    'total_penelitian' => UsulanPenelitian::whereIn('status', $actionStatuses)->count(),
+                    'total_pengabdian' => UsulanPengabdian::whereIn('status', $actionStatuses)->count(),
+                ];
+            },
         ]);
+
     }
 }

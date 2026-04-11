@@ -179,9 +179,6 @@ export default function AdminPenelitianDetail({ usulan, reviewers, initialScores
                                         <Badge variant="outline" className="text-gray-600">
                                             {formatAcademicYear(usulan.tahun_pertama)}
                                         </Badge>
-                                        <Badge variant="outline" className="text-gray-600">
-                                            {usulan.lama_kegiatan} Tahun
-                                        </Badge>
                                     </div>
                                 </div>
 

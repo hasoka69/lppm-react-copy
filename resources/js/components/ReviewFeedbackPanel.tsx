@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MessageSquare, X, Maximize2, Minimize2, ChevronRight, PenTool, Calculator } from 'lucide-react';
+import { MessageSquare, X, Maximize2, Minimize2, ChevronRight, PenTool, Calculator, DollarSign, Info } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { usePage } from '@inertiajs/react';
 import { calculateTotalLuaranCost, LUARAN_COSTS } from '@/constants/luaran';
@@ -35,20 +35,25 @@ const ReviewFeedbackPanel: React.FC<ReviewFeedbackPanelProps> = ({ reviewers, da
     const activeUsulan = propUsulan || props?.usulan;
     const currentStatus = status || activeUsulan?.status;
 
+    // Robustly extract data from usulan if not provided as direct props
+    const activeReviewers = reviewers || activeUsulan?.reviewers || [];
+    const activeDanaAwal = danaAwal !== undefined ? danaAwal : (activeUsulan?.dana_usulan_awal || activeUsulan?.total_anggaran);
+    const activeDanaDisetujui = danaDisetujui !== undefined ? danaDisetujui : activeUsulan?.dana_disetujui;
+
     // Check if the current status is a revision status
     const isRevision = currentStatus && ['needs_revision', 'revision_dosen', 'under_revision_admin', 'revision_kaprodi', 'didanai'].includes(currentStatus);
 
     // Get luaran items from reviewers (reviewer recommended categories)
-    const reviewerSelectedLuaranIds = (reviewers || []).flatMap(r => r.selected_luaran || []);
-    const totalBiayaLuaran = reviewerSelectedLuaranIds.reduce((total, id) => {
+    const reviewerSelectedLuaranIds = (activeReviewers || []).flatMap((r: Reviewer) => r.selected_luaran || []);
+    const totalBiayaLuaran = reviewerSelectedLuaranIds.reduce((total: number, id: string) => {
         return total + (LUARAN_COSTS[id] || 0);
     }, 0);
 
-    const grandTotalAwal = Number(danaAwal || 0) + totalBiayaLuaran;
+    const grandTotalAwal = Number(activeDanaAwal || 0) + totalBiayaLuaran;
 
     // If no reviewers or no notes, we don't necessarily show it, but usually, if status is revision, there's a note.
-    const hasNotes = reviewers && reviewers.some(r => r.catatan && r.catatan.trim() !== '');
-    const hasFunding = danaAwal !== undefined || danaDisetujui !== undefined || totalBiayaLuaran > 0;
+    const hasNotes = activeReviewers && activeReviewers.some((r: Reviewer) => r.catatan && r.catatan.trim() !== '');
+    const hasFunding = activeDanaAwal !== undefined || activeDanaDisetujui !== undefined || totalBiayaLuaran > 0;
 
     if (!isRevision) return null;
     if (!hasNotes && !hasFunding) return null;
@@ -130,83 +135,75 @@ const ReviewFeedbackPanel: React.FC<ReviewFeedbackPanelProps> = ({ reviewers, da
                                 <p>Silakan perhatikan catatan berikut saat memperbaiki proposal Anda. Panel ini dapat dibiarkan terbuka saat Anda mengisi form.</p>
                             </div>
 
-                            {/* Funding Information */}
+                            {/* Simplified Funding Information */}
                             {hasFunding && (
                                 <div className="bg-emerald-50 border border-emerald-200 p-5 rounded-2xl text-sm text-emerald-900 shadow-sm relative overflow-hidden">
                                     <div className="absolute top-0 right-0 p-3 opacity-10">
-                                        <Calculator className="w-12 h-12" />
+                                        <Calculator className="w-12 h-12 text-emerald-600" />
                                     </div>
                                     
-                                    <h4 className="font-bold mb-4 flex items-center gap-2 text-emerald-800">
+                                    <h4 className="font-bold mb-5 flex items-center gap-2 text-emerald-800">
                                         <div className="p-1.5 bg-emerald-100 rounded-lg">
-                                            <PenTool className="w-4 h-4 text-emerald-600" />
+                                            <DollarSign className="w-4 h-4 text-emerald-600" />
                                         </div>
                                         Hasil Review Pendanaan
                                     </h4>
                                     
-                                    <div className="space-y-3">
-                                        {danaAwal != null && (
-                                            <div className="flex justify-between items-center group">
-                                                <span className="text-emerald-700 font-medium">Dana Usulan (RAB):</span>
-                                                <span className="font-bold text-slate-700 transition-colors group-hover:text-emerald-600">
-                                                    {formatCurrency(Number(danaAwal))}
-                                                </span>
-                                            </div>
-                                        )}
+                                    <div className="space-y-4">
+                                        {/* Row 1: Dana Usulan */}
+                                        <div className="flex justify-between items-center group">
+                                            <span className="text-emerald-700/80 font-semibold uppercase text-[10px] tracking-wider">Dana Usulan (RAB):</span>
+                                            <span className="font-bold text-slate-600">
+                                                {formatCurrency(Number(activeDanaAwal || 0))}
+                                            </span>
+                                        </div>
 
-                                        {totalBiayaLuaran > 0 && (
-                                            <div className="flex justify-between items-start group">
-                                                <div className="flex flex-col">
-                                                    <span className="text-emerald-700 font-medium">Biaya Target Luaran (Disetujui):</span>
-                                                    <div className="flex flex-wrap gap-1 mt-0.5">
-                                                        {Array.from(new Set(reviewerSelectedLuaranIds)).map(id => (
-                                                            <span key={id} className="text-[9px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded border border-emerald-200/50 font-bold">
-                                                                {REVIEWER_LUARAN_MAP[id] || id}
-                                                            </span>
-                                                        ))}
-                                                    </div>
-                                                </div>
-                                                <span className="font-bold text-slate-700 transition-colors group-hover:text-emerald-600">
-                                                    + {formatCurrency(totalBiayaLuaran)}
-                                                </span>
-                                            </div>
-                                        )}
-
-                                        {(totalBiayaLuaran > 0 && danaAwal != null) && (
-                                            <div className="flex justify-between items-center pt-2 border-t border-emerald-200/50">
-                                                <span className="text-emerald-800 font-black uppercase tracking-tight text-xs">Total Anggaran:</span>
-                                                <span className="font-black text-emerald-700 text-lg">
-                                                    {formatCurrency(grandTotalAwal)}
-                                                </span>
-                                            </div>
-                                        )}
-
-                                        {danaDisetujui != null && Number(danaDisetujui) > 0 && (
-                                            <div className="mt-4 pt-4 border-t-2 border-emerald-200 border-dashed">
-                                                <div className="flex justify-between items-center">
-                                                    <span className="text-emerald-900 font-black">DANA DISETUJUI:</span>
-                                                    <div className="bg-emerald-200/50 px-3 py-1 rounded-lg">
-                                                        <span className="font-black text-emerald-800 text-xl">
-                                                            {formatCurrency(Number(danaDisetujui))}
-                                                        </span>
-                                                    </div>
+                                        {/* Row 2: Dana Disetujui (The Main Value) */}
+                                        <div className="pt-4 border-t border-emerald-200/50">
+                                            <div className="flex justify-between items-center mb-1">
+                                                <span className="text-emerald-900 font-extrabold uppercase text-xs tracking-tight">DANA DISETUJUI:</span>
+                                                <div className="bg-emerald-600 text-white px-3 py-1.5 rounded-xl shadow-sm">
+                                                    <span className="font-black text-lg">
+                                                        {formatCurrency(Number(activeDanaDisetujui || 0))}
+                                                    </span>
                                                 </div>
                                             </div>
-                                        )}
+
+                                            {/* Breakdown Details */}
+                                            {totalBiayaLuaran > 0 && (
+                                                <div className="mt-3 bg-white/60 p-3 rounded-xl border border-emerald-200/50 space-y-2">
+                                                    <div className="flex justify-between items-center text-[10px]">
+                                                        <span className="font-bold text-emerald-800">Termasuk Biaya Luaran:</span>
+                                                        <span className="font-black text-emerald-700">+{formatCurrency(totalBiayaLuaran)}</span>
+                                                    </div>
+                                                    
+                                                    <div>
+                                                        <span className="text-[9px] font-bold text-emerald-600 uppercase tracking-widest block mb-1.5">Kategori Luaran:</span>
+                                                        <div className="flex flex-wrap gap-1.5">
+                                                            {Array.from<string>(new Set(reviewerSelectedLuaranIds)).map((id: string) => (
+                                                                <span key={id} className="text-[10px] bg-emerald-200/50 text-emerald-800 px-2 py-0.5 rounded-lg border border-emerald-200/50 font-bold">
+                                                                    {REVIEWER_LUARAN_MAP[id] || id}
+                                                                </span>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
 
-                                    <div className="mt-4 flex items-start gap-2 bg-white/40 p-2.5 rounded-lg border border-emerald-200/50">
+                                    <div className="mt-5 flex items-start gap-2 bg-emerald-100/30 p-3 rounded-xl border border-dotted border-emerald-300">
                                         <div className="mt-0.5">
-                                            <Calculator className="w-3.5 h-3.5 text-emerald-600" />
+                                            <Info className="w-3.5 h-3.5 text-emerald-600" />
                                         </div>
-                                        <p className="text-[11px] text-emerald-700 leading-normal italic">
-                                            * Harap sesuaikan RAB Anda dengan total dana yang disetujui. Total anggaran mencakup biaya operasional (RAB) dan biaya luaran.
+                                        <p className="text-[10px] text-emerald-700 leading-normal font-medium italic">
+                                            * Harap sesuaikan rincian RAB di Step 3 dengan total dana yang disetujui (Nilai Pagu - Biaya Luaran).
                                         </p>
                                     </div>
                                 </div>
                             )}
 
-                            {reviewers?.map((reviewer, idx) => (
+                            {activeReviewers?.map((reviewer: Reviewer, idx: number) => (
                                 (reviewer.catatan || (reviewer.selected_luaran && reviewer.selected_luaran.length > 0)) ? (
                                     <div key={idx} className="bg-white border text-sm border-slate-200 rounded-2xl overflow-hidden shadow-sm">
                                         <div className="bg-slate-50/80 px-4 py-3 border-b border-slate-100 flex items-center justify-between">
@@ -217,7 +214,7 @@ const ReviewFeedbackPanel: React.FC<ReviewFeedbackPanelProps> = ({ reviewers, da
                                                 <div className="bg-blue-50/50 p-3 rounded-xl border border-blue-100/50">
                                                     <span className="text-[10px] font-bold text-blue-800 uppercase tracking-wider block mb-2">Rekomendasi Target Luaran:</span>
                                                     <div className="flex flex-wrap gap-2">
-                                                        {reviewer.selected_luaran.map(id => (
+                                                        {reviewer.selected_luaran.map((id: string) => (
                                                             <div key={id} className="bg-blue-600 text-white text-[10px] font-black px-2 py-1 rounded-md shadow-sm">
                                                                 {REVIEWER_LUARAN_MAP[id] || id}
                                                             </div>

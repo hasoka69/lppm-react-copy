@@ -285,9 +285,10 @@ function OutputRow({ output, index, isAdminView = false, isLaporanDraft = true }
     const isReadOnly = isAdminView || !isLaporanDraft;
     const fileInputRef = useRef<HTMLInputElement>(null);
 
+    const initialStatus = output.kemajuan_data?.status || output.status || 'Rencana';
     const { data, setData, post, processing, errors } = useForm({
         judul_realisasi: output.kemajuan_data?.judul_realisasi || output.judul_realisasi || '',
-        status: output.kemajuan_data?.status || output.status || 'Rencana',
+        status: initialStatus === 'Rencana' ? 'Submit' : initialStatus,
         peran_penulis: output.kemajuan_data?.peran_penulis || output.peran_penulis || '',
         nama_jurnal: output.kemajuan_data?.nama_jurnal || output.nama_jurnal || '',
         issn: output.kemajuan_data?.issn || output.issn || '',

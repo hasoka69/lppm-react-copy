@@ -160,12 +160,14 @@ class AdminLPPMController extends Controller
             'didanai' => (clone $query)->where('status', 'didanai')->count(),
             'proses' => (clone $query)->whereIn('status', ['submitted', 'approved_prodi', 'reviewer_assigned', 'resubmitted_revision', 'reviewed_approved'])->count(),
             'perbaikan' => (clone $query)->whereIn('status', ['under_revision_admin', 'revision_dosen'])->count(),
+            'needs_action_daftar' => (clone $query)->where('status', 'resubmitted_revision')->count(),
+            'needs_action_perbaikan' => (clone $query)->where('status', 'under_revision_admin')->count(),
         ];
 
         return Inertia::render('lppm/penelitian/Index', [
             'proposals' => $proposals,
             'activeTab' => $activeTab,
-            'stats' => [],
+            'stats' => $stats,
             'filters' => request()->all(['tahun_akademik', 'search'])
         ]);
     }
@@ -318,12 +320,14 @@ class AdminLPPMController extends Controller
             'didanai' => (clone $query)->where('status', 'didanai')->count(),
             'proses' => (clone $query)->whereIn('status', ['submitted', 'approved_prodi', 'reviewer_assigned', 'resubmitted_revision', 'reviewed_approved'])->count(),
             'perbaikan' => (clone $query)->whereIn('status', ['under_revision_admin', 'revision_dosen'])->count(),
+            'needs_action_daftar' => (clone $query)->where('status', 'resubmitted_revision')->count(),
+            'needs_action_perbaikan' => (clone $query)->where('status', 'under_revision_admin')->count(),
         ];
 
         return Inertia::render('lppm/pengabdian/Index', [
             'proposals' => $proposals,
             'activeTab' => $activeTab,
-            'stats' => [],
+            'stats' => $stats,
             'filters' => request()->all(['tahun_akademik', 'search'])
         ]);
     }

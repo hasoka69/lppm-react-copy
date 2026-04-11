@@ -410,7 +410,7 @@ function CatatanModal({ isOpen, onClose, usulanId, log }: { isOpen: boolean, onC
                                         multiple
                                         className="hidden"
                                         id="catatan-files"
-                                        accept=".pdf,.doc,.docx,.jpeg,.jpg,.png"
+                                        accept=".pdf,.doc,.docx,."
                                         onChange={e => {
                                             const newFiles = Array.from(e.target.files || []);
                                             // Handle file size validation before adding to state

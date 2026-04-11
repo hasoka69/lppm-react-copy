@@ -108,6 +108,10 @@ class UsulanPengabdianController extends Controller
             session()->flash('usulanId', $usulan->id);
             session()->flash('success', 'Draft pengabdian berhasil disimpan');
 
+            if ($request->header('X-Inertia')) {
+                return back();
+            }
+
             return response()->json([
                 'success' => true,
                 'usulanId' => $usulan->id,
@@ -116,6 +120,10 @@ class UsulanPengabdianController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Failed to create draft pengabdian', ['error' => $e->getMessage()]);
+
+            if ($request->header('X-Inertia')) {
+                return back()->with('error', 'Gagal menyimpan draft: ' . $e->getMessage());
+            }
 
             return response()->json([
                 'success' => false,

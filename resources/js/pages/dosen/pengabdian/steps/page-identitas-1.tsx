@@ -138,6 +138,12 @@ const PageIdentitas: React.FC<PageIdentitasProps> = ({
                 alert('Mohon lengkapi semua data sebelum melanjutkan.');
                 return;
             }
+        } else {
+            // Minimal validation for drafting
+            if (!data.judul) {
+                alert('Harap isi judul pengabdian sebelum menyimpan draft.');
+                return;
+            }
         }
 
         if (currentUsulanId) {

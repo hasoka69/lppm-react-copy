@@ -53,13 +53,14 @@ interface Usulan {
 interface PageProps {
     proposals: PaginatedResponse<Usulan>;
     activeTab: string;
+    stats: Record<string, number>;
     filters?: {
         tahun_akademik?: string;
         search?: string;
     }
 }
 
-export default function AdminPenelitianIndex({ proposals, activeTab = 'daftar', filters = {} }: PageProps) {
+export default function AdminPenelitianIndex({ proposals, activeTab = 'daftar', stats = {}, filters = {} }: PageProps) {
     const tabs = [
         { id: 'daftar', label: 'Daftar Usulan', icon: FileText, href: route('lppm.penelitian.index') },
         { id: 'perbaikan', label: 'Perbaikan Usulan', icon: AlertCircle, href: route('lppm.penelitian.perbaikan') },
@@ -193,7 +194,14 @@ export default function AdminPenelitianIndex({ proposals, activeTab = 'daftar', 
                                     : 'text-gray-500 hover:text-gray-700'
                                     }`}
                             >
-                                {tab.label}
+                                <div className="flex items-center gap-2">
+                                    {tab.label}
+                                    {((tab.id === 'daftar' && stats.needs_action_daftar > 0) || (tab.id === 'perbaikan' && stats.needs_action_perbaikan > 0)) && (
+                                        <span className="inline-flex items-center justify-center bg-red-100 text-red-600 text-[10px] font-bold rounded-full h-4 min-w-[16px] px-1 border border-red-200">
+                                            {tab.id === 'daftar' ? stats.needs_action_daftar : stats.needs_action_perbaikan}
+                                        </span>
+                                    )}
+                                </div>
                                 {activeTab === tab.id && (
                                     <motion.div
                                         layoutId="activeTabUnderline"
@@ -410,6 +418,13 @@ function DaftarUsulanTable({ proposals, activeTab, onContractClick, currentPage,
                                     </td>
                                     <td className="px-8 py-6 whitespace-nowrap text-center">
                                         <StatusBadge status={item.status} />
+                                        {(item.status === 'resubmitted_revision' || item.status === 'under_revision_admin') && (
+                                            <div className="mt-1.5 flex justify-center">
+                                                <span className="text-[9px] font-black text-red-500 animate-pulse uppercase tracking-[0.1em]">
+                                                    ● PERLU AKSI
+                                                </span>
+                                            </div>
+                                        )}
                                     </td>
                                     <td className="px-8 py-6 whitespace-nowrap text-right">
                                         <div className="flex flex-col items-end gap-2.5">
